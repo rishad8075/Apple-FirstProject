@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
+</head>
+<body>
+
+    <header>
+        
+        <%- include("../partials/header.ejs") %>
+
+    </header>
+
+    
+    <div class="container d-flex justify-content-center align-items-center vh-100">
+        <div class="row w-100">
+            <div class="col-md-6 d-none d-md-block">
+                <img src="shopping-image.jpg" alt="Shopping" class="img-fluid">
+            </div>
+            <div class="col-md-6 p-5">
+                <h2>Create an Account</h2>
+                <% if (typeof errorMessage !== 'undefined' && errorMessage) { %>
+                    <div class="alert alert-danger"><%= errorMessage %></div>
+                <% } %>
+                <form method="post" action="/signup">
+                    <input type="text" class="form-control my-2" placeholder="Name" name="name">
+                    <input type="text" class="form-control my-2" placeholder="Phone Number" name="phoneNumber">
+                    <input type="email" class="form-control my-2" placeholder="Email" name="email">
+                    <div class="input-group my-2">
+                        <input type="password" class="form-control" placeholder="Password" name="password" id="password">
+                        <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('password', this)">
+                            👁️
+                        </button>
+                    </div>
+                    
+                 
+                    <div class="input-group my-2">
+                        <input type="password" class="form-control" placeholder="Confirm Password" name="confirmPassword" id="confirmPassword">
+                        <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('confirmPassword', this)">
+                            👁️
+                        </button>
+                    </div>
+                    <button class="btn btn-danger w-100">Create Account</button>
+                    <a href="/auth/google" class="btn btn-light w-100 mt-2">Sign up with Google</a>
+                    <p class="mt-3">Already have an account? <a href="/views/User/login.ejs">Log in</a></p>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <%- include("../partials/footer.ejs") %>
+    </footer>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+      document.querySelector("form").addEventListener("submit", function (e) {
+        const nameField = document.getElementsByName("name")[0];
+
+        if (nameField.value.trim() === "") {
+            e.preventDefault(); 
+            Swal.fire({
+                icon: "error",
+                title: "Oops...",
+                text: "Please enter your name",
+                showConfirmButton: true,
+                timer: 2000
+            });
+        }
+    });
+    function togglePassword(fieldId, button) {
+        const field = document.getElementById(fieldId);
+        if (field.type === "password") {
+            field.type = "text";
+            button.textContent = "🙈";
+        } else {
+            field.type = "password";
+            button.textContent = "👁️";
+        }
+    }
+    document.querySelector("form").addEventListener("submit", function (e) {
+    const password = document.getElementById("password").value.trim();
+    const confirmPassword = document.getElementById("confirmPassword").value.trim();
+
+    if (password !== confirmPassword) {
+        e.preventDefault();
+        Swal.fire({
+            icon: "error",
+            title: "Password Mismatch",
+            text: "Passwords do not match. Please try again.",
+            timer: 2000
+        });
+    }
+});
+    </script>
+
+</body>
+</html>

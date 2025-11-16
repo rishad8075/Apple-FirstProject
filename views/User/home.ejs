@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>APPLLe - Premium Electronics</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <style>
+        :root {
+            --primary: #0d6efd;
+            --dark: #212529;
+            --light: #f8f9fa;
+            --accent: #ffc107;
+        }
+        
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            overflow-x: hidden;
+        }
+        
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin: 2rem 0;
+        }
+        
+        .hero-content {
+            padding: 3rem;
+        }
+        
+        .hero-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+        }
+        
+        .hero-btn {
+            padding: 12px 30px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+        }
+        
+        /* Product Cards */
+        .product-card {
+            border: none;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            margin-bottom: 20px;
+        }
+        
+        .product-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+        }
+        
+        .product-img-container {
+            height: 220px;
+            background: #f8f9fa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .product-img {
+            max-height: 100%;
+            max-width: 100%;
+            object-fit: contain;
+        }
+        
+        .product-body {
+            padding: 1.5rem;
+            background: white;
+        }
+        
+        .product-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            height: 48px;
+            overflow: hidden;
+        }
+        
+        .product-price {
+            font-weight: 700;
+            color: var(--primary);
+            font-size: 1.2rem;
+            margin: 1rem 0;
+        }
+        
+        .btn-add-to-cart {
+            width: 100%;
+            padding: 10px;
+            font-weight: 600;
+            background: var(--dark);
+            border: none;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-add-to-cart:hover {
+            background: var(--primary);
+            transform: translateY(-2px);
+        }
+        
+        /* Section Headings */
+        .section-title {
+            position: relative;
+            display: inline-block;
+            margin-bottom: 2rem;
+            font-weight: 700;
+        }
+        
+        .section-title:after {
+            content: '';
+            position: absolute;
+            width: 50%;
+            height: 4px;
+            background: var(--accent);
+            bottom: -10px;
+            left: 0;
+            border-radius: 2px;
+        }
+        
+        /* Responsive Adjustments */
+        @media (max-width: 768px) {
+            .hero-content {
+                text-align: center;
+                padding: 2rem;
+            }
+            
+            .hero-title {
+                font-size: 2rem;
+            }
+            
+            .product-img-container {
+                height: 180px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <%- include("../partials/header.ejs") %>
+    
+    <!-- Premium Hero Banner -->
+    <section class="hero">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6 hero-content animate__animated animate__fadeInLeft">
+                    <h1 class="hero-title">MacBook Air with M2 Chip</h1>
+                    <p class="lead mb-4">Supercharged by the next-generation M2 chip, the MacBook Air delivers incredible performance and up to 18 hours of battery life.</p>
+                    <div class="d-flex gap-3">
+                        <button class="btn btn-dark hero-btn">
+                            <i class="fas fa-shopping-cart me-2"></i>Shop Now
+                        </button>
+                        <button class="btn btn-outline-dark hero-btn">
+                            <i class="fas fa-info-circle me-2"></i>Learn More
+                        </button>
+                    </div>
+                </div>
+                <div class="col-lg-6 p-0 animate__animated animate__fadeInRight">
+                    <img src="/images/banner Macbook.jpg" class="img-fluid" alt="MacBook Air" style="max-height: 500px; width: 100%; object-fit: cover;">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Dynamic Products Section -->
+    <section class="container my-5 py-4">
+        <div class="text-center mb-5">
+            <h2 class="section-title">Our Products</h2>
+            <p class="text-muted">Discover our premium selection of cutting-edge technology</p>
+        </div>
+        
+        <div class="row g-4">
+            <% products.forEach(product => { %>
+            <div class="col-md-6 col-lg-4 col-xl-3 animate__animated animate__fadeInUp">
+                <div class="product-card h-100">
+                    <div class="product-img-container">
+                        <% if(product.image && product.image[0]) { %>
+                            <img src="<%= product.image[0] %>" class="product-img" alt="<%= product.productName %>">
+                        <% } else { %>
+                            <img src="/images/default-product.jpg" class="product-img" alt="Default product image">
+                        <% } %>
+                    </div>
+                    <div class="product-body text-center">
+                        <h5 class="product-title"><%= product.productName %></h5>
+                        <div class="product-price">
+                            ₹<%= product.salePrice || product.regularPrice %>
+                            <% if(product.salePrice && product.salePrice < product.regularPrice) { %>
+                                <small class="text-muted text-decoration-line-through ms-2">₹<%= product.regularPrice %></small>
+                            <% } %>
+                        </div>
+                        <button class="btn btn-add-to-cart" data-id="<%= product._id %>">
+                            <i class="fas fa-cart-plus me-2"></i>Add to Cart
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <% }); %>
+        </div>
+    </section>
+    
+    <%- include("../partials/footer.ejs") %>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Add to cart functionality
+        document.querySelectorAll('.btn-add-to-cart').forEach(button => {
+            button.addEventListener('click', function() {
+                const productId = this.getAttribute('data-id');
+                // Add your cart logic here
+                alert('Added product ' + productId + ' to cart');
+            });
+        });
+
+        // Simple animation trigger
+        document.addEventListener('DOMContentLoaded', function() {
+            const animatedElements = document.querySelectorAll('.animate__animated');
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = 1;
+                    }
+                });
+            }, { threshold: 0.1 });
+            
+            animatedElements.forEach(el => {
+                el.style.opacity = 0;
+                observer.observe(el);
+            });
+        });
+    </script>
+</body>
+</html>
