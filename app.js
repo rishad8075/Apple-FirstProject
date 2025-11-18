@@ -1,10 +1,13 @@
 const express = require("express");
 const app = express();
 const env = require('dotenv').config();
-const DB = require("./model/db");
+const passport = require("./config/passport")
+const DB = require("./config/db");
 const path = require("path");
 const session = require("express-session");
-const UserRoutes = require("./Routes/UserRoutes") 
+const UserRoutes = require("./Routes/UserRoutes");
+const adminRoutes = require("./Routes/adminRoutes");
+
 
 
 const Port = process.env.PORT
@@ -31,6 +34,8 @@ app.use((req, res, next) => {
 app.set("view engine","ejs");
 app.set('views', path.join(__dirname, 'views'));
 app.use(express.static("public"))
+app.use(passport.initialize());
+app.use(passport.session());
 
 
 
@@ -38,7 +43,7 @@ app.use(express.static("public"))
 
 
 app.use("/",UserRoutes)
-
+app.use(adminRoutes);
 
 app.listen(Port,()=>{
     console.log(`Server Running ${process.env.PORT}`);

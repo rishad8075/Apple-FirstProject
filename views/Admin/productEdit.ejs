@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Product</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <style>
+        body {
+            background-color: black;
+            color: white;
+        }
+        .error-message {
+            color: red;
+        }
+        .container {
+            margin-left: 260px;
+            padding: 20px;
+        }
+        .image-counter {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background: #28a745;
+            color: white;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .image-upload-box, .cropped-preview-box {
+            border: 1px dashed #666;
+            padding: 15px;
+            border-radius: 5px;
+            background-color: #1a1a1a;
+            margin-bottom: 15px;
+            height: 100%;
+        }
+        .image-preview-container {
+            width: 100%;
+            height: 200px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            border: 1px solid #444;
+        }
+        .img-preview {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+        .cropper-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.9);
+            z-index: 9999;
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+        .cropper-dialog {
+            background: #222;
+            padding: 20px;
+            border-radius: 5px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+        }
+        .cropper-container {
+            max-height: 70vh;
+            overflow: hidden;
+        }
+        .cropper-buttons {
+            margin-top: 15px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+        .image-row {
+            margin-bottom: 30px;
+        }
+        #footer, .activate-windows {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container py-5">
+        <%- include("../partials/adminsidebar.ejs") %>
+        <div class="card bg-dark text-white">
+            <div class="card-body">
+            
+                <h2 class="card-title">Edit Product</h2>
+                <form id="productForm" method="post" action="/admin/update-product/<%= product._id %>" enctype="multipart/form-data">
+                    <!-- Product Details Fields -->
+                    <div class="mb-3">
+                        <label for="product_name" class="form-label">Product Name</label>
+                        <input type="text" name="productName" class="form-control" id="product_name" value="<%= product.productName %>">
+                        <div id="productName-error" class="error-message"></div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Category</label>
+                        <select class="form-select" name="category" required>
+                            <% for(let i = 0; i < cat.length; i++) { %>
+                                <option value="<%= cat[i]._id %>" 
+                                        <%= product.category._id.toString() === cat[i]._id.toString() ? 'selected' : '' %>>
+                                    <%= cat[i].name %>
+                                </option>
+                            <% } %>
+                        </select>
+                        <div id="category-error" class="error-message"></div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Full Description</label>
+                        <textarea name="description" class="form-control" id="description" rows="4"><%= product.description %></textarea>
+                        <div id="description-error" class="error-message"></div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Stock</label>
+                        <input type="number" name="stock" class="form-control" id="stock" min="0" required value="<%= product.stock %>">
+                        <div id="stock-error" class="error-message"></div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="base_price" class="form-label">Regular Price</label>
+                        <input type="number" placeholder="Enter base price" name="regularPrice" class="form-control" id="regularPrice" value="<%= product.regularPrice %>">
+                        <div id="basePrice-error" class="error-message"></div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="sale_price" class="form-label">Sale Price</label>
+                        <input type="number" placeholder="Enter sale price" name="salePrice" class="form-control" id="salePrice" value="<%= product.salePrice %>">
+                        <div id="salePrice-error" class="error-message"></div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="product_offer" class="form-label">Product Offer (%)</label>
+                        <input type="number" placeholder="Enter discount percentage" name="productOffer" class="form-control" id="product_offer" value="<%= product.productOffer || 0 %>">
+                        <div id="productOffer-error" class="error-message"></div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Color</label>
+                        <select class="form-select" name="color">
+                            <option value="">Select Color</option>
+                            <option value="Silver" <%= product.Color === 'Silver' ? 'selected' : '' %>>Silver</option>
+                            <option value="Space Gray" <%= product.Color === 'Space Gray' ? 'selected' : '' %>>Space Gray</option>
+                            <option value="Midnight" <%= product.Color === 'Midnight' ? 'selected' : '' %>>Midnight</option>
+                            <option value="Starlight" <%= product.Color === 'Starlight' ? 'selected' : '' %>>Starlight</option>
+                        </select>
+                        <div id="color-error" class="error-message"></div>
+                    </div>
+                
+                    <div class="mb-3">
+                        <label class="form-label">Storage</label>
+                        <select class="form-select" name="storage">
+                            <option value="">Select Storage</option>
+                            <option value="128GB" <%= product.storage === '128GB' ? 'selected' : '' %>>128GB</option>
+                            <option value="256GB" <%= product.storage === '256GB' ? 'selected' : '' %>>256GB</option>
+                            <option value="512GB" <%= product.storage === '512GB' ? 'selected' : '' %>>512GB</option>
+                            <option value="1TB" <%= product.storage === '1TB' ? 'selected' : '' %>>1TB</option>
+                        </select>
+                        <div id="storage-error" class="error-message"></div>
+                    </div>
+                
+                    <div class="mb-3">
+                        <label class="form-label">Product Status</label>
+                        <select class="form-select" name="status">
+                            <option value="Available" <%= product.status === 'Available' ? 'selected' : '' %>>Available</option>
+                            <option value="Out of Stock" <%= product.status === 'Out of Stock' ? 'selected' : '' %>>Out of Stock</option>
+                            <option value="Discontinued" <%= product.status === 'Discontinued' ? 'selected' : '' %>>Discontinued</option>
+                        </select>
+                        <div id="status-error" class="error-message"></div>
+                    </div>
+                
+                    <!-- Product Images Section -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-dark text-white position-relative">
+                            <h5>Product Images</h5>
+                            <span id="imageCounter" class="image-counter">0/4</span>
+                        </div>
+                        <div class="card-body">
+                            <% for(let i = 0; i < 4; i++) { 
+                                const imgPath = product.image[i] ? 
+                                    product.image[i].startsWith('/') ? 
+                                        product.image[i] : 
+                                        '/' + product.image[i] : 
+                                    '/images/default-product.jpg';
+                            %>
+                                <div class="row image-row">
+                                    <div class="col-md-6">
+                                        <div class="image-upload-box">
+                                            <div class="image-preview-container">
+                                                <img id="preview<%= i+1 %>" src="<%= imgPath %>" class="img-preview" 
+                                                     onerror="this.src='/images/default-product.jpg'">
+                                            </div>
+                                            <input type="file" id="upload<%= i+1 %>" name="image<%= i+1 %>" class="d-none" accept="image/*">
+                                            <div class="btn-group mt-2 w-100">
+                                                <button type="button" class="btn btn-sm btn-primary" onclick="document.getElementById('upload<%= i+1 %>').click()">
+                                                    Choose Image
+                                                </button>
+                                                <button type="button" class="btn btn-sm btn-danger" onclick="resetImage(<%= i+1 %>, '<%= imgPath %>')">
+                                                    Reset
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="cropped-preview-box">
+                                            <div class="image-preview-container">
+                                                <img id="croppedPreview<%= i+1 %>" src="<%= imgPath %>" class="img-preview"
+                                                     onerror="this.src='/images/default-product.jpg'">
+                                            </div>
+                                            <div class="btn-group mt-2 w-100">
+                                                <button type="button" class="btn btn-sm btn-success" onclick="showCropper(<%= i+1 %>)" 
+                                                        id="cropBtn<%= i+1 %>" <%= product.image[i] ? '' : 'disabled' %>>
+                                                    Crop Image
+                                                </button>
+                                                <button type="button" class="btn btn-sm btn-secondary" onclick="saveCrop(<%= i+1 %>)" 
+                                                        id="saveBtn<%= i+1 %>" disabled>
+                                                    Save Crop
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            <% } %>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-success">Update Product</button>
+                    <a href="/admin/products" class="btn btn-secondary">Cancel</a>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cropper Modal -->
+    <div id="cropperModal" class="cropper-modal-overlay">
+        <div class="cropper-dialog">
+            <div class="cropper-container">
+                <img id="imageToCrop" src="" style="max-width: 100%">
+            </div>
+            <div class="cropper-buttons">
+                <button type="button" class="btn btn-primary" onclick="applyCrop()">Apply</button>
+                <button type="button" class="btn btn-secondary" onclick="cancelCrop()">Cancel</button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
+    <script>
+        let currentCropper;
+        let currentImageIndex;
+        const originalImages = {};
+        const existingImages = [
+            '<%= product.image[0] || "" %>',
+            '<%= product.image[1] || "" %>',
+            '<%= product.image[2] || "" %>',
+            '<%= product.image[3] || "" %>'
+        ];
+        document.addEventListener('DOMContentLoaded', function() {
+    // Check if images are loading
+    for (let i = 1; i <= 4; i++) {
+        const img = document.getElementById(`preview${i}`);
+        img.onerror = function() {
+            console.error(`Image ${i} failed to load:`, this.src);
+        };
+        img.onload = function() {
+            console.log(`Image ${i} loaded successfully:`, this.src);
+        };
+    }
+});
+
+        // Function to update image counter
+        function updateImageCounter() {
+            let count = 0;
+            for (let i = 1; i <= 4; i++) {
+                if (document.getElementById(`upload${i}`).files.length > 0 || existingImages[i-1]) {
+                    count++;
+                }
+            }
+            const counter = document.getElementById('imageCounter');
+            counter.textContent = `${count}/4`;
+            counter.style.background = count >= 3 ? '#28a745' : '#dc3545';
+        }
+
+        // Initialize file inputs
+        document.querySelectorAll('input[type="file"]').forEach((input, index) => {
+            input.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                const imageIndex = index + 1;
+                
+                if (!file) return;
+                
+                // Validate image type
+                if (!file.type.match('image.*')) {
+                    Swal.fire({
+                        title: "Invalid File!",
+                        text: "Please select an image file (JPEG, PNG, etc.)",
+                        icon: "error"
+                    });
+                    this.value = '';
+                    return;
+                }
+
+                // Validate image size (max 5MB)
+                if (file.size > 5 * 1024 * 1024) {
+                    Swal.fire({
+                        title: "File Too Large!",
+                        text: "Maximum image size is 5MB",
+                        icon: "error"
+                    });
+                    this.value = '';
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    originalImages[imageIndex] = event.target.result;
+                    document.getElementById(`preview${imageIndex}`).src = event.target.result;
+                    document.getElementById(`cropBtn${imageIndex}`).disabled = false;
+                    document.getElementById(`croppedPreview${imageIndex}`).src = '/images/default-product.jpg';
+                    document.getElementById(`saveBtn${imageIndex}`).disabled = true;
+                    
+                    Swal.fire({
+                        title: "Image Uploaded!",
+                        text: `Image ${imageIndex} ready for cropping`,
+                        icon: "success",
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                    
+                    updateImageCounter();
+                };
+                reader.onerror = function() {
+                    Swal.fire({
+                        title: "Error!",
+                        text: "Failed to read image file",
+                        icon: "error"
+                    });
+                };
+                reader.readAsDataURL(file);
+            });
+        });
+
+        // Reset image function (modified to handle existing images)
+        function resetImage(index, originalImage) {
+            Swal.fire({
+                title: "Reset Image?",
+                text: "This will remove the current image selection",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonText: "Reset",
+                cancelButtonText: "Cancel"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById(`upload${index}`).value = '';
+                    document.getElementById(`preview${index}`).src = originalImage || '/images/default-product.jpg';
+                    document.getElementById(`croppedPreview${index}`).src = originalImage || '/images/default-product.jpg';
+                    document.getElementById(`cropBtn${index}`).disabled = !originalImage;
+                    document.getElementById(`saveBtn${index}`).disabled = true;
+                    updateImageCounter();
+                }
+            });
+        }
+
+        // Show cropper modal
+        function showCropper(index) {
+            currentImageIndex = index;
+            const originalImage = document.getElementById(`preview${index}`).src;
+            
+            document.getElementById('imageToCrop').src = originalImage;
+            document.getElementById('cropperModal').style.display = 'flex';
+            
+            if (currentCropper) {
+                currentCropper.destroy();
+            }
+            
+            currentCropper = new Cropper(document.getElementById('imageToCrop'), {
+                aspectRatio: NaN,
+                viewMode: 1,
+                autoCropArea: 1,
+                responsive: true,
+                background: false,
+                zoomable: true
+            });
+        }
+
+        // Apply crop
+        function applyCrop() {
+            if (!currentCropper) {
+                Swal.fire({
+                    title: "Error!",
+                    text: "No active cropping session",
+                    icon: "error"
+                });
+                return;
+            }
+
+            const canvas = currentCropper.getCroppedCanvas({
+                width: 800,
+                height: 800,
+                minWidth: 400,
+                minHeight: 400,
+                fillColor: '#fff'
+            });
+            
+            if (!canvas) {
+                Swal.fire({
+                    title: "Error!",
+                    text: "Failed to crop image",
+                    icon: "error"
+                });
+                return;
+            }
+            
+            document.getElementById(`croppedPreview${currentImageIndex}`).src = canvas.toDataURL('image/jpeg');
+            document.getElementById(`saveBtn${currentImageIndex}`).disabled = false;
+            
+            Swal.fire({
+                title: "Cropping Applied!",
+                text: "You can now save the cropped image",
+                icon: "success",
+                timer: 1500,
+                showConfirmButton: false
+            });
+            
+            cancelCrop();
+        }
+
+        // Save crop to file input
+        function saveCrop(index) {
+            const img = document.getElementById(`croppedPreview${index}`);
+            
+            if (img.src.includes('default-product.jpg')) {
+                Swal.fire({
+                    title: "No Crop!",
+                    text: "Please crop the image before saving",
+                    icon: "warning"
+                });
+                return;
+            }
+
+            const canvas = document.createElement('canvas');
+            canvas.width = img.naturalWidth;
+            canvas.height = img.naturalHeight;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0);
+            
+            canvas.toBlob(blob => {
+                const fileInput = document.getElementById(`upload${index}`);
+                const file = new File([blob], `product-image-${index}.jpg`, {
+                    type: 'image/jpeg',
+                    lastModified: Date.now()
+                });
+                
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(file);
+                fileInput.files = dataTransfer.files;
+                
+                Swal.fire({
+                    title: "Saved!",
+                    text: `Image ${index} has been saved`,
+                    icon: "success",
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+            }, 'image/jpeg', 0.92);
+        }
+
+        // Cancel cropping
+        function cancelCrop() {
+            document.getElementById('cropperModal').style.display = 'none';
+            if (currentCropper) {
+                currentCropper.destroy();
+                currentCropper = null;
+            }
+        }
+
+        // Form validation
+        document.getElementById('productForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Collect form data
+            const formData = {
+                productName: document.getElementById('product_name').value.trim(),
+                regularPrice: parseFloat(document.getElementById('regularPrice').value),
+                salePrice: parseFloat(document.getElementById('salePrice').value),
+                stock: parseInt(document.getElementById('stock').value),
+                description: document.getElementById('description').value.trim()
+            };
+            
+            // Count uploaded images
+            let uploadedImages = 0;
+            for (let i = 1; i <= 4; i++) {
+                if (document.getElementById(`upload${i}`).files.length > 0 || existingImages[i-1]) {
+                    uploadedImages++;
+                }
+            }
+            
+            // Validation checks
+            if (!formData.productName) {
+                Swal.fire({
+                    title: "Missing Name!",
+                    text: "Product name is required",
+                    icon: "error",
+                    focusConfirm: true
+                }).then(() => document.getElementById('product_name').focus());
+                return;
+            }
+            
+            if (uploadedImages < 3) {
+                Swal.fire({
+                    title: "Insufficient Images!",
+                    html: `You have <strong>${uploadedImages}</strong> image(s).<br>Minimum <strong>3 images</strong> are required.`,
+                    icon: "warning",
+                    confirmButtonText: "Upload More"
+                });
+                return;
+            }
+            
+            if (isNaN(formData.regularPrice) || formData.regularPrice <= 0) {
+                Swal.fire({
+                    title: "Invalid Price!",
+                    text: "Please enter a valid regular price",
+                    icon: "error"
+                }).then(() => document.getElementById('regularPrice').focus());
+                return;
+            }
+            
+            
+            
+            if (isNaN(formData.stock) || formData.stock < 0) {
+                Swal.fire({
+                    title: "Invalid Stock!",
+                    text: "Please enter a valid stock quantity",
+                    icon: "error"
+                }).then(() => document.getElementById('stock').focus());
+                return;
+            }
+            
+            if (!formData.description || formData.description.length < 20) {
+                Swal.fire({
+                    title: "Description Too Short!",
+                    text: "Please provide a detailed description (minimum 20 characters)",
+                    icon: "warning"
+                }).then(() => document.getElementById('description').focus());
+                return;
+            }
+            
+            // Final confirmation before submission
+            Swal.fire({
+                title: "Update Product?",
+                html: `You're about to update:<br><strong>${formData.productName}</strong>`,
+                icon: "question",
+                showCancelButton: true,
+                confirmButtonText: "Yes, update it!",
+                cancelButtonText: "Cancel"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Show loading state
+                    Swal.fire({
+                        title: "Updating...",
+                        text: "Saving your changes",
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                            // Submit the form after a brief delay to show the loading state
+                            setTimeout(() => {
+                                document.getElementById('productForm').submit();
+                            }, 500);
+                        }
+                    });
+                }
+            });
+        });
+
+        // Initialize image counter on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Enable crop buttons for existing images
+            for (let i = 1; i <= 4; i++) {
+                if (existingImages[i-1]) {
+                    document.getElementById(`cropBtn${i}`).disabled = false;
+                }
+            }
+            updateImageCounter();
+        });
+    </script>
+</body>
+</html>

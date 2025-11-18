@@ -201,7 +201,7 @@ const resendOtp = async (req, res) => {
 
 const Loadlogin = async (req,res)=>{
     if(!req.session.userId){
-      return res.render('user/login');
+      return res.render('User/login');
        
     }
      return res.redirect('/');
@@ -215,14 +215,14 @@ const login = async (req,res) => {
         }
         const user = await User.findOne({email});
         if(!user){
-            return res.render('user/login',{errorMessage:"not user found"})
+            return res.render('User/login',{errorMessage:"not user found"})
         }
         if (user.isBlocked) {
-            return res.render('user/login', { errorMessage: "Your account has been blocked. Contact support." });
+            return res.render('User/login', { errorMessage: "Your account has been blocked. Contact support." });
         }
         const isMatch = await user.comparePassword(password);
         if(!isMatch){
-            return res.status(400).render('user/login',{errorMessage:"invalid Password"});
+            return res.status(400).render('User/login',{errorMessage:"invalid Password"});
         }
 
         req.session.userId = user._id; 
@@ -230,12 +230,169 @@ const login = async (req,res) => {
         res.redirect('/');
 
     }catch(err){
-        res.status(500).render('error', {
-            message: 'Error login. Please try again.'
+        res.status(500).render('User/login', {
+           errorMessage: 'Error login. Please try again.'
         });
 
     }
 }
+
+
+
+// const loadShopPage= async (req, res) => {
+//     try {
+//         if (!req.session.userId) return res.redirect('/login');
+
+//         // Get query parameters with defaults
+//         const queryParams = {
+//             search: req.query.search || '',
+//             category: req.query.category || '',
+//             price: req.query.price || '',
+//             sort: req.query.sort || '',
+//             page: Math.max(1, parseInt(req.query.page) || 1)
+//         };
+
+//         // Build base query
+//         const query = { 
+//             isBlocked: false 
+//         };
+
+//         // Apply filters
+//         if (queryParams.search) {
+//             query.$or = [
+//                 { productName: { $regex: queryParams.search, $options: 'i' } },
+//                 { description: { $regex: queryParams.search, $options: 'i' } }
+//             ];
+//         }
+
+//         if (queryParams.category) {
+//             query.category = queryParams.category;
+//         }
+
+//         if (queryParams.price) {
+//             const [min, max] = queryParams.price.split('-');
+//             query.regularPrice = {};
+//             if (min) query.regularPrice.$gte = Number(min);
+//             if (max) query.regularPrice.$lte = Number(max);
+//         }
+
+//         // Set sort
+//         const sortOptions = {
+//             'price_asc': { regularPrice: 1 },
+//             'price_desc': { regularPrice: -1 },
+//             'name_asc': { productName: 1 },
+//             'name_desc': { productName: -1 },
+//             '': { createdAt: -1 } // default
+//         };
+//         const sort = sortOptions[queryParams.sort] || sortOptions[''];
+
+//         // Pagination
+//         const perPage = 12;
+//         const skip = (queryParams.page - 1) * perPage;
+
+        
+//         const [totalProducts, products, categories] = await Promise.all([
+//             Product.countDocuments(query),
+//             Product.find(query)
+//                 .sort(sort)
+//                 .skip(skip)
+//                 .limit(perPage)
+//                 .lean(),
+//             Category.aggregate([
+//                 { $match: { isListed: true } },
+//                 {
+//                     $lookup: {
+//                         from: 'products',
+//                         let: { categoryId: '$_id' },
+//                         pipeline: [
+//                             { 
+//                                 $match: { 
+//                                     $expr: { $eq: ['$category', '$$categoryId'] },
+                            
+//                                     isBlocked: false
+//                                 }
+//                             }
+//                         ],
+//                         as: 'categoryProducts'
+//                     }
+//                 },
+//                 {
+//                     $project: {
+//                         name: 1,
+//                         productCount: { $size: '$categoryProducts' }
+//                     }
+//                 }
+//             ])
+//         ]);
+
+        
+//         const generateShopUrl = (newParams) => {
+//             const params = { ...queryParams, ...newParams };
+            
+        
+//             if (newParams.search !== undefined || newParams.category !== undefined || 
+//                 newParams.price !== undefined || newParams.sort !== undefined) {
+//                 params.page = 1;
+//             }
+            
+         
+//             Object.keys(params).forEach(key => {
+//                 if (!params[key]) delete params[key];
+//             });
+            
+//             return '/shop?' + new URLSearchParams(params).toString();
+//         };
+
+        
+//         res.render("user/shop", {
+//             products,
+//             categories,
+//             currentPage: queryParams.page,
+//             totalPages: Math.ceil(totalProducts / perPage),
+//             searchQuery: queryParams.search,
+//             categoryFilter: queryParams.category,
+//             priceFilter: queryParams.price,
+//             sortOption: queryParams.sort,
+//             generateShopUrl,
+//             user: await User.findById(req.session.userId)
+//         });
+
+//     } catch (error) {
+//         console.error('Shop error:', error);
+//         res.status(500).send('Error loading shop: ' + error.message);
+//     }
+// };
+
+// const productDetailPage = async (req, res) => {
+//     try {
+//         const userId = req.session.user;
+//         const userData = await User.findById(userId);
+//         const productId = req.params.id;
+//         const product = await Product.findById(productId).populate('category');
+//         const findCategory = product.category;
+//         const categoryOffer = findCategory?.categoryOffer || 0;
+//         const productOffer = product.productOffer || 0;
+//         const totalOffer = categoryOffer + productOffer;
+        
+       
+//         const relatedProducts = await Product.find({
+//             category: findCategory._id,
+//             _id: { $ne: productId } 
+//         }).limit(4); 
+        
+//         res.render("user/productDetails", {
+//             user: userData,
+//             product: product,
+//             quantity: product.stock,
+//             totalOffer: totalOffer,
+//             category: findCategory,
+//             relatedProducts: relatedProducts 
+//         });
+//     } catch (error) {
+//         console.error("Error fetching product details:", error);
+//         res.render('page-404');
+//     }
+// };
 
 
 
@@ -263,5 +420,7 @@ module.exports = {
   resendOtp,
   Loadlogin,
   login,
+//   loadShopPage,
+//   productDetailPage,
   Logout,
 };

@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Category</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
+
+    <style>
+        body {
+            background-color: #181818;
+            color: white;
+        }
+        .sidebar {
+            width: 250px;
+            height: 100vh;
+            position: fixed;
+            background: #111;
+            padding-top: 20px;
+        }
+        .sidebar a {
+            padding: 15px;
+            text-decoration: none;
+            color: #bbb;
+            display: block;
+        }
+        .sidebar a:hover {
+            background: #333;
+            color: white;
+        }
+        .content {
+            margin-left: 260px;
+            padding: 20px;
+        }
+        .form-container {
+            background: #222;
+            padding: 20px;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+ <%- include("../partials/adminSide-bar.ejs")%>
+    <div class="content">
+        <h2>Edit Categories</h2>
+            <!-- <button type="button" id="reloadBtn" class="btn btn-secondary" style="color: white; display: flex;justify-content: end;">
+  Reload Page
+</button> -->
+        <% if (typeof errorMessage !== 'undefined' && errorMessage) { %>
+            <div class="alert alert-danger"><%= errorMessage %></div>
+        <% } %>
+       
+        
+        <div class="form-container">
+            <form onsubmit="handleFormSubmit(event)" method="post" action="/admin/editCategory/<%=category._id%>">
+
+                <div class="mb-3">
+                    <label class="form-label">Category Name:</label>
+                    <input name="name" type="text" value="<%=category.name%>" class="form-control">
+                    <div id="name-error" class="error-message"></div>
+                </div>
+                <div class="mb-3">
+                    <textarea id="descriptionId" name="description" class="form-control" rows="3"><%=category.description%></textarea>
+                    <div id="description-error" class="error-message"></div>
+                </div>
+                <button type="submit" class="btn btn-primary">Edit Category</button>
+                <button  type="button" class="btn btn-secondary"><a href="/admin/category" style="text-decoration: none; color: white;">Cancel</a></button>
+            </form>
+        </div>
+        
+    </div>
+ 
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
+
+    <script>
+
+document.getElementById("reloadBtn").addEventListener("click", function() {
+    location.reload(); 
+});
+
+
+
+    function handleFormSubmit(event) {
+    event.preventDefault();
+    if (!validateForm()) return;
+
+    const name = document.getElementsByName("name")[0].value.trim();
+    const description = document.getElementById("descriptionId").value.trim();
+    const id = "<%=category._id%>";
+
+    fetch(`/admin/editCategory/${id}`, {
+        method: "PATCH",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ name, description }),
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.error) throw new Error(data.error);
+        Swal.fire("Success", data.message, "success").then(() => {
+            window.location.href = "/admin/category";
+        });
+    })
+    .catch(err => {
+        Swal.fire("Error", err.message, "error");
+    });
+}
+
+
+
+  function validateForm() {
+    clearErrorMessage();
+    const name = document.getElementsByName('name')[0].value.trim();
+    const description = document.getElementById('descriptionId').value.trim();
+    let isValid = true;
+
+    if (name === "") {
+        displayErrorMessage("name-error", "Please enter a name");
+        isValid = false;
+    } else if (!/^[A-Z]/.test(name)) {
+        displayErrorMessage("name-error", "First letter must be uppercase");
+        isValid = false;
+    } else if (!/^[A-Z][a-zA-Z\s]*$/.test(name)) {
+        displayErrorMessage("name-error", "Category name should contain only letters and spaces");
+        isValid = false;
+    }
+
+    if (description === "") {
+        displayErrorMessage("description-error", "Please enter a description");
+        isValid = false;
+    }
+
+    return isValid;
+}
+
+function displayErrorMessage(elementId, message) {
+    const errorElement = document.getElementById(elementId);
+    errorElement.innerText = message;
+    errorElement.style.display = "block";
+}
+
+function clearErrorMessage() {
+    const errorElements = document.getElementsByClassName("error-message");
+    Array.from(errorElements).forEach((element) => {
+        element.innerText = "";
+        element.style.display = "none";
+    });
+}
+
+    </script>
+</body>
+</html>
