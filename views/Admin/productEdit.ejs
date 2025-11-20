@@ -9,8 +9,8 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
 
   <style>
-    body { margin: 0; font-family: Arial, sans-serif; background: #121212; color: #fff; }
-    .sidebar { width: 240px; position: fixed; top:0; left:0; height:100vh; background:#1c1c1c; padding-top:20px; display:flex; flex-direction:column;}
+    body { margin:0; font-family:Arial,sans-serif; background:#121212; color:#fff; }
+    .sidebar { width:240px; position:fixed; top:0; left:0; height:100vh; background:#1c1c1c; padding-top:20px; display:flex; flex-direction:column;}
     .sidebar h4{margin-bottom:20px;color:#fff;}
     .sidebar a{color:#fff;text-decoration:none;padding:10px 20px;display:flex;align-items:center;gap:10px;border-radius:5px;margin:2px 10px;transition:background 0.2s;}
     .sidebar a:hover{background:#333;}
@@ -30,296 +30,282 @@
 </head>
 <body>
 
-  <div class="sidebar">
-    <h4 class="text-center">Admin</h4>
-    <a href="/admin"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
-    <a href="/admin/users"><i class="fas fa-users"></i> Users</a>
-    <a href="/admin/products"><i class="fas fa-box"></i> Products</a>
-    <a href="/admin/addProducts"><i class="fas fa-plus"></i> Add Product</a>
-    <a href="/admin/category"><i class="fas fa-tags"></i> Categories</a>
-    <a href="/admin/logout" class="text-danger"><i class="fas fa-sign-out-alt"></i> Logout</a>
+<div class="sidebar">
+  <h4 class="text-center">Admin</h4>
+  <a href="/admin"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+  <a href="/admin/users"><i class="fas fa-users"></i> Users</a>
+  <a href="/admin/products"><i class="fas fa-box"></i> Products</a>
+  <a href="/admin/addProducts"><i class="fas fa-plus"></i> Add Product</a>
+  <a href="/admin/category"><i class="fas fa-tags"></i> Categories</a>
+  <a href="/admin/logout" class="text-danger"><i class="fas fa-sign-out-alt"></i> Logout</a>
+</div>
+
+<div class="main-content">
+  <div class="card p-4">
+    <h3>Edit Product (Variants)</h3>
+    <form id="productForm" action="/admin/edit-product/<%= product._id %>" method="POST" enctype="multipart/form-data">
+
+      <div class="mb-3">
+        <label class="form-label">Product Name</label>
+        <input name="productName" class="form-control" value="<%= product.productName %>" required>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Category</label>
+        <select name="category" class="form-select" required>
+          <% cat.forEach(c => { %>
+            <option value="<%= c._id %>" <%= (product.category && product.category.toString() === c._id.toString()) ? 'selected' : '' %>><%= c.name %></option>
+          <% }) %>
+        </select>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Description</label>
+        <textarea name="description" class="form-control" rows="3"><%= product.description %></textarea>
+      </div>
+
+      <input type="hidden" name="variants" id="variantsJson">
+
+      <div class="mb-3">
+        <div class="d-flex justify-content-between align-items-center">
+          <h5>Variants</h5>
+          <button type="button" id="addVariantBtn" class="btn btn-sm btn-primary">+ Add variant</button>
+        </div>
+        <div id="variantContainer" class="mt-3"></div>
+      </div>
+
+      <div class="mb-3 text-end">
+        <button type="submit" class="btn btn-success">Update product</button>
+      </div>
+    </form>
   </div>
+</div>
 
-  <div class="main-content">
-    <div class="card p-4">
-      <h3>Edit Product (Variants)</h3>
-      <form id="productForm" action="/admin/edit-product/<%= product._id %>" method="POST" enctype="multipart/form-data">
-
-        <div class="mb-3">
-          <label class="form-label">Product Name</label>
-          <input name="productName" class="form-control" value="<%= product.productName %>" required>
-        </div>
-
-        <div class="mb-3">
-          <label class="form-label">Category</label>
-          <select name="category" class="form-select" required>
-            <% cat.forEach(c => { %>
-              <option value="<%= c._id %>" <%= (product.category && product.category.toString() === c._id.toString()) ? 'selected' : '' %>><%= c.name %></option>
-            <% }) %>
-          </select>
-        </div>
-
-        <div class="mb-3">
-          <label class="form-label">Description</label>
-          <textarea name="description" class="form-control" rows="3"><%= product.description %></textarea>
-        </div>
-
-        <!-- hidden JSON holding variants metadata -->
-        <input type="hidden" name="variants" id="variantsJson">
-
-        <div class="mb-3">
-          <div class="d-flex justify-content-between align-items-center">
-            <h5>Variants</h5>
-            <button type="button" id="addVariantBtn" class="btn btn-sm btn-primary">+ Add variant</button>
-          </div>
-          <div id="variantContainer" class="mt-3"></div>
-        </div>
-
-        <div class="mb-3 text-end">
-          <button type="submit" class="btn btn-success">Update product</button>
-        </div>
-      </form>
+<!-- Variant template -->
+<template id="variantTemplate">
+  <div class="variant-box">
+    <div class="d-flex justify-content-between">
+      <h6 class="mb-0">Variant <span class="variant-index"></span></h6>
+      <button type="button" class="btn btn-sm btn-danger remove-variant">Remove</button>
     </div>
-  </div>
 
-  <!-- Variant template -->
-  <template id="variantTemplate">
-    <div class="variant-box">
-      <div class="d-flex justify-content-between">
-        <h6 class="mb-0">Variant <span class="variant-index"></span></h6>
-        <button type="button" class="btn btn-sm btn-danger remove-variant">Remove</button>
+    <div class="row mt-2">
+      <div class="col-md-3 mb-2">
+        <label class="form-label">Color</label>
+        <input type="text" class="form-control attr-color" placeholder="e.g. Space Gray">
       </div>
-
-      <div class="row mt-2">
-        <div class="col-md-3 mb-2">
-          <label class="form-label">Color</label>
-          <input type="text" class="form-control attr-color" placeholder="e.g. Space Gray">
-        </div>
-        <div class="col-md-3 mb-2">
-          <label class="form-label">Storage</label>
-          <input type="text" class="form-control attr-storage" placeholder="e.g. 256GB">
-        </div>
-        <div class="col-md-2 mb-2">
-          <label class="form-label">Regular Price</label>
-          <input type="number" class="form-control variant-regularPrice" min="0">
-        </div>
-        <div class="col-md-2 mb-2">
-          <label class="form-label">Sale Price</label>
-          <input type="number" class="form-control variant-salePrice" min="0">
-        </div>
-        <div class="col-md-2 mb-2">
-          <label class="form-label">Stock</label>
-          <input type="number" class="form-control variant-stock" min="0">
-        </div>
+      <div class="col-md-3 mb-2">
+        <label class="form-label">Storage</label>
+        <input type="text" class="form-control attr-storage" placeholder="e.g. 256GB">
       </div>
-
-      <div class="mb-2">
-        <label class="form-label">Product Offer (%)</label>
-        <input type="number" class="form-control variant-offer" min="0" value="0">
+      <div class="col-md-2 mb-2">
+        <label class="form-label">Regular Price</label>
+        <input type="number" class="form-control variant-regularPrice" min="0">
       </div>
-
-      <div class="mb-2">
-        <label class="form-label">Variant Images <small class="text-muted">(min 3)</small></label>
-        <div class="variant-thumbs d-flex flex-wrap gap-2"></div>
-        <input type="file" accept="image/*" class="d-none variant-file-input" multiple>
-        <button type="button" class="btn btn-sm btn-outline-light pick-images-btn">Choose images</button>
-        <small class="text-muted ms-2">Crop each image after selection</small>
+      <div class="col-md-2 mb-2">
+        <label class="form-label">Sale Price</label>
+        <input type="number" class="form-control variant-salePrice" min="0">
+      </div>
+      <div class="col-md-2 mb-2">
+        <label class="form-label">Stock</label>
+        <input type="number" class="form-control variant-stock" min="0">
       </div>
     </div>
-  </template>
 
-  <!-- cropper modal -->
-  <div id="cropperModal" class="cropper-modal">
-    <div class="cropper-dialog">
-      <div style="background:#000;padding:6px;border-radius:6px;">
-        <img id="cropperImage" src="" style="max-width:100%; display:block; margin:0 auto;">
-      </div>
-      <div class="mt-2 text-center">
-        <button id="cropApplyBtn" class="btn btn-success btn-sm">Apply crop</button>
-        <button id="cropCancelBtn" class="btn btn-secondary btn-sm">Cancel</button>
-      </div>
+    <div class="mb-2">
+      <label class="form-label">Product Offer (%)</label>
+      <input type="number" class="form-control variant-offer" min="0" value="0">
+    </div>
+
+    <div class="mb-2">
+      <label class="form-label">Variant Images <small class="text-muted">(min 3)</small></label>
+      <div class="variant-thumbs d-flex flex-wrap gap-2"></div>
+      <input type="file" accept="image/*" class="d-none variant-file-input" multiple>
+      <button type="button" class="btn btn-sm btn-outline-light pick-images-btn">Choose images</button>
+      <small class="text-muted ms-2">Crop each image after selection</small>
     </div>
   </div>
+</template>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<!-- cropper modal -->
+<div id="cropperModal" class="cropper-modal">
+  <div class="cropper-dialog">
+    <div style="background:#000;padding:6px;border-radius:6px;">
+      <img id="cropperImage" src="" style="max-width:50%; display:block; margin:0 auto;">
+    </div>
+    <div class="mt-2 text-center">
+      <button id="cropApplyBtn" class="btn btn-success btn-sm">Apply crop</button>
+      <button id="cropCancelBtn" class="btn btn-secondary btn-sm">Cancel</button>
+    </div>
+  </div>
+</div>
 
- <script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
 const variantContainer = document.getElementById('variantContainer');
 const variantTpl = document.getElementById('variantTemplate').content;
 const cropperModal = document.getElementById('cropperModal');
 const cropperImage = document.getElementById('cropperImage');
 let cropperInstance = null;
-
-// Holds new cropped files per variant index
-const variantFileStores = [];
-
-// Existing variants from server
-const existingVariants = <%- JSON.stringify(product.variants || []) %>;
+const variantFileStores = []; // holds DataTransfer for each variant
+const existingVariants = <% JSON.stringify(product.variants || []) %>;
 
 // Create thumbnail element
-function createThumbElement(src, isServerImage=false) {
-  const container = document.createElement('div');
-  container.className = 'variant-thumb-container';
-  const img = document.createElement('img');
-  img.className = 'img-thumb';
-  img.src = src;
-  if (isServerImage) img.dataset.server = '1';
-  const btn = document.createElement('button');
-  btn.type = 'button';
-  btn.innerText = '×';
-  btn.onclick = () => container.remove();
-  container.appendChild(img);
-  container.appendChild(btn);
-  return container;
+function createThumbElement(src, isServerImage=false){
+    const container = document.createElement('div');
+    container.className = 'variant-thumb-container';
+    const img = document.createElement('img');
+    img.className = 'img-thumb';
+    img.src = src;
+    if(isServerImage) img.dataset.server = '1';
+    const btn = document.createElement('button');
+    btn.type='button'; btn.innerText='×';
+    btn.onclick = ()=>container.remove();
+    container.appendChild(img); container.appendChild(btn);
+    return container;
 }
 
-// Add a variant box
-function addVariant(vData=null, vIndex=null) {
-  const frag = variantTpl.cloneNode(true);
-  const box = frag.querySelector('.variant-box');
-  const idx = (vIndex != null) ? vIndex : variantFileStores.length;
-  variantFileStores[idx] = new DataTransfer();
+// Add variant box
+function addVariant(vData=null, vIndex=null){
+    const frag = variantTpl.cloneNode(true);
+    const box = frag.querySelector('.variant-box');
+    const idx = (vIndex != null) ? vIndex : variantFileStores.length;
+    variantFileStores[idx] = new DataTransfer();
 
-  const fileInput = box.querySelector('.variant-file-input');
-  const pickBtn = box.querySelector('.pick-images-btn');
-  const thumbs = box.querySelector('.variant-thumbs');
+    if(vData && vData._id) box.dataset.variantId = vData._id;
 
-  // render server images
-  if (vData && Array.isArray(vData.images)) {
-    vData.images.forEach(url => {
-      const thumb = createThumbElement(url, true);
-      thumbs.appendChild(thumb);
-    });
-  }
+    const fileInput = box.querySelector('.variant-file-input');
+    const pickBtn = box.querySelector('.pick-images-btn');
+    const thumbs = box.querySelector('.variant-thumbs');
 
-  pickBtn.addEventListener('click', () => fileInput.click());
-  fileInput.addEventListener('change', async (e) => {
-    const files = Array.from(e.target.files);
-    for (let f of files) {
-      await handleCropForVariantFile(idx, f, thumbs);
+    // Load existing images from server
+    if(vData && Array.isArray(vData.images)){
+        vData.images.forEach(url => thumbs.appendChild(createThumbElement(url,true)));
     }
-    fileInput.value = '';
-  });
 
-  box.querySelector('.remove-variant').addEventListener('click', () => {
-    variantFileStores[idx] = null;
-    box.remove();
+    pickBtn.addEventListener('click',()=>fileInput.click());
+    fileInput.addEventListener('change', async e => {
+        for(let f of Array.from(e.target.files)){
+            await handleCropForVariantFile(idx, f, thumbs);
+        }
+        fileInput.value = '';
+    });
+
+    box.querySelector('.remove-variant').addEventListener('click', ()=>{
+        variantFileStores[idx]=null; 
+        box.remove(); 
+        reIndexVariants();
+    });
+
+    // Fill existing data
+    if(vData){
+        const attrs = vData.attributes || {};
+        box.querySelector('.attr-color').value = attrs.Color || attrs.color || '';
+        box.querySelector('.attr-storage').value = attrs.storage || '';
+        box.querySelector('.variant-regularPrice').value = vData.regularPrice || '';
+        box.querySelector('.variant-salePrice').value = vData.salePrice || '';
+        box.querySelector('.variant-stock').value = vData.stock || '';
+        box.querySelector('.variant-offer').value = vData.productOffer || 0;
+    }
+
+    variantContainer.appendChild(box);
     reIndexVariants();
-  });
-
-  // prefill fields
-  if (vData) {
-    const attrs = vData.attributes || {};
-    box.querySelector('.attr-color').value = attrs.Color || '';
-    box.querySelector('.attr-storage').value = attrs.storage || '';
-    box.querySelector('.variant-regularPrice').value = vData.regularPrice || '';
-    box.querySelector('.variant-salePrice').value = vData.salePrice || '';
-    box.querySelector('.variant-stock').value = vData.stock || '';
-    box.querySelector('.variant-offer').value = vData.productOffer || 0;
-  }
-
-  variantContainer.appendChild(box);
 }
 
-// Reindex variants
-function reIndexVariants() {
-  document.querySelectorAll('.variant-box').forEach((b,i) => {
-    b.querySelector('.variant-index').innerText = i+1;
-  });
+// Reindex variant numbers
+function reIndexVariants(){
+    document.querySelectorAll('.variant-box').forEach((b,i)=> b.querySelector('.variant-index').innerText=i+1);
 }
 
-// Handle crop for uploaded file
-async function handleCropForVariantFile(variantIdx, file, thumbsContainer) {
-  const url = URL.createObjectURL(file);
-  cropperImage.src = url;
-  cropperModal.style.display = 'flex';
-  if (cropperInstance) cropperInstance.destroy();
-  cropperInstance = new Cropper(cropperImage, { viewMode:1, autoCropArea:1, background:false, zoomable:true });
+// Crop image for variant
+async function handleCropForVariantFile(idx, file, thumbsContainer){
+    const url = URL.createObjectURL(file);
+    cropperImage.src = url; 
+    cropperModal.style.display = 'flex';
+    if(cropperInstance) cropperInstance.destroy();
+    cropperInstance = new Cropper(cropperImage, { viewMode:1, autoCropArea:1, background:false, zoomable:true });
 
-  const applied = await new Promise(resolve => {
-    document.getElementById('cropApplyBtn').onclick = () => resolve(true);
-    document.getElementById('cropCancelBtn').onclick = () => resolve(false);
-  });
-
-  if (applied) {
-    const canvas = cropperInstance.getCroppedCanvas({ width:800, height:800, fillColor:'#fff' });
-    const blob = await new Promise(r => canvas.toBlob(r, 'image/jpeg', 0.9));
-    const filename = `variant-${variantIdx}-${Date.now()}.jpg`;
-    const fileObj = new File([blob], filename, { type:'image/jpeg', lastModified:Date.now() });
-
-    variantFileStores[variantIdx].items.add(fileObj);
-
-    const thumb = createThumbElement(URL.createObjectURL(fileObj), false);
-    thumbsContainer.appendChild(thumb);
-  }
-
-  cropperInstance.destroy();
-  cropperInstance = null;
-  cropperModal.style.display = 'none';
-  URL.revokeObjectURL(url);
-}
-
-// Initialize existing variants
-existingVariants.forEach((v,i) => addVariant(v,i));
-if (!existingVariants.length) addVariant();
-
-document.getElementById('addVariantBtn').addEventListener('click', () => addVariant());
-
-// Submit handler using FormData
-document.getElementById('productForm').addEventListener('submit', async function(e){
-  e.preventDefault();
-  const form = e.target;
-  const boxes = document.querySelectorAll('.variant-box');
-  if (!boxes.length) { Swal.fire({icon:'warning',title:'Add at least one variant'}); return; }
-
-  const formData = new FormData(form);
-
-  const variantsToSend = [];
-  boxes.forEach((box, idx) => {
-    const color = box.querySelector('.attr-color').value.trim();
-    const storage = box.querySelector('.attr-storage').value.trim();
-    const regularPrice = box.querySelector('.variant-regularPrice').value;
-    const salePrice = box.querySelector('.variant-salePrice').value;
-    const stock = box.querySelector('.variant-stock').value;
-    const offer = box.querySelector('.variant-offer').value || 0;
-    const thumbsContainer = box.querySelector('.variant-thumbs');
-
-    const keptServerImages = Array.from(thumbsContainer.querySelectorAll('img'))
-      .map(img=>img.src)
-      .filter(s => s.startsWith('/') || s.includes('/uploads/'));
-
-    // append new files
-    const dt = variantFileStores[idx];
-    if (dt) Array.from(dt.files).forEach(f => formData.append(`variant_images_${idx}[]`, f));
-
-    variantsToSend.push({
-      attributes:{Color:color, storage:storage},
-      regularPrice:Number(regularPrice),
-      salePrice:Number(salePrice),
-      productOffer:Number(offer),
-      stock:Number(stock),
-      fileFieldName:`variant_images_${idx}[]`,
-      existingImages: keptServerImages
+    const applied = await new Promise(resolve => {
+        document.getElementById('cropApplyBtn').onclick = ()=>resolve(true);
+        document.getElementById('cropCancelBtn').onclick = ()=>resolve(false);
     });
-  });
 
-  formData.set('variants', JSON.stringify(variantsToSend));
-
-  try {
-    const res = await fetch(form.action, { method:form.method, body:formData });
-    if (res.redirected) window.location.href = res.url;
-    else {
-      const data = await res.text();
-      console.error('Update failed', data);
-      Swal.fire({icon:'error', title:'Update failed'});
+    if(applied){
+        const canvas = cropperInstance.getCroppedCanvas({width:800, height:800, fillColor:'#fff'});
+        const blob = await new Promise(r=>canvas.toBlob(r,'image/jpeg',0.9));
+        const fileObj = new File([blob], `variant-${idx}-${Date.now()}.jpeg`, {type:'image/jpeg', lastModified:Date.now()});
+        variantFileStores[idx].items.add(fileObj); // store new files
+        thumbsContainer.appendChild(createThumbElement(URL.createObjectURL(fileObj), false));
     }
-  } catch(err) {
-    console.error(err);
-    Swal.fire({icon:'error', title:'Server error'});
-  }
+
+    cropperInstance.destroy(); cropperInstance = null; 
+    cropperModal.style.display='none';
+    URL.revokeObjectURL(url);
+}
+
+// Init existing variants
+existingVariants.forEach((v,i)=>addVariant(v,i));
+if(!existingVariants.length) addVariant();
+
+document.getElementById('addVariantBtn').addEventListener('click', ()=>addVariant());
+
+// Handle form submit
+document.getElementById('productForm').addEventListener('submit', async e=>{
+    e.preventDefault();
+    const boxes = document.querySelectorAll('.variant-box');
+    if(!boxes.length){ Swal.fire({icon:'warning',title:'Add at least one variant'}); return; }
+
+    const form = e.target;
+    const formData = new FormData(form);
+    const variantsToSend = [];
+
+    boxes.forEach((box, idx)=>{
+        const color = box.querySelector('.attr-color').value.trim();
+        const storage = box.querySelector('.attr-storage').value.trim();
+        const regularPrice = box.querySelector('.variant-regularPrice').value;
+        const salePrice = box.querySelector('.variant-salePrice').value;
+        const stock = box.querySelector('.variant-stock').value;
+        const offer = box.querySelector('.variant-offer').value || 0;
+        const thumbsContainer = box.querySelector('.variant-thumbs');
+
+        // Keep only server images (relative paths)
+        const keptServerImages = Array.from(thumbsContainer.querySelectorAll('img'))
+            .filter(img => img.dataset.server)
+            .map(img=>{
+                let src = img.src;
+                if(src.startsWith(window.location.origin)) src = src.replace(window.location.origin,'');
+                return src;
+            });
+
+        // Append new files
+        const dt = variantFileStores[idx];
+        if(dt) Array.from(dt.files).forEach(f => formData.append(`variant_images_${idx}[]`, f));
+
+        variantsToSend.push({
+            id: box.dataset.variantId || null,
+            attributes: { Color: color, storage: storage },
+            regularPrice: Number(regularPrice),
+            salePrice: Number(salePrice),
+            productOffer: Number(offer),
+            stock: Number(stock),
+            fileFieldName: `variant_images_${idx}[]`,
+            existingImages: keptServerImages
+        });
+    });
+
+    formData.set('variants', JSON.stringify(variantsToSend));
+
+    try{
+        const res = await fetch(form.action, { method: form.method, body: formData });
+        if(res.redirected) window.location.href = res.url;
+        else { const data = await res.text(); console.error('Update failed', data); Swal.fire({icon:'error',title:'Update failed'}); }
+    }catch(err){ console.error(err); Swal.fire({icon:'error',title:'Server error'});}
 });
 </script>
+
+
 
 </body>
 </html>

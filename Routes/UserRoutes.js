@@ -2,10 +2,12 @@ const express = require("express");
 const router = express.Router();
 const UserController = require("../Controllers/User/userController");
 const passport = require("passport")
+const authMiddleware = require('../middleware/UserAuth');
+const profileController = require("../Controllers/User/profileController");
 
 
 
-router.get("/",UserController.loadHome);
+router.get('/', authMiddleware,UserController.loadHome);
 router.get("/signup",UserController.loadSignup);
 router.post("/signup",UserController.signup);
 router.post("/verify-otp",UserController.verifyOtp);
@@ -13,8 +15,8 @@ router.post("/resend-otp",UserController.resendOtp);
 router.get("/login",UserController.Loadlogin);
 router.post("/login",UserController.login);
 router.get("/logout",UserController.Logout);
-//router.get("/shop",UserController.loadShopPage);
-//router.get("/productDetails/:id",UserController.productDetailPage)
+router.get("/shop",UserController.loadShopPage);
+router.get("/productDetails/:id",UserController.loadProductDetail);
 
 
 
@@ -49,6 +51,16 @@ router.get('/auth/google/callback',
         }
     }
 );
+
+
+//profile Management
+router.get("/user/forgotPassword",profileController.getForgot_password);
+router.post("/forgot-email-valid",profileController.postForgot_password);
+router.post('/verify-passForgot-otp',profileController.verifyPassForgotOtp)
+router.get('/reset-password',profileController.getResetPassword);
+router.post("/resend-forgot-otp",profileController.resend_ForgotPass_Otp);
+router.post("/reset-password",profileController.resetPassword);
+
 
 
 module.exports= router;

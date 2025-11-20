@@ -20,12 +20,12 @@ const addProducts = async(req,res)=>{
     }
 }
 
-const  addProductPost = async (req, res) => {
+const addProductPost = async (req, res) => {
     try {
         const { productName, description, category, status } = req.body;
 
-        // The frontend sends a JSON string in `variants` hidden input
         if (!req.body.variants) throw new Error('Missing variants data');
+
         let incomingVariants;
         try {
             incomingVariants = JSON.parse(req.body.variants);
@@ -34,19 +34,43 @@ const  addProductPost = async (req, res) => {
         }
 
         const variants = [];
+
         for (let i = 0; i < incomingVariants.length; i++) {
             const v = incomingVariants[i];
             const fileField = v.fileFieldName; // e.g. variant_images_0[]
-            const files = Array.isArray(req.files) ? req.files.filter(f => f.fieldname === fileField) : [];
+            const files = Array.isArray(req.files)
+                ? req.files.filter(f => f.fieldname === fileField)
+                : [];
+
             if (!files || files.length < 3) {
                 throw new Error(`Variant ${i + 1} must have at least 3 images.`);
             }
-            const images = files.map(f => `/uploads/product-images/${f.filename}`);
+
+            const images = [];
+
+            for (let f of files) {
+                const inputPath = f.path; // Original uploaded file
+                const filename = `product-${Date.now()}-${Math.round(Math.random()*1e9)}.jpeg`;
+                const outputPath = path.join(process.cwd(), 'public/uploads/product-images', filename);
+
+                // Ensure folder exists
+                fs.mkdirSync(path.dirname(outputPath), { recursive: true });
+
+                // Resize image using Sharp
+                await sharp(inputPath)
+                    .resize(800, 800, { fit: 'contain' })
+                    .jpeg({ quality: 80 })
+                    .toFile(outputPath);
+
+             
+
+                images.push(`/uploads/product-images/${filename}`);
+            }
 
             variants.push({
                 attributes: v.attributes || {},
-                regularPrice: Number(v.regularPrice || v.regularPrice === 0 ? v.regularPrice : v.regularPrice),
-                salePrice: Number(v.salePrice || v.salePrice === 0 ? v.salePrice : v.salePrice),
+                regularPrice: Number(v.regularPrice || 0),
+                salePrice: Number(v.salePrice || 0),
                 productOffer: Number(v.productOffer || 0),
                 stock: Number(v.stock || 0),
                 images
@@ -64,10 +88,12 @@ const  addProductPost = async (req, res) => {
 
         await newProduct.save();
         return res.redirect('/admin/products');
+
     } catch (error) {
         console.error('Error adding product:', error);
         const categories = await Category.find({ isListed: true });
         let errorMessage = 'Failed to add product';
+
         if (error.message && error.message.includes('Only jpeg|jpg|png|gif files are allowed')) {
             errorMessage = 'Please upload only JPEG, PNG, or GIF images';
         } else if (error.message && error.message.includes('at least 3 images')) {
@@ -75,13 +101,15 @@ const  addProductPost = async (req, res) => {
         } else if (error.name === 'ValidationError') {
             errorMessage = Object.values(error.errors).map(val => val.message).join(', ');
         }
+
         return res.status(500).render('admin/productAdd', {
             error: errorMessage,
             cat: categories,
-            formData: req.body // To repopulate form
+            formData: req.body
         });
     }
-}
+};
+
 
 
 const listProducts= async (req, res) => {
@@ -222,82 +250,71 @@ const editProductPost = async (req, res) => {
       throw new Error('Invalid variants JSON');
     }
 
-    // fetch original product to compare images for deletion
-    const original = await Product.findById(id).lean();
-    if (!original) throw new Error('Original product not found');
+    const original = await Product.findById(id);
+    if (!original) throw new Error('Product not found');
 
     const finalVariants = [];
 
-    // req.files is an array (because multer.any()). group by fieldname
+    // Group uploaded files by fieldname
     const filesByField = {};
     (Array.isArray(req.files) ? req.files : []).forEach(f => {
       if (!filesByField[f.fieldname]) filesByField[f.fieldname] = [];
       filesByField[f.fieldname].push(f);
     });
 
-    for (let idx = 0; idx < incomingVariants.length; idx++) {
-      const v = incomingVariants[idx];
-
-      const fieldName = v.fileFieldName; // variant_images_X[]
-      const uploadedFiles = (filesByField[fieldName] || []).map(f => `/uploads/product-images/${f.filename}`);
-
-      // existingImages sent from client are the server paths (kept by admin)
+    for (let v of incomingVariants) {
+      // New uploaded images
+      const uploadedFiles = (filesByField[v.fileFieldName] || []).map(f => `/uploads/product-images/${f.filename}`);
+      // Existing images user kept
       const keptExisting = Array.isArray(v.existingImages) ? v.existingImages.filter(i => typeof i === 'string') : [];
 
       const combinedImages = [...keptExisting, ...uploadedFiles];
 
       if (combinedImages.length < 3) {
-        throw new Error(`Variant ${idx + 1} must have at least 3 images.`);
+        throw new Error(`Variant "${v.attributes.Color || ''} ${v.attributes.storage || ''}" must have at least 3 images.`);
       }
 
       finalVariants.push({
-        attributes: v.attributes || {},
-        regularPrice: Number(v.regularPrice || v.regularPrice === 0 ? v.regularPrice : v.regularPrice),
-        salePrice: Number(v.salePrice || v.salePrice === 0 ? v.salePrice : v.salePrice),
+        _id: v.id || new mongoose.Types.ObjectId(),
+        attributes: {
+          color: v.attributes.Color || v.attributes.color || '',
+          storage: v.attributes.storage || ''
+        },
+        regularPrice: Number(v.regularPrice || 0),
+        salePrice: Number(v.salePrice || 0),
         productOffer: Number(v.productOffer || 0),
         stock: Number(v.stock || 0),
         images: combinedImages
       });
 
-      // Now, remove from disk any original images that were NOT kept
-      // original.variants may be shorter/longer; safe check:
-      const origVariant = (original.variants && original.variants[idx]) ? original.variants[idx] : null;
-      if (origVariant && Array.isArray(origVariant.images)) {
-        origVariant.images.forEach(origImg => {
-          // if origImg not present in keptExisting, delete file
-          // origImg might start with '/uploads/product-images/...'
-          if (!keptExisting.includes(origImg)) {
-            // map URL to disk path
-            let rel = origImg;
-            if (rel.startsWith('/')) rel = rel.slice(1); // remove leading slash
-            const diskPath = path.join(__dirname, '..', '..', 'public', rel);
-            if (fs.existsSync(diskPath)) {
-              try {
-                fs.unlinkSync(diskPath);
-                console.log('Deleted old image:', diskPath);
-              } catch (e) {
-                console.error('Failed to delete old file:', diskPath, e);
-              }
+      // Delete old images removed by user
+      if (v.id) {
+        const origVariant = original.variants.find(ov => ov._id.toString() === v.id);
+        if (origVariant && Array.isArray(origVariant.images)) {
+          origVariant.images.forEach(origImg => {
+            if (!keptExisting.includes(origImg) && !uploadedFiles.includes(origImg)) {
+              const rel = origImg.startsWith('/') ? origImg.slice(1) : origImg;
+              const diskPath = path.join(process.cwd(), 'public', rel);
+              try { if (fs.existsSync(diskPath)) fs.unlinkSync(diskPath); }
+              catch(e){ console.warn('Cannot delete file:', diskPath, e.message); }
             }
-          }
-        });
+          });
+        }
       }
     }
 
-    // update product
+    // Update product in MongoDB
     await Product.findByIdAndUpdate(id, {
       productName,
       description,
       category: category ? new mongoose.Types.ObjectId(category) : undefined,
       variants: finalVariants
     }, { new: true });
-    console.log("Uploaded files:", req.files);
-
 
     return res.redirect('/admin/products');
-  } catch (err) {
+
+  } catch(err) {
     console.error('Edit product error:', err);
-    // re-render edit page with message
     const categories = await Category.find({ isListed: true });
     return res.status(500).render('Admin/productEdit', {
       product: await Product.findById(req.params.id).lean(),
@@ -306,6 +323,9 @@ const editProductPost = async (req, res) => {
     });
   }
 };
+
+
+
 
 
 

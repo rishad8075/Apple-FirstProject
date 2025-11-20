@@ -178,32 +178,32 @@
         </div>
         
         <div class="row g-4">
-            <% products.forEach(product => { %>
-            <div class="col-md-6 col-lg-4 col-xl-3 animate__animated animate__fadeInUp">
-                <div class="product-card h-100">
-                    <div class="product-img-container">
-                        <% if(product.image && product.image[0]) { %>
-                            <img src="<%= product.image[0] %>" class="product-img" alt="<%= product.productName %>">
-                        <% } else { %>
-                            <img src="/images/default-product.jpg" class="product-img" alt="Default product image">
-                        <% } %>
-                    </div>
-                    <div class="product-body text-center">
-                        <h5 class="product-title"><%= product.productName %></h5>
-                        <div class="product-price">
-                            ₹<%= product.salePrice || product.regularPrice %>
-                            <% if(product.salePrice && product.salePrice < product.regularPrice) { %>
-                                <small class="text-muted text-decoration-line-through ms-2">₹<%= product.regularPrice %></small>
-                            <% } %>
-                        </div>
-                        <button class="btn btn-add-to-cart" data-id="<%= product._id %>">
-                            <i class="fas fa-cart-plus me-2"></i>Add to Cart
-                        </button>
-                    </div>
-                </div>
+    <% products.forEach(product => { %>
+    <div class="col-md-6 col-lg-4 col-xl-3 animate__animated animate__fadeInUp">
+        <div class="product-card h-100">
+            <div class="product-img-container">
+                <% if(product.image && product.image[0]) { %>
+                    <img src="<%= product.image[0] %>" class="product-img" alt="<%= product.productName %>">
+                <% } else { %>
+                    <img src="/images/default-product.jpg" class="product-img" alt="Default product image">
+                <% } %>
             </div>
-            <% }); %>
+            <div class="product-body text-center">
+                <h5 class="product-title"><%= product.productName %></h5>
+                <div class="product-price">
+                    ₹<%= product.displayPrice %>
+                    <% if(product.hasDiscount) { %>
+                        <small class="text-muted text-decoration-line-through ms-2">₹<%= product.regularPrice %></small>
+                    <% } %>
+                </div>
+                <button class="btn btn-add-to-cart" data-id="<%= product._id %>">
+                    <i class="fas fa-cart-plus me-2"></i>Add to Cart
+                </button>
+            </div>
         </div>
+    </div>
+    <% }); %>
+</div>
     </section>
     
     <%- include("../partials/footer.ejs") %>

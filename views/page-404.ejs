@@ -36,6 +36,9 @@
     <div class="error-container">
         <div class="error-icon">🚫</div>
         <h1 class="display-3 fw-bold">404</h1>
+          <% if (typeof errorMessage !== 'undefined' && errorMessage) { %>
+                        <div class="alert alert-danger"><%= errorMessage %></div>
+                    <% } %>
         <p class="lead">Page not found. Check the address or <a href="/">go back</a>.</p>
     </div>
 
