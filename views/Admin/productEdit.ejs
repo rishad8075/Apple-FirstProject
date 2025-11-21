@@ -76,6 +76,7 @@
 
       <div class="mb-3 text-end">
         <button type="submit" class="btn btn-success">Update product</button>
+        <button type="submit" class="btn btn-success" onclick="cancel()" >Cancel</button>
       </div>
     </form>
   </div>
@@ -150,7 +151,11 @@ const cropperModal = document.getElementById('cropperModal');
 const cropperImage = document.getElementById('cropperImage');
 let cropperInstance = null;
 const variantFileStores = []; // holds DataTransfer for each variant
-const existingVariants = <% JSON.stringify(product.variants || []) %>;
+const existingVariants = <%- JSON.stringify(product.variants || []) %>;
+
+function Cancel(){
+window.location.href="/admin/products"
+}
 
 // Create thumbnail element
 function createThumbElement(src, isServerImage=false){

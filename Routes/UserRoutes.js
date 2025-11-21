@@ -15,23 +15,15 @@ router.post("/resend-otp",UserController.resendOtp);
 router.get("/login",UserController.Loadlogin);
 router.post("/login",UserController.login);
 router.get("/logout",UserController.Logout);
-router.get("/shop",UserController.loadShopPage);
-router.get("/productDetails/:id",UserController.loadProductDetail);
+router.get("/shop",authMiddleware,UserController.loadShopPage);
+router.get("/productDetails/:id",authMiddleware,UserController.loadProductDetail);
 
 
 
 
-// google signup
-router.get('/auth/google',passport.authenticate('google',{scope:['profile','email']}));
-router.get('/auth/google/callback',
-    passport.authenticate('google', { failureRedirect: '/signup' }),
-    (req, res) => {
-        req.session.userId = req.user._id;  
-        res.redirect('/');  
-    }
-);
 
 
+// Google Signup & Login
 router.get('/auth/google',
     passport.authenticate('google', { scope: ['profile', 'email'] })
 );
@@ -39,18 +31,27 @@ router.get('/auth/google',
 router.get('/auth/google/callback',
     passport.authenticate('google', { failureRedirect: '/login' }),
     (req, res) => {
+
+      
         if (req.user.isBlocked) {
+
             req.logout(() => {
                 req.session.destroy(() => {
-                    res.render("user/login",{errorMessage:"user is Blocked. Please contact Admin"}) // Redirect with an error message
+                    return res.render("user/login", {
+                        errorMessage: "User is Blocked. Please contact Admin"
+                    });
                 });
             });
+
         } else {
+
+            // Save session
             req.session.userId = req.user._id;
             res.redirect('/');
         }
     }
 );
+
 
 
 //profile Management

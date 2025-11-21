@@ -64,15 +64,7 @@
     </style>
 </head>
 <body>
-    <header class="simple-header">
-        <nav class="simple-nav">
-            <a href="/">Home</a>
-            <a href="/shop">Shop</a>
-        </nav>
-        <% if (user) { %>
-            <div class="user-greeting"><%= user.name %></div>
-        <% } %>
-    </header>
+    <%- include("../partials/header.ejs") %>
     
     <div class="main-container">
         <section class="shop-page">
@@ -85,12 +77,7 @@
                     <button type="submit" class="search-button"><i class="fas fa-search"></i> Search</button>
                 </form>
                 
-                <% if (user) { %>
-                    <div class="user-search">
-                        <input type="text" placeholder="Search here...">
-                        <button>Search</button>
-                    </div>
-                <% } %>
+               
             </div>
             
             <div class="shop-topbar">

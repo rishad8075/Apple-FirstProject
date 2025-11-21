@@ -51,7 +51,7 @@
                     </div>
                     <button class="btn btn-danger w-100">Create Account</button>
                     <a href="/auth/google" class="btn btn-light w-100 mt-2">Sign up with Google</a>
-                    <p class="mt-3">Already have an account? <a href="/views/User/login.ejs">Log in</a></p>
+                    <p class="mt-3">Already have an account? <a href="/login">Log in</a></p>
                 </form>
             </div>
         </div>
@@ -78,7 +78,7 @@ const error5 = document.getElementById("error5");
 function togglePassword(fieldId, button) {
     const field = document.getElementById(fieldId);
     field.type = field.type === "password" ? "text" : "password";
-    button.textContent = field.type === "password" ? "👁️" : "🙈";
+    button.textContent = field.type === "password" ? "👁️" : "HIDE";
 }
 
 document.querySelector("form").addEventListener("submit", function (e) {
@@ -102,7 +102,7 @@ document.querySelector("form").addEventListener("submit", function (e) {
     }
 
    
-    const phoneRegex = /^[6-9]\d{9}$/;
+    const phoneRegex = /^[6-9]\d{9}/;
     if (!phoneRegex.test(phoneNumber.value.trim())) {
         error2.textContent = "Enter a valid 10-digit Indian phone number.";
         isValid = false;

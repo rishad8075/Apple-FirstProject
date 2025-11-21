@@ -94,7 +94,7 @@
                     <div id="error2" style="color: red;font-size: medium;"></div>
                     <div class="input-group my-2">
                     <input type="password" class="form-control mb-3" placeholder="Password" name="password" id="password" >
-                            <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('password', this)">
+                            <button style="height: 40px; background-color: #444;" class="btn btn-outline-secondary" type="button" onclick="togglePassword('password', this)">
                             👁️
                         </button>
                         </div>
@@ -123,7 +123,7 @@ const error2 = document.getElementById("error2");
 function togglePassword(fieldId, button) {
     const field = document.getElementById(fieldId);
     field.type = field.type === "password" ? "text" : "password";
-    button.textContent = field.type === "password" ? "👁️" : "🙈";
+    button.textContent = field.type === "password" ? "👁️" : "HIDE";
 }
 
 document.querySelector("form").addEventListener("submit", function (e) {

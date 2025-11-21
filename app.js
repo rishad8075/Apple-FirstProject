@@ -27,9 +27,12 @@ app.use(session({
 
 // Prevent caching for login/signup pages (and other protected pages)
 app.use((req, res, next) => {
-    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+    res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, private");
+    res.setHeader("Pragma", "no-cache");
+    res.setHeader("Expires", "0");
     next();
 });
+
 
 app.set("view engine","ejs");
 app.set('views', path.join(__dirname, 'views'));

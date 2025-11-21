@@ -371,23 +371,26 @@ const loadProductDetail = async (req, res) => {
   try {
     const productId = req.params.id;
 
-    // Fetch main product
-    const product = await Product.findById(productId).lean();
+    // Fetch main product with category populated
+    const product = await Product.findById(productId).populate("category").lean();
     if (!product) return res.status(404).send("Product not found");
 
     // Fetch related products (same category, excluding current product)
     let relatedProducts = [];
     if (product.category) {
       relatedProducts = await Product.find({
-        category: product.category,
+        category: product.category._id,
         _id: { $ne: product._id }
       })
-        .limit(4)
-        .lean();
+      .populate("category")
+      .limit(4)
+      .lean();
     }
 
-    // Render template with safe checks
+    // Render template
+    const user = await User.findById(req.session.userId).lean();
     res.render("User/productDetails", {
+      user,
       product,
       relatedProducts,
       message: req.query.message || null
@@ -408,14 +411,15 @@ const loadProductDetail = async (req, res) => {
 
 
 
+
 const Logout = async (req, res) => {
     req.session.destroy((err) => {
         if (err) {
             console.log("Logout error:", err);
             return res.status(500).send("Logout failed");
         }
-        res.clearCookie('connect.sid'); // clear session cookie
-        return res.redirect('/login'); // redirect and stop execution
+        res.clearCookie('connect.sid'); 
+        return res.redirect('/login'); 
     });
 }
 

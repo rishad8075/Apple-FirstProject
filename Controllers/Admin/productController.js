@@ -58,7 +58,7 @@ const addProductPost = async (req, res) => {
 
                 // Resize image using Sharp
                 await sharp(inputPath)
-                    .resize(800, 800, { fit: 'contain' })
+                    .resize(400, 400, { fit: 'contain' })
                     .jpeg({ quality: 80 })
                     .toFile(outputPath);
 
@@ -296,7 +296,7 @@ const editProductPost = async (req, res) => {
               const rel = origImg.startsWith('/') ? origImg.slice(1) : origImg;
               const diskPath = path.join(process.cwd(), 'public', rel);
               try { if (fs.existsSync(diskPath)) fs.unlinkSync(diskPath); }
-              catch(e){ console.warn('Cannot delete file:', diskPath, e.message); }
+              catch(e){ console.log('Cannot delete file:', diskPath, e.message); }
             }
           });
         }
