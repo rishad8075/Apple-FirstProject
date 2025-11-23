@@ -304,7 +304,7 @@ const loadShopPage = async (req, res) => {
         };
         const sort = sortOptions[queryParams.sort] || sortOptions[''];
 
-        const perPage = 12;
+        const perPage = 3;
         const skip = (queryParams.page - 1) * perPage;
 
         // Get total products (filtered) and products for current page

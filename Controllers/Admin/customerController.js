@@ -36,20 +36,44 @@ const customerInfo =  async (req, res) => {
 // Block User
 const BlockUser = async (req, res) => {
     try {
-        const user = await User.findByIdAndUpdate(req.params.id, { isBlocked: true }, { new: true }); 
-        if (!user) return res.status(404).json({ success: false, message: "User not found" });
+        const user = await User.findByIdAndUpdate(
+            req.params.id,
+            { isBlocked: true },
+            { new: true }
+        );
+
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User not found" });
+        }
+
+        
+        if (req.session.user && req.session.user._id.toString() === req.params.id.toString()) {
+            req.session.user.isBlocked = true;
+        }
 
         res.json({ success: true, message: "User blocked successfully" });
     } catch (error) {
         res.status(500).json({ success: false, message: "Error blocking user" });
     }
 };
-
+ 
 // Unblock User
-const UnblockUser= async (req, res) => {
+const UnblockUser = async (req, res) => {
     try {
-        const user = await User.findByIdAndUpdate(req.params.id, { isBlocked: false }, { new: true });
-        if (!user) return res.status(404).json({ success: false, message: "User not found" });
+        const user = await User.findByIdAndUpdate(
+            req.params.id,
+            { isBlocked: false },
+            { new: true }
+        );
+
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User not found" });
+        }
+
+       
+        if (req.session.user && req.session.user._id.toString() === req.params.id.toString()) {
+            req.session.user.isBlocked = false;
+        }
 
         res.json({ success: true, message: "User unblocked successfully" });
     } catch (error) {

@@ -4,9 +4,10 @@ const UserController = require("../Controllers/User/userController");
 const passport = require("passport")
 const authMiddleware = require('../middleware/UserAuth');
 const profileController = require("../Controllers/User/profileController");
+const checkBlock = require('../middleware/checkBlock')
 
 
-
+router.use(checkBlock);
 router.get('/', authMiddleware,UserController.loadHome);
 router.get("/signup",UserController.loadSignup);
 router.post("/signup",UserController.signup);
