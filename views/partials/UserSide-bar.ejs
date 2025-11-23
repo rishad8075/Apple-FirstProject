@@ -14,10 +14,11 @@
 
     <style>
         /* --- SIDEBAR STYLES (Fixed Left) --- */
-     header {
+     header,footer {
     position: relative;
     z-index: 1100; /* above sidebar */
 }
+
 
 /* --- Sidebar --- */
 .account-sidebar {
@@ -71,12 +72,12 @@
     <aside class="account-sidebar">
         <ul class="sidebar-menu">
             <li class="sidebar-menu-item">
-                <a href="/account/profile" class="<%= activeLink === 'profile' ? 'active' : '' %>">
+                <a href="/user/profile" class="<%= activeLink === 'profile' ? 'active' : '' %>">
                     <i class="fas fa-user"></i> PERSONAL INFO
                 </a>
             </li>
             <li class="sidebar-menu-item">
-                <a href="/account/addresses" class="<%= activeLink === 'addresses' ? 'active' : '' %>">
+                <a href="/user/addresseManagement" class="<%= activeLink === 'addresses' ? 'active' : '' %>">
                     <i class="fas fa-map-marker-alt"></i> ADDRESSES
                 </a>
             </li>

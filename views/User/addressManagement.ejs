@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Address Management</title>
+    
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+
+    <style>
+        /* Note: Ensure the CSS for the Sidebar (.account-sidebar) is available in your UserSide-bar.ejs partial's CSS or linked globally. */
+
+        /* --- Page Layout --- */
+        .account-page-wrapper {
+            display: flex;
+             margin-left: 250px;
+                padding: 20px;
+            min-height: calc(100vh - 50px); /* Adjust height for content */
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* --- Main Content Area Styling (Adjusted for exact look) --- */
+        .account-content {
+            flex-grow: 1;
+            background-color: #F5F5F5; /* Light Gray background from image */
+            padding: 50px 30px; /* Vertical padding to match the image */
+        }
+
+        /* --- MY ADDRESSES Title --- */
+        .my-addresses-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        /* --- Add New Address Button --- */
+        .btn-add-new-address {
+            display: block;
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto 40px auto;
+            padding: 15px 25px;
+            background-color: transparent;
+            color: #000;
+            border: 1px solid #000;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            transition: background-color 0.2s, color 0.2s;
+        }
+
+        .btn-add-new-address:hover {
+            background-color: #000;
+            color: #fff;
+        }
+
+        /* --- Individual Address Card --- */
+        .address-display-card {
+            background-color: #fff;
+            padding: 25px 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+            max-width: 600px;
+            margin: 0 auto 25px auto;
+            display: flex;
+            align-items: flex-start;
+            position: relative;
+        }
+
+        .address-display-card .icon-container {
+            flex-shrink: 0;
+            margin-right: 20px;
+            color: #000;
+            font-size: 24px;
+        }
+
+        .address-display-card .address-details p {
+            margin-bottom: 5px;
+            color: #555;
+            font-size: 15px;
+            line-height: 1.4;
+        }
+
+        .address-display-card .address-details .full-name {
+            font-weight: 600;
+            color: #000;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        
+        /* Default Tag Styling */
+        .address-display-card .default-tag {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background-color: #FFD700;
+            color: #000;
+            padding: 3px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        /* Edit/Remove Buttons */
+        .address-actions-bottom {
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+            width: 100%; /* Ensure actions take full width below details */
+        }
+        
+        .address-actions-bottom button {
+            background-color: transparent;
+            border: 1px solid #ccc;
+            color: #555;
+            padding: 8px 20px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .address-actions-bottom button:hover {
+            border-color: #000;
+            color: #000;
+            background-color: #f0f0f0;
+        }
+
+        /* --- Add New Address Form Card (Modal content styling) --- */
+        .add-address-card {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+        }
+        .add-address-card .form-control {
+            border-radius: 6px;
+            padding: 10px;
+            background-color: #f7f7f7;
+            border: 1px solid #eee;
+            margin-bottom: 15px;
+        }
+        .btn-save-address {
+            background-color: #FF9500;
+            color: #000;
+            font-weight: 600;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 6px;
+            width: 100%;
+        }
+           .error-text {
+        color: red;
+        font-size: 0.9rem;
+        margin-top: 3px;
+    }
+    .form-error {
+        border-color: red !important;
+    }
+    </style>
+</head>
+<body>
+
+    <%- include("../partials/header") %>
+
+    <div class="account-page-wrapper">
+        
+        <%- include("../partials/UserSide-bar.ejs", { activeLink: 'addresses' }) %>
+
+        <div class="account-content">
+            
+            <h2 class="my-addresses-title">MY ADDRESSES</h2>
+
+            <button type="button" style="color: #000;margin-left: 22rem; background-color: #FFD700; box-shadow: #000;width: 19rem;" class="btn btn-add-new-address" data-bs-toggle="modal" data-bs-target="#addAddressModal">
+                ADD NEW ADDRESS+
+            </button>
+            <% 
+                const addresses = [
+                    { id: 1, isDefault: true, fullname: 'Rishad I', mobile: '8075147355', houseName: '123 Main St', locality: 'Near Central Park', district: 'Edayannur', state: 'Kerala', pincode: '670595' },
+                    { id: 2, isDefault: false, fullname: 'Mithun K', mobile: '9876543210', houseName: 'Flat 4B', locality: 'Blue Sky Tower', district: 'Kannur', state: 'Kerala', pincode: '670001' }
+                ]; 
+            %>
+
+          
+
+            <% addresses.forEach(addr => { %>
+                <div class="address-display-card">
+                    <div class="icon-container">
+                        <i class="fas fa-map-marker-alt"></i> 
+                    </div>
+                    <div class="address-details flex-grow-1">
+                        <p class="full-name"><%= addr.fullname %></p>
+                        <p><%= addr.houseName %>, <%= addr.locality %></p>
+                        <p><%= addr.district %>, <%= addr.state %> - <%= addr.pincode %></p>
+                        <p>Phone: <%= addr.mobile %></p>
+                        <div style="flex-grow: 1;"></div>
+                    </div>
+                    
+                    <% if (addr.isDefault) { %>
+                        <span class="default-tag">DEFAULT</span>
+                    <% } %>
+
+                    <div class="address-actions-bottom">
+                        <button type="button" class="btn">Edit</button>
+                        <button type="button" class="btn">Remove</button>
+                        <% if (!addr.isDefault) { %>
+                            <button type="button" class="btn" style="border-color:#FFD700; color: #FFD700;">Set Default</button>
+                        <% } %>
+                    </div>
+                </div>
+            <% }) %>
+            
+        </div>
+        
+    </div>
+
+   
+
+
+    <div class="modal fade" id="addAddressModal" tabindex="-1" aria-labelledby="addAddressModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content add-address-card">
+                <div class="modal-header d-flex justify-content-between align-items-center" style="border-bottom: none; padding-bottom: 0;">
+                    <h2 class="modal-title" id="addAddressModalLabel" style="font-weight: 700; font-size: 1.6rem;">ADD NEW ADDRESS</h2>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" style="padding-top: 0;">
+                   <form id="addAddressForm" action="/add-address" method="POST">
+
+    <div class="form-group mb-2">
+        <input type="text" class="form-control" name="fullname" placeholder="Fullname" >
+        <div class="error-text" id="fullnameError"></div>
+    </div>
+
+    <div class="form-group mb-2">
+        <input type="email" class="form-control" name="email" placeholder="Email" >
+        <div class="error-text" id="emailError"></div>
+    </div>
+
+    <div class="form-group mb-2">
+        <input type="tel" class="form-control" name="mobile" placeholder="Mobile No" >
+        <div class="error-text" id="mobileError"></div>
+    </div>
+
+    <div class="form-group mb-2">
+        <input type="text" class="form-control" name="houseName" placeholder="House Name" >
+        <div class="error-text" id="houseNameError"></div>
+    </div>
+
+    <div class="form-group mb-2">
+        <input type="text" class="form-control" name="locality" placeholder="Locality">
+        <div class="error-text" id="localityError"></div>
+    </div>
+
+    <div class="row g-2 mb-3">
+        <div class="col-md-6">
+            <input type="text" class="form-control" name="pincode" placeholder="Pincode" >
+            <div class="error-text" id="pincodeError"></div>
+        </div>
+        <div class="col-md-6">
+            <input type="text" class="form-control" name="district" placeholder="District" >
+            <div class="error-text" id="districtError"></div>
+        </div>
+    </div>
+
+    <div class="form-group mb-2">
+        <input type="text" class="form-control" name="state" placeholder="State" >
+        <div class="error-text" id="stateError"></div>
+    </div>
+
+    <div class="form-check mb-3">
+        <input class="form-check-input" type="checkbox" name="isDefault" id="isDefault">
+        <label class="form-check-label" for="isDefault">
+            Set as default address
+        </label>
+    </div>
+
+    <button type="submit" class="btn btn-save-address btn-secondary">Save Address</button>
+</form>
+                </div>
+            </div>
+        </div>
+    </div>
+     <%- include("../partials/footer.ejs") %>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Add this before </body> -->
+<script>
+document.getElementById("addAddressForm").addEventListener("submit", function(e){
+    e.preventDefault();
+
+    let isValid = true;
+
+    // Helper function to reset errors
+    const resetError = (field) => {
+        field.classList.remove("form-error");
+        const errDiv = document.getElementById(field.name + "Error");
+        if(errDiv) errDiv.innerText = "";
+    }
+
+    const setError = (field, message) => {
+        field.classList.add("form-error");
+        const errDiv = document.getElementById(field.name + "Error");
+        if(errDiv) errDiv.innerText = message;
+        isValid = false;
+    }
+
+    // Fields
+    const fullname = this.fullname;
+    const email = this.email;
+    const mobile = this.mobile;
+    const houseName = this.houseName;
+    const locality = this.locality;
+    const pincode = this.pincode;
+    const district = this.district;
+    const state = this.state;
+
+    const nameRegex = /^[A-Za-z ]+$/;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const mobileRegex = /^[0-9]{10}$/;
+    const pincodeRegex = /^[0-9]{6}$/;
+
+    // Reset all
+    [fullname,email,mobile,houseName,locality,pincode,district,state].forEach(resetError);
+
+    // Fullname
+    if(fullname.value.trim().length < 3 || !nameRegex.test(fullname.value.trim())){
+        setError(fullname, "Enter a valid full name (letters only, min 3 chars).");
+    }
+
+    // Email
+    if(!emailRegex.test(email.value.trim())){
+        setError(email, "Enter a valid email address.");
+    }
+
+    // Mobile
+    if(!mobileRegex.test(mobile.value.trim())){
+        setError(mobile, "Mobile number must be 10 digits.");
+    }
+
+    // House Name
+    if(houseName.value.trim().length < 2){
+        setError(houseName, "House name must be at least 2 characters.");
+    }
+
+    // Locality
+    if(locality.value.trim().length < 2){
+        setError(locality, "Locality must be at least 2 characters.");
+    }
+
+    // Pincode
+    if(!pincodeRegex.test(pincode.value.trim())){
+        setError(pincode, "Pincode must be exactly 6 digits.");
+    }
+
+    // District
+    if(district.value.trim().length < 2 || !nameRegex.test(district.value.trim())){
+        setError(district, "District must contain letters only.");
+    }
+
+    // State
+    if(state.value.trim().length < 2 || !nameRegex.test(state.value.trim())){
+        setError(state, "State must contain letters only.");
+    }
+
+    if(isValid){
+        this.submit();
+    }
+});
+</script>
+
+</body>
+</html>

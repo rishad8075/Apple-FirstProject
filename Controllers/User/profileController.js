@@ -1,5 +1,7 @@
 const User = require("../../model/user");
 const nodemailer = require("nodemailer");
+const UserAddress = require("../../model/address");
+const address = require("../../model/address");
 
 function generateOtp() {
     return Math.floor(100000 + Math.random() * 900000).toString();
@@ -179,6 +181,30 @@ const userProfile = async (req, res) => {
 };
 
 
+const userAddressManagement = async(req,res)=>{
+    try {
+        const user = req.session.userId
+        const userAddress = await UserAddress.findById(req.session.userId);
+        res.render("User/addressManagement",{
+            user:user,
+            addresses:userAddress,
+              activeLink: 'profile'
+        })
+    } catch (error) {
+        console.error(error);
+        res.render("page-404")
+    }
+}
+
+
+
+
+
+
+
+
+
+
 module.exports = {
     getForgot_password,
     postForgot_password,
@@ -187,4 +213,5 @@ module.exports = {
     resend_ForgotPass_Otp,
     resetPassword,
     userProfile,
+    userAddressManagement,
 };
