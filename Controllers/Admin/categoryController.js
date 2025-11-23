@@ -111,10 +111,24 @@ const getEditCategoryPage = async (req, res) => {
 
 const editCategory = async (req, res) => {
     try {
-        const id = req.params.id;  
+        const id = req.params.id;
         const { name, description } = req.body;
 
-        const category = await Category.findByIdAndUpdate(id, { name, description }, { new: true });
+        // Case-insensitive check for existing category
+        const existingCategory = await Category.findOne({ 
+            name: { $regex: `^${name}$`, $options: 'i' }, 
+            _id: { $ne: id } 
+        });
+
+        if (existingCategory) {
+            return res.status(400).json({ error: "Category name already exists" });
+        }
+
+        const category = await Category.findByIdAndUpdate(
+            id,
+            { name, description },
+            { new: true }
+        );
 
         if (!category) return res.status(404).json({ error: "Category not found" });
 
@@ -124,6 +138,8 @@ const editCategory = async (req, res) => {
         res.status(500).json({ error: "Server error" });
     }
 };
+
+
 
 
 

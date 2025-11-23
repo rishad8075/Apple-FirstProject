@@ -158,6 +158,27 @@ const resetPassword = async (req, res) => {
     }
 };
 
+
+const userProfile = async (req, res) => {
+    try {
+        const userId = req.session.userId;
+        if (!userId) return res.redirect('/login'); // Safety check
+
+        const userData = await User.findById(userId).lean(); // lean() returns plain JS object
+        if (!userData) return res.redirect('/login'); // If user not found
+
+        res.render("User/profileInfo", {
+            user: userData,        // pass user to EJS
+            activeLink: 'profile'  // tells sidebar which menu is active
+        });
+
+    } catch (error) {
+        console.log(error);
+        res.render("page-404", { error: error });
+    }
+};
+
+
 module.exports = {
     getForgot_password,
     postForgot_password,
@@ -165,4 +186,5 @@ module.exports = {
     getResetPassword,
     resend_ForgotPass_Otp,
     resetPassword,
+    userProfile,
 };

@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add New Address - E-commerce</title>
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    
+    <style>
+        /* Basic Reset and Setup */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #f5f5f7;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        /* Container for the Card */
+        .address-container {
+            padding: 20px;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        /* The Address Card Styling */
+        .address-card {
+            background-color: #ffffff;
+            border-radius: 12px;
+            padding: 30px 25px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Card Header */
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .card-header h2 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            letter-spacing: 0.5px;
+            margin: 0;
+        }
+
+        .close-icon {
+            font-size: 24px;
+            color: #a0a0a0;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        /* Form Groups and Inputs */
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .address-label {
+            font-size: 14px;
+            font-weight: 500;
+            color: #8a8a8e;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="tel"] {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 14px;
+            color: #333;
+            transition: border-color 0.2s;
+        }
+
+        input::placeholder {
+            color: #c0c0c0;
+        }
+
+        input:focus {
+            border-color: #007aff;
+            outline: none;
+            box-shadow: 0 0 0 1px #007aff;
+        }
+
+        /* Inline Group for Address Fields */
+        .inline-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .inline-item {
+            flex: 1;
+        }
+
+        /* --- BUTTON GROUP STYLES --- */
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .save-button, .cancel-button {
+            padding: 12px 20px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            flex: 1; /* Makes both buttons take equal space */
+            transition: background-color 0.2s, opacity 0.2s;
+        }
+
+        /* Primary Button: Save */
+        .save-button {
+            background-color: #ff9500; /* Primary Orange */
+            color: white;
+            border: none;
+        }
+
+        .save-button:hover {
+            background-color: #e58600;
+        }
+        
+        /* Secondary Button: Cancel */
+        .cancel-button {
+            background-color: #e0e0e0; /* Light Gray */
+            color: #333;
+            border: 1px solid #c0c0c0;
+        }
+        
+        .cancel-button:hover {
+            background-color: #d0d0d0;
+        }
+
+        /* Validation Error Styling */
+        .error-message {
+            color: #ff3b30;
+            font-size: 12px;
+            display: block;
+            margin-top: 4px;
+        }
+
+        .input-error {
+            border-color: #ff3b30 !important;
+        }
+        
+        /* SweetAlert2 Custom Styling */
+        .swal2-styled-button {
+            background-color: #ff9500 !important;
+            color: white !important;
+            font-weight: 600 !important;
+            border-radius: 8px !important;
+            box-shadow: none !important;
+        }
+
+        .swal2-styled-button:hover {
+            background-color: #e58600 !important;
+        }
+        
+        .swal2-styled-button-error {
+            background-color: #6c757d !important; 
+            color: white !important;
+            font-weight: 600 !important;
+            border-radius: 8px !important;
+            box-shadow: none !important;
+        }
+    </style>
+</head>
+<body>
+
+<div class="address-container">
+    <div class="address-card">
+        <header class="card-header">
+            <h2>ADD NEW ADDRESS</h2>
+            <span class="close-icon">&bull;</span>
+        </header>
+        <form id="addressForm">
+            <div class="form-group">
+                <label for="fullname">Fullname</label>
+                <input type="text" id="fullname" name="fullname" placeholder="Enter full name" >
+                <span class="error-message" id="fullname-error"></span>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" placeholder="Enter email address" >
+                <span class="error-message" id="email-error"></span>
+            </div>
+
+            <div class="form-group">
+                <label for="mobile">Mobile No</label>
+                <input type="tel" id="mobile" name="mobile" placeholder="Enter 10 digit mobile number" >
+                <span class="error-message" id="mobile-error"></span>
+            </div>
+
+            <div class="form-group">
+                <label for="houseName" class="address-label">Address</label>
+            </div>
+
+            <div class="form-group">
+                <input type="text" id="houseName" name="houseName" placeholder="House Name" >
+                <span class="error-message" id="houseName-error"></span>
+            </div>
+
+            <div class="form-group inline-group">
+                <div class="inline-item">
+                    <input type="text" id="locality" name="locality" placeholder="Locality" >
+                    <span class="error-message" id="locality-error"></span>
+                </div>
+                <div class="inline-item">
+                    <input type="text" id="pincode" name="pincode" placeholder="Pincode" >
+                    <span class="error-message" id="pincode-error"></span>
+                </div>
+            </div>
+
+            <div class="form-group inline-group">
+                <div class="inline-item">
+                    <input type="text" id="district" name="district" placeholder="District">
+                    <span class="error-message" id="district-error"></span>
+                </div>
+                <div class="inline-item">
+                    <input type="text" id="state" name="state" placeholder="State">
+                    <span class="error-message" id="state-error"></span>
+                </div>
+            </div>
+            
+            <div class="button-group">
+                <button type="button" id="cancelButton" class="cancel-button">Cancel</button>
+                <button type="submit" class="save-button">Save Address</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('addressForm');
+        const cancelButton = document.getElementById('cancelButton');
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; 
+
+        // Helper function to show error
+        function setError(inputElement, message) {
+            const errorElement = document.getElementById(inputElement.id + '-error');
+            inputElement.classList.add('input-error');
+            errorElement.textContent = message;
+        }
+
+        // Helper function to clear error
+        function clearError(inputElement) {
+            const errorElement = document.getElementById(inputElement.id + '-error');
+            inputElement.classList.remove('input-error');
+            errorElement.textContent = '';
+        }
+
+        // Validation logic for a single field using if/else
+        function validateField(inputElement) {
+            const value = inputElement.value.trim();
+            const fieldName = inputElement.name;
+
+            // 1. Check for required fields
+            if (value === '') {
+                setError(inputElement, `${fieldName.charAt(0).toUpperCase() + fieldName.slice(1)} is required.`);
+                return false;
+            } 
+            
+            // 2. Specific field validations using if/else if
+            if (fieldName === 'email' && !emailRegex.test(value)) {
+                setError(inputElement, 'Please enter a valid email address.');
+                return false;
+            } else if (fieldName === 'mobile' && !/^[0-9]{10}$/.test(value)) {
+                setError(inputElement, 'Mobile number must be 10 digits.');
+                return false;
+            } else if (fieldName === 'pincode' && !/^[0-9]{6}$/.test(value)) {
+                setError(inputElement, 'Pincode must be 6 digits.');
+                return false;
+            } 
+            
+            // If all checks pass
+            clearError(inputElement);
+            return true;
+        }
+
+        // Attach real-time validation (on blur) to all input fields
+        const inputs = form.querySelectorAll('input');
+        inputs.forEach(input => {
+            input.addEventListener('blur', () => validateField(input));
+            input.addEventListener('input', () => {
+                if (input.classList.contains('input-error')) {
+                    validateField(input);
+                }
+            });
+        });
+
+        // --- CANCEL BUTTON HANDLER ---
+        cancelButton.addEventListener('click', function() {
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "All entered data will be lost!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ff3b30', // Red for destructive action
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, discard it!',
+                customClass: { 
+                    confirmButton: 'swal2-styled-button-error',
+                    cancelButton: 'swal2-styled-button'
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.reset();
+                    // Optionally: Redirect the user 
+                    // window.history.back(); 
+                    Swal.fire(
+                        'Cancelled!',
+                        'Your address entry has been discarded.',
+                        'info'
+                    )
+                }
+            })
+        });
+
+        // --- FORM SUBMISSION HANDLER ---
+        form.addEventListener('submit', function(event) {
+            event.preventDefault(); 
+            
+            let isFormValid = true;
+
+            // Run validation for ALL fields on submit
+            inputs.forEach(input => {
+                if (!validateField(input)) {
+                    isFormValid = false;
+                }
+            });
+
+            if (isFormValid) {
+                // Success Alert (SweetAlert2)
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Address Saved!',
+                    text: 'Your new delivery address has been recorded successfully.',
+                    confirmButtonText: 'Continue Shopping',
+                    customClass: { confirmButton: 'swal2-styled-button' }
+                }).then(() => {
+                    form.reset();
+                });
+            } else {
+                // Error Alert (SweetAlert2)
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Validation Error',
+                    text: 'Please fill out all required fields and correct the errors before saving.',
+                    confirmButtonText: 'Got It',
+                    customClass: { confirmButton: 'swal2-styled-button-error' }
+                });
+                
+                // Optional: Scroll to the first error
+                const firstError = document.querySelector('.input-error');
+                if (firstError) {
+                    firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }
+        });
+    });
+</script>
+</body>
+</html>

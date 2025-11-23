@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <!-- SweetAlert JS -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+        /* --- SIDEBAR STYLES (Fixed Left) --- */
+     header {
+    position: relative;
+    z-index: 1100; /* above sidebar */
+}
+
+/* --- Sidebar --- */
+.account-sidebar {
+    position: fixed;
+    top: 2;
+    left: 0;
+    width: 250px;
+    height: 100vh;
+    background-color: #fff;
+    padding: 30px 0;
+  
+    overflow-y: auto;
+    z-index: 900;
+}
+.sidebar-menu { list-style: none; padding: 0; margin: 0; }
+.sidebar-menu-item { margin-bottom: 2px; }
+.sidebar-menu-item a {
+    display: flex; align-items: center;
+    padding: 12px 25px;
+    text-decoration: none;
+    color: #000;
+    font-size: 15px;
+    font-weight: 500;
+    transition: background-color 0.2s, color 0.2s;
+}
+.sidebar-menu-item a i { margin-right: 15px; font-size: 18px; width: 20px; color: #555; }
+.sidebar-menu-item a:hover { background-color: #f8f9fa; color: #000; }
+.sidebar-menu-item a.active { background-color: #ff9500; color: #fff; font-weight: 700; border-left: 4px solid #ff9500; }
+.sidebar-menu-item.logout-item a { color: #ff4500; }
+.sidebar-menu-item.logout-item a:hover { background-color: #f8f9fa; color: #ff6347; }
+
+/* --- Main Content --- */
+.main-content {
+    margin-left: 250px;
+    padding: 20px;
+    background-color: #f8f9fa;
+}
+
+      @media (max-width: 992px) {
+    .account-sidebar { position: relative; width: 100%; height: auto; padding: 10px 0; margin-bottom: 20px; box-shadow: none; }
+            .main-content {
+                margin-left: 0;
+            }
+        }
+        
+    </style>
+</head>
+<body class="bg-light">
+
+    <!-- Sidebar -->
+    <aside class="account-sidebar">
+        <ul class="sidebar-menu">
+            <li class="sidebar-menu-item">
+                <a href="/account/profile" class="<%= activeLink === 'profile' ? 'active' : '' %>">
+                    <i class="fas fa-user"></i> PERSONAL INFO
+                </a>
+            </li>
+            <li class="sidebar-menu-item">
+                <a href="/account/addresses" class="<%= activeLink === 'addresses' ? 'active' : '' %>">
+                    <i class="fas fa-map-marker-alt"></i> ADDRESSES
+                </a>
+            </li>
+            <li class="sidebar-menu-item">
+                <a href="/account/orders" class="<%= activeLink === 'orders' ? 'active' : '' %>">
+                    <i class="fas fa-clock"></i> ORDERS
+                </a>
+            </li>
+            <li class="sidebar-menu-item">
+                <a href="/account/track" class="<%= activeLink === 'track' ? 'active' : '' %>">
+                    <i class="fas fa-truck"></i> TRACK ORDER
+                </a>
+            </li>
+            <li class="sidebar-menu-item">
+                <a href="/account/coupons" class="<%= activeLink === 'coupons' ? 'active' : '' %>">
+                    <i class="fas fa-ticket-alt"></i> COUPONS
+                </a>
+            </li>
+            <li class="sidebar-menu-item">
+                <a href="/account/wallet" class="<%= activeLink === 'wallet' ? 'active' : '' %>">
+                    <i class="fas fa-wallet"></i> WALLET
+                </a>
+            </li>
+            <li class="sidebar-menu-item logout-item">
+                <a href="/logout">
+                    <i class="fas fa-sign-out-alt"></i> LOGOUT
+                </a>
+            </li>
+        </ul>
+    </aside>
+
+   
+     
+        
+
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- SweetAlert JS -->
+    <script>
+        // Address Delete Confirmation
+        function confirmDelete(addressId){
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "This address will be deleted permanently!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, delete it!'
+            }).then((result) => {
+                if(result.isConfirmed){
+                    window.location.href = `/account/addresses/delete/${addressId}`;
+                }
+            });
+        }
+
+        // Edit Address Redirect
+        function editAddress(addressId){
+            window.location.href = `/account/addresses/edit/${addressId}`;
+        }
+
+       
+    </script>
+</body>
+</html>

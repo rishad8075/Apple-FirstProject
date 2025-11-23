@@ -62,6 +62,7 @@ router.post('/verify-passForgot-otp',profileController.verifyPassForgotOtp)
 router.get('/reset-password',profileController.getResetPassword);
 router.post("/resend-forgot-otp",profileController.resend_ForgotPass_Otp);
 router.post("/reset-password",profileController.resetPassword);
+router.get("/userProfile",authMiddleware,profileController.userProfile)
 
 
 

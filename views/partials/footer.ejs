@@ -1,65 +1,144 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Exclusive Login</title>
-    
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    
-    <style>
-        
-       
-        .footer {
-            margin-top: 3rem;
-            background-color: black;
-            padding: 20px 0;
-            text-align: center;
-        }
-        .footer a {
-            color: white;
-            text-decoration: none;
-        }
-        .footer input {
-            width: 250px;
-            padding: 8px;
-        }
-        .footer img {
-            width: 100px;
-        }
-    </style>
-</head>
-<body>
+<style>
+/* ----------------- COMPACT FOOTER STYLES ----------------- */
+.app-footer {
+    background-color: #000; /* Solid Black */
+    color: #f5f5f7;
+    padding: 30px 0 15px 0; /* Reduced top and bottom padding */
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
 
-    
-    <footer style="justify-content: space-between;" class="footer text-white" >
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-3">
-                    <h5>Exclusive</h5>
-                    <p>Get 10% off your first order</p>
-                    <input type="email" class="form-control" placeholder="Enter your email">
-                </div>
-                <div class="col-lg-3">
-                    <h5>Support</h5>
-                    <p>kerala, India</p>
-                    <p>ednrrishad@gmail.com</p>
-                    <p>+91 8075147355</p>
-                </div>
-                <div class="col-lg-3">
-                    <h5>Quick Links</h5>
-                    <p><a href="#">Privacy Policy</a></p>
-                    <p><a href="#">Terms of Use</a></p>
-                    <p><a href="#">FAQ</a></p>
-                    <p><a href="#">Contact</a></p>
-                </div>
+.app-footer h5 {
+    color: #f5f5f7;
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 10px; /* Reduced spacing */
+}
+
+.app-footer a,
+.app-footer p {
+    color: #a0a0a0;
+    text-decoration: none;
+    font-size: 13px;
+    line-height: 1.4;
+    margin-bottom: 5px; /* Reduced spacing */
+    display: block;
+}
+
+.app-footer a:hover {
+    color: #ffffff;
+}
+
+/* Subscription Input */
+.subscribe-input {
+    border: 1px solid #a0a0a0;
+    background: transparent;
+    color: white;
+    padding: 6px 10px;
+    width: 100%;
+    max-width: 220px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    margin-top: 8px; /* Smaller spacing */
+}
+
+.subscribe-input input {
+    flex-grow: 1;
+    background: transparent;
+    border: none;
+    color: white;
+    outline: none;
+}
+
+.subscribe-input input::placeholder {
+    color: #a0a0a0;
+}
+
+.subscribe-input i {
+    color: white;
+    cursor: pointer;
+    margin-left: 5px;
+}
+
+/* Social Icons */
+.social-icons a {
+    display: inline-block;
+    margin-right: 10px;
+    font-size: 16px;
+}
+
+/* Footer Bottom */
+.footer-bottom {
+    border-top: 1px solid #333;
+    padding-top: 10px;
+    margin-top: 20px;
+}
+
+.footer-bottom p {
+    color: #a0a0a0;
+    font-size: 13px;
+    margin: 0;
+    text-align: center;
+}
+
+/* Responsive Columns */
+@media (min-width: 992px) {
+    .app-footer .row > div {
+        flex: 0 0 auto;
+        width: 25%; /* Four equal columns */
+    }
+}
+</style>
+
+<footer class="app-footer">
+    <div class="container">
+        <div class="row">
+
+            <div class="col-lg-3 col-md-6 mb-3">
+                <h5>Exclusive</h5>
+                <p>Subscribe</p>
+                <p>Get 10% off your first order</p>
                 
+                <div class="subscribe-input">
+                    <input type="email" placeholder="Enter your email" aria-label="Subscribe to newsletter">
+                    <i class="fas fa-paper-plane"></i>
+                </div>
             </div>
+
+            <div class="col-lg-3 col-md-6 mb-3">
+                <h5>Support</h5>
+                <p>Kannur, Edayannur, India</p>
+                <p>ichadrishad@gmail.com</p>
+                <p>+91 8075147355</p>
+                
+                <div class="social-icons mt-2">
+                    <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                    <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                    <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-md-6 mb-3">
+                <h5>Account</h5>
+                <a href="#">My Account</a>
+                <a href="#">Login / Register</a>
+                <a href="#">Cart</a>
+                <a href="#">Wishlist</a>
+                <a href="#">Shop</a>
+            </div>
+
+            <div class="col-lg-3 col-md-6 mb-3">
+                <h5>Quick Link</h5>
+                <a href="#">Privacy Policy</a>
+                <a href="#">Terms Of Use</a>
+                <a href="#">FAQ</a>
+                <a href="#">Contact</a>
+            </div>
+
         </div>
-    </footer>
-
-    
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-</body>
-</html>
+        <div class="footer-bottom">
+            <p>&copy; Copyright Exclusive 2024. All rights reserved.</p>
+        </div>
+    </div>
+</footer>

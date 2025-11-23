@@ -1,112 +1,149 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Responsive Navbar with Profile Dropdown</title>
-    <!-- Bootstrap 5 CDN -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" defer></script>
-    <style>
-        .dropdown {
-   position:relative;
-   display:inline-block;
-}
-.dropdown-content {
- 
-   display: none;
-   position:absolute;
-   background-color: white;
-   min-width: 160px;
-   box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-   z-index:1000;
-   right:0;
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+
+
+
+<style>
+    
+    /* Custom CSS to center the links and align the sections */
+
+/* Flex container for the whole navbar content (Logo | Links | Icons/Auth) */
+.custom-navbar-container {
+    display: flex;
+    justify-content: space-between; 
+    align-items: center;
+    width: 100%;
 }
 
-
-.dropdown-content a {
-   color: black;
-   padding: 12px 16px;
-   text-decoration: none;
-   display: block;
-   width: 100%;
-
-
-}
-.dropdown-content a:hover{
-   background-color: #f1f1f1;
-}
-.dropdown:hover .dropdown-content{
-   display: block;
+/* Container for the navigation links (to center them) */
+.custom-navbar-links {
+    flex-grow: 1; /* Takes up middle space */
+    display: flex;
+    justify-content: center; /* Centers the actual links */
+    padding: 0;
+    margin: 0;
 }
 
-    </style>
+/* Nav list items inside the centered container */
+.custom-navbar-links .navbar-nav {
+    display: flex;
+    flex-direction: row; 
+    gap: 30px; /* Spacing between primary links */
+}
 
-</head>
+/* Container for the right-side elements (Auth links, Name, Dropdown, Cart/Search Icons) */
+.custom-navbar-right {
+    display: flex;
+    align-items: center;
+    gap: 20px; /* Spacing between elements on the right */
+    min-width: 120px; /* Reserves space */
+}
 
-<body>
+/* Ensure icons on the right are styled correctly */
+.custom-navbar-right .nav-link i {
+    font-size: 16px;
+    opacity: 0.8;
+    transition: opacity 0.2s;
+}
 
-<!-- Navbar -->
-<nav class="navbar navbar-expand-lg navbar-dark bg-black" style="display: flex; align-items: center;">
-    <div style="display: flex; align-items: center;" class="container-fluid">
-        <!-- Logo -->
-        <a class="navbar-brand" href="#">
-            <img src="/images/header logo.webp" alt="Logo" width="40" height="40">
+.custom-navbar-right .nav-link i:hover {
+    opacity: 1;
+}
+
+/* Fix Bootstrap's dropdown positioning to align to the right edge of the header */
+.custom-dropdown .dropdown-menu {
+    right: 0 !important;
+    left: auto !important;
+}
+
+/* Responsive adjustment for small screens */
+@media (max-width: 991px) {
+    /* Hide the custom centered links on mobile, rely on Bootstrap's collapse menu */
+    .custom-navbar-links {
+        display: none;
+    }
+    
+    /* When the menu is collapsed, ensure the right-side icons stack neatly */
+    #navbarNav {
+        padding-top: 10px;
+    }
+    
+    /* Ensure right-side elements are visible when menu is collapsed */
+    .custom-navbar-right {
+        margin-left: 0 !important; /* Remove any old margins */
+        justify-content: flex-start;
+        width: 100%;
+        padding-bottom: 10px;
+    }
+}
+</style>
+
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-black">
+    <div class="container-fluid custom-navbar-container">
+        
+        <a class="navbar-brand" href="/">
+            <img src="/images/header logo.webp" alt="Logo" width="30" height="30">
         </a>
 
-        <!-- Toggle Button for Mobile -->
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
 
-        <!-- Navbar Links -->
-        <div style="display: flex;align-items: center;" class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav me-auto">
-                <li class="nav-item">
-                    <a class="nav-link text-white" href="/">Home</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-white" href="#">About</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-white" href="/shop">Shop</a>
-                </li>
-                <%if(locals.user){%>
-                    <div style=" display: flex ; align-items: center; margin-left: 49rem; margin-top: 5px; color: #f1f1f1;" class="dropdown">
-                        <a style="font-size: 14px; padding-right: 20px; color: #f1f1f1;" href=""><%=locals.user.name%></a>
-                    
+        <div class="collapse navbar-collapse" id="navbarNav">
             
-                        <!-- Profile Dropdown -->
-                        <div style="display: flex; align-items: center;" class="dropdown">
-                            <button class="btn btn-dark dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                                <i class="bi bi-person-circle"></i> <!-- Bootstrap Icon -->
-                            </button>
-                            <ul class="dropdown-menu dropdown-menu-end">
-                                <li><a class="dropdown-item" href="#">Profile</a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item text-danger" href="/logout">Logout</a></li>
-                            </ul>
-                        </div>
-
-                <%}else {%>
-                <li class="nav-item">
+            <div class="custom-navbar-links">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="#">About</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="/shop">Shop</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="#">Contact</a>
+                    </li>
+                </ul>
+            </div>
+            
+            <div class="custom-navbar-right">
+                
+                <% if(locals.user) { %>
+                    <span class="text-white d-none d-lg-block" style="font-size: 14px;">
+                        <%= locals.user.name %>
+                    </span>
+                    
+                    <div class="dropdown custom-dropdown">
+                        <button class="btn btn-dark dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="padding: 0 5px; border: none; background: transparent;">
+                            <i class="bi bi-person-circle text-white" style="font-size: 18px; opacity: 0.8;"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="/userProfile">Profile</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="/logout">Logout</a></li>
+                        </ul>
+                    </div>
+                    
+                <% } else { %>
                     <a class="nav-link text-white" href="/signup">Sign up</a>
-                </li>
-                <li class="nav-item">
                     <a class="nav-link text-white" href="/login">Login</a>
-                </li>
-                <%}%>
-            </ul>
+                <% } %>
+                
+                
+                
+                <a class="nav-link text-white" href="/cart" aria-label="Shopping Cart">
+                    <i class="fas fa-shopping-cart"></i>
+                </a>
 
-            <!-- Search Bar -->
-           
+            </div>
         </div>
     </div>
 </nav>
-
-
-<!-- Bootstrap Icons (For Profile Icon) -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
-
-</body>
-</html>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

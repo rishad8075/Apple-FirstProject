@@ -105,57 +105,58 @@
    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
    <script>
-    let otpTimerInterval ;
-    let timer =60;
-    function updateTimerColor(percentage){
-        const timerElement = document.getElementById("otpTimer");
-        if(percentage > 50){
-            timerElement.style.backgroundColor="#28a745";
+   let otpTimerInterval;
+let timer = 60;
+const otpTimerElement = document.getElementById("otpTimer");
+const resendBtn = document.querySelector(".resend-button");
 
-        }else if(percentage >25){
-            timerElement.style.backgroundColor="#ffc107";
+// Disable resend initially
+resendBtn.disabled = true;
 
-        }else{
-            timerElement.style.backgroundColor="#dc3545";
+function updateTimerColor(percentage){
+    if(percentage > 50){
+        otpTimerElement.style.backgroundColor="#28a745";
+    } else if(percentage > 25){
+        otpTimerElement.style.backgroundColor="#ffc107";
+    } else {
+        otpTimerElement.style.backgroundColor="#dc3545";
+    }
+}
+
+function startOtpTimer(){
+    resendBtn.disabled = true; // disable while timer runs
+    otpTimerElement.style.backgroundColor = "#28a745"; // reset color
+    otpTimerInterval = setInterval(function(){
+        const minutes = Math.floor(timer/60);
+        const seconds = timer%60;
+        otpTimerElement.textContent = `${minutes}:${seconds<10?"0":""}${seconds}`;
+        updateTimerColor((timer/60)*100);
+
+        if(--timer < 0){
+            clearInterval(otpTimerInterval);
+            otpTimerElement.textContent = "Expired";
+            otpTimerElement.style.backgroundColor = "red";
+            resendBtn.disabled = false; // enable resend when timer ends
         }
-    }
+    },1000);
+}
 
-    function startOtpTimer(){
-        const timerElement = document.getElementById("otpTimer")
-        otpTimerInterval = setInterval(function(){
-            const minutes = Math.floor(timer/60);
-            const seconds = timer%60;
-            timerElement.textContent=`${minutes}:${seconds<10?"0":""}${seconds}`;
-            updateTimerColor((timer/60*100))
-            if(--timer<0){
-                clearInterval(otpTimerInterval)
-             timerElement.textContent="Expired";
-             timerElement.style.backgroundColor="red";
-            }
-        },1000);
-    }
+// Initialize timer
+function initializeOtpInterval(){
+    clearInterval(otpTimerInterval);
+    timer = 60;
+    startOtpTimer();
+}
 
-    initializeOtpInterval();
+initializeOtpInterval();
 
-
-
-
-
-
-
-    function initializeOtpInterval(){
-        clearInterval();
-        timer=60;
-        startOtpTimer();
-    
-    }
-    function validateOtpForm() {
-    const otp = document.getElementById("otp").value; // ✅ Get OTP value correctly
+function validateOtpForm() {
+    const otp = document.getElementById("otp").value;
     $.ajax({
         type: "POST",
         url: '/verify-passForgot-otp',
-        contentType: "application/json", // ✅ Specify JSON format
-        data: JSON.stringify({ otp: otp }), // ✅ Send properly formatted data
+        contentType: "application/json",
+        data: JSON.stringify({ otp: otp }),
         success: function (response) {
             if (response.success) {
                 Swal.fire({
@@ -183,18 +184,19 @@
         }
     });
 
-    return false; // Prevent default form submission
+    return false;
 }
 
+function resendOtp(){
+    if(resendBtn.disabled) return; // prevent click if disabled
 
- function  resendOtp(){
     clearInterval(otpTimerInterval);
-    timer =60;
-    startOtpTimer();
+    timer = 60;
+    startOtpTimer(); // restart timer
+
     $.ajax({
         type:"POST",
         url:"/resend-forgot-otp",
-        
         success:function(response){
             if(response.success){
                 Swal.fire({
@@ -207,8 +209,7 @@
                 Swal.fire({
                     icon:"error",
                     title:'Error',
-                    text:'Failed to resend OTP .Please try again',
-                
+                    text:'Failed to resend OTP. Please try again',
                 });
             }
         },
@@ -216,11 +217,12 @@
             Swal.fire({
                 icon:'error',
                 title:'Error',
-                text:'Failed resend OTP .Please try again'
-            })
+                text:'Failed to resend OTP. Please try again'
+            });
         }
-    })
+    });
 }
+
 
 
 
