@@ -1,0 +1,78 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>APPLLe - Premium Electronics</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+
+
+
+
+<style>
+    .error-message {
+        color: red;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+    .is-invalid {
+        border-color: red;
+    }
+ </style>
+
+</head>
+<body>
+    
+    <%- include("../partials/header.ejs") %>
+
+ <section class="content-main" style="margin-top: 80px; margin-bottom: 80px;">
+    <div class="card mx-auto card-login col-4">
+        <div class="card-body">
+            <h4 class="card-title mb-4">Email</h4>
+              <% if (typeof errorMessage !== 'undefined' && errorMessage) { %>
+                        <div class="alert alert-danger"><%= errorMessage %></div>
+                    <% } %>
+            <form method="post" action="/user/ChangeEmail-valid" onsubmit="return validateLoginForm()">
+                <div class="mb-3">
+                    <input class="form-control" name="email" placeholder="Email" type="text" id="email">
+                    <div class="error-message" id="email-error"></div>
+                </div>
+                <div class="mb-4">
+                    <button type="submit" class="btn btn-primary w-100">Verify</button>
+                </div>
+            </form>
+          
+            <p class="text-center mb-4"> <a href="/user/profile" style="color: black;" >go back to profile</a></p>
+        </div>
+    </div>
+ </section>
+ 
+
+ <%- include("../partials/footer.ejs") %>
+
+ 
+ <script>
+    function validateLoginForm() {
+        const emailInput = document.getElementById('email');
+        const emailError = document.getElementById('email-error');
+        const emailValue = emailInput.value.trim();
+        const emailPattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
+ 
+ 
+        if (emailValue === '') {
+            emailError.textContent = 'Please enter your email.';
+            emailInput.classList.add('is-invalid');
+            return false;
+        } else if (!emailValue.match(emailPattern)) {
+            emailError.textContent = 'Please enter a valid email address.';
+            emailInput.classList.add('is-invalid');
+            return false;
+        } else {
+            emailError.textContent = '';
+            emailInput.classList.remove('is-invalid');
+            return true;
+        }
+    }
+ </script>
+ </body>

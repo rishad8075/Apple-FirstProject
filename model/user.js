@@ -66,6 +66,10 @@ const userSchema = new Schema(
         ref: "Order"
       }
     ],
+    dob: {
+    type: Date,
+    default: null
+},
 
     createdOn: {
       type: Date,

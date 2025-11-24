@@ -13,8 +13,21 @@
 <style>
 .profile-image-container { position: relative; width: 150px; height: 150px; margin-bottom: 20px; }
 .profile-image-container img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; cursor: pointer; }
-.modal-body img { max-width: 100%; display: block; }
+.change-image-btn, .remove-image-btn {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    cursor: pointer;
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 5px;
+    color: white;
+}
+.change-image-btn { background-color: rgba(0,0,0,0.6); bottom: 25px; }
+.remove-image-btn { background-color: rgba(255,0,0,0.6); }
 .error-msg { color: red; font-size: medium; }
+.modal-body img { max-width: 100%; display: block; }
 </style>
 </head>
 <body class="bg-light">
@@ -22,14 +35,17 @@
 <div class="container py-5">
     <h3>Edit Profile</h3>
 
-    <form id="editProfileForm" action="/account/profile/edit" method="POST" enctype="multipart/form-data">
+    <form id="editProfileForm" action="/user/profileEdit" method="POST" enctype="multipart/form-data">
+
         <!-- Profile Image -->
         <div class="profile-image-container mx-auto text-center">
             <img id="profileImage" src="<%= user.profileImage || '/images/user-default.png' %>" alt="Profile Image">
+            <div class="change-image-btn" onclick="document.getElementById('profileImageInput').click()">Change Image</div>
+            <div class="remove-image-btn" onclick="removeImage()">Remove Image</div>
             <input type="file" id="profileImageInput" name="profileImage" class="d-none" accept="image/*">
         </div>
 
-        <!-- Name, Email, Phone -->
+        <!-- Name, Email, Phone, DOB -->
         <div class="mb-3">
             <label for="name" class="form-label">Name</label>
             <div id="error1" class="error-msg"></div>
@@ -44,6 +60,10 @@
             <label for="phoneNumber" class="form-label">Phone</label>
             <div id="error3" class="error-msg"></div>
             <input type="text" id="phoneNumber" name="phoneNumber" class="form-control" value="<%= user.phoneNumber || '' %>">
+        </div>
+        <div class="mb-3">
+            <label for="dob" class="form-label">Date of Birth</label>
+            <input type="date" id="dob" name="dob" class="form-control" value="<%= user.dob ? user.dob.toISOString().split('T')[0] : '' %>">
         </div>
 
         <button type="submit" class="btn btn-success">Save Changes</button>
@@ -78,9 +98,9 @@ const profileImageInput = document.getElementById('profileImageInput');
 const cropModal = new bootstrap.Modal(document.getElementById('cropModal'));
 const cropImage = document.getElementById('cropImage');
 let cropper;
+let imageRemoved = false;
 
-profileImage.addEventListener('click', () => profileImageInput.click());
-
+// Change Image -> Crop
 profileImageInput.addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -94,6 +114,7 @@ profileImageInput.addEventListener('change', (e) => {
     reader.readAsDataURL(file);
 });
 
+// Crop & Upload
 document.getElementById('cropBtn').addEventListener('click', () => {
     const canvas = cropper.getCroppedCanvas({ width: 300, height: 300 });
     canvas.toBlob((blob) => {
@@ -105,19 +126,36 @@ document.getElementById('cropBtn').addEventListener('click', () => {
         profileImage.src = URL.createObjectURL(blob);
         cropModal.hide();
         cropper.destroy();
+        imageRemoved = false;
     });
 });
 
-// Form Validation
-const nameField = document.getElementById("name");
-const phoneNumber = document.getElementById("phoneNumber");
-const email = document.getElementById("email");
+// Remove Image
+function removeImage() {
+    profileImage.src = '/images/user-default.png';
+    profileImageInput.value = "";
+    imageRemoved = true;
+}
 
-const error1 = document.getElementById("error1");
-const error2 = document.getElementById("error2");
-const error3 = document.getElementById("error3");
-
+// Form submit
 document.getElementById('editProfileForm').addEventListener('submit', function(e) {
+    if (imageRemoved) {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'removeImage';
+        input.value = 'true';
+        this.appendChild(input);
+    }
+
+    // Validation
+    const nameField = document.getElementById("name");
+    const phoneNumber = document.getElementById("phoneNumber");
+    const email = document.getElementById("email");
+
+    const error1 = document.getElementById("error1");
+    const error2 = document.getElementById("error2");
+    const error3 = document.getElementById("error3");
+
     let isValid = true;
     error1.textContent = "";
     error2.textContent = "";
@@ -126,9 +164,6 @@ document.getElementById('editProfileForm').addEventListener('submit', function(e
     const nameRegex = /^[A-Za-z ]+$/;
     if (nameField.value.trim().length < 3) {
         error1.textContent = "Name must be at least 3 characters long.";
-        isValid = false;
-    } else if (!nameRegex.test(nameField.value.trim())) {
-        error1.textContent = "Name should contain only alphabets and spaces.";
         isValid = false;
     }
 

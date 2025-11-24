@@ -4,6 +4,7 @@ const UserController = require("../Controllers/User/userController");
 const passport = require("passport")
 const authMiddleware = require('../middleware/UserAuth');
 const profileController = require("../Controllers/User/profileController");
+const upload = require('../helpers/multerProfile');
 const checkBlock = require('../middleware/checkBlock')
 
 
@@ -63,6 +64,17 @@ router.get('/reset-password',profileController.getResetPassword);
 router.post("/resend-forgot-otp",profileController.resend_ForgotPass_Otp);
 router.post("/reset-password",profileController.resetPassword);
 router.get("/user/profile",authMiddleware,profileController.userProfile);
+router.get('/user/edit-profile', authMiddleware, profileController.getEditProfile);
+router.post(
+    '/user/profileEdit',
+    authMiddleware,
+    upload.single('profileImage'),   
+    profileController.postEditProfile
+);
+
+
+
+//address Management
 router.get("/user/addresseManagement",authMiddleware,profileController.userAddressManagement);
 router.post("/user/add-address",authMiddleware,profileController.addAddress);
 router.delete("/user/delete-address/:id",authMiddleware,profileController.deleteAddress);
@@ -70,6 +82,16 @@ router.get("/user/edit-address/:id",authMiddleware,profileController.getEditAddr
 router.patch("/user/edit-address/:id",authMiddleware,profileController.postEditAddress);
 router.patch('/user/set-default-address/:id',authMiddleware,profileController.setDefaultAddress);
 
+// change password
+router.patch("/user/change-password",authMiddleware,profileController.changePassword);
+
+//change email
+router.get("/user/ChangeEmail-valid",authMiddleware,profileController.getchangeEmail_valid);
+router.post("/user/ChangeEmail-valid",authMiddleware,profileController.postchangeEmail);
+router.post("/user/ChangeEmail-OtpVerify",authMiddleware,profileController.verifyChangeEmail_otp);
+router.post("/user/resendOtp-changeEmail",authMiddleware,profileController.resend_changeEmail_Otp);
+router.get("/user/changeEmail",authMiddleware,profileController.getchangeEmail)
+router.post("/user/changeEmail",authMiddleware,profileController.changeEmail);
 
 
 
