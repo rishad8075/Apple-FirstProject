@@ -10,14 +10,12 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
 
     <style>
-        /* Note: Ensure the CSS for the Sidebar (.account-sidebar) is available in your UserSide-bar.ejs partial's CSS or linked globally. */
-
-        /* --- Page Layout --- */
+        
         .account-page-wrapper {
             display: flex;
              margin-left: 250px;
                 padding: 20px;
-            min-height: calc(100vh - 50px); /* Adjust height for content */
+            min-height: calc(100vh - 50px); 
             max-width: 1400px;
             margin: 0 auto;
         }
@@ -181,12 +179,7 @@
             <button type="button" style="color: #000;margin-left: 22rem; background-color: #FFD700; box-shadow: #000;width: 19rem;" class="btn btn-add-new-address" data-bs-toggle="modal" data-bs-target="#addAddressModal">
                 ADD NEW ADDRESS+
             </button>
-            <% 
-                const addresses = [
-                    { id: 1, isDefault: true, fullname: 'Rishad I', mobile: '8075147355', houseName: '123 Main St', locality: 'Near Central Park', district: 'Edayannur', state: 'Kerala', pincode: '670595' },
-                    { id: 2, isDefault: false, fullname: 'Mithun K', mobile: '9876543210', houseName: 'Flat 4B', locality: 'Blue Sky Tower', district: 'Kannur', state: 'Kerala', pincode: '670001' }
-                ]; 
-            %>
+         
 
           
 
@@ -208,11 +201,19 @@
                     <% } %>
 
                     <div class="address-actions-bottom">
-                        <button type="button" class="btn">Edit</button>
-                        <button type="button" class="btn">Remove</button>
-                        <% if (!addr.isDefault) { %>
-                            <button type="button" class="btn" style="border-color:#FFD700; color: #FFD700;">Set Default</button>
-                        <% } %>
+                        <button type="button" class="btn" onclick="editAddress('<%= addr._id %>')">Edit</button>
+
+                        <button type="button" class="btn btn-remove" data-id="<%= addr._id %>">Remove</button>
+
+                       <% if (!addr.isDefault) { %>
+                       <button 
+                            type="button" 
+                            class="btn btn-set-default" 
+                            data-id="<%= addr._id %>" 
+                            style="border-color:#FFD700; color: #FFD700;">
+                            Set Default
+                        </button>
+                    <% } %>
                     </div>
                 </div>
             <% }) %>
@@ -220,7 +221,7 @@
         </div>
         
     </div>
-
+    
    
 
 
@@ -232,7 +233,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body" style="padding-top: 0;">
-                   <form id="addAddressForm" action="/add-address" method="POST">
+                   <form id="addAddressForm" action="/user/add-address" method="POST">
 
     <div class="form-group mb-2">
         <input type="text" class="form-control" name="fullname" placeholder="Fullname" >
@@ -245,7 +246,7 @@
     </div>
 
     <div class="form-group mb-2">
-        <input type="tel" class="form-control" name="mobile" placeholder="Mobile No" >
+        <input type="tel" class="form-control" name="phoneNumber" placeholder="Mobile No" >
         <div class="error-text" id="mobileError"></div>
     </div>
 
@@ -293,12 +294,53 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <!-- Add this before </body> -->
 <script>
+
+document.querySelectorAll('.btn-set-default').forEach(button => {
+    button.addEventListener('click', function() {
+        const addressId = this.dataset.id; // must not be undefined
+       
+
+        Swal.fire({
+            title: "Set this Address as default?",
+            icon: "question",
+            showCancelButton: true,
+            confirmButtonColor: '#FF9500',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, set as default'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch(`/user/set-default-address/${addressId}`, {
+                    method: "PATCH",
+                    headers: { "Content-Type": "application/json" }
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire('Updated!', data.message, 'success')
+                            .then(() => window.location.reload());
+                    } else {
+                        Swal.fire('Error!', data.message, 'error');
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    Swal.fire('Error!', 'Server error', 'error');
+                });
+            }
+        });
+    });
+});
+
+
+   function editAddress(id){
+    window.location.href =`/user/edit-address/${id}`
+   }
+
 document.getElementById("addAddressForm").addEventListener("submit", function(e){
     e.preventDefault();
 
     let isValid = true;
 
-    // Helper function to reset errors
     const resetError = (field) => {
         field.classList.remove("form-error");
         const errDiv = document.getElementById(field.name + "Error");
@@ -312,10 +354,9 @@ document.getElementById("addAddressForm").addEventListener("submit", function(e)
         isValid = false;
     }
 
-    // Fields
     const fullname = this.fullname;
     const email = this.email;
-    const mobile = this.mobile;
+    const mobile = this.phoneNumber;
     const houseName = this.houseName;
     const locality = this.locality;
     const pincode = this.pincode;
@@ -327,53 +368,122 @@ document.getElementById("addAddressForm").addEventListener("submit", function(e)
     const mobileRegex = /^[0-9]{10}$/;
     const pincodeRegex = /^[0-9]{6}$/;
 
-    // Reset all
     [fullname,email,mobile,houseName,locality,pincode,district,state].forEach(resetError);
 
-    // Fullname
     if(fullname.value.trim().length < 3 || !nameRegex.test(fullname.value.trim())){
         setError(fullname, "Enter a valid full name (letters only, min 3 chars).");
     }
-
-    // Email
     if(!emailRegex.test(email.value.trim())){
         setError(email, "Enter a valid email address.");
     }
-
-    // Mobile
     if(!mobileRegex.test(mobile.value.trim())){
         setError(mobile, "Mobile number must be 10 digits.");
     }
-
-    // House Name
     if(houseName.value.trim().length < 2){
         setError(houseName, "House name must be at least 2 characters.");
     }
-
-    // Locality
     if(locality.value.trim().length < 2){
         setError(locality, "Locality must be at least 2 characters.");
     }
-
-    // Pincode
     if(!pincodeRegex.test(pincode.value.trim())){
         setError(pincode, "Pincode must be exactly 6 digits.");
     }
-
-    // District
     if(district.value.trim().length < 2 || !nameRegex.test(district.value.trim())){
         setError(district, "District must contain letters only.");
     }
-
-    // State
     if(state.value.trim().length < 2 || !nameRegex.test(state.value.trim())){
         setError(state, "State must contain letters only.");
     }
 
     if(isValid){
-        this.submit();
+        // Prepare form data
+        const formData = new FormData(this);
+
+        // Send data using fetch
+      fetch("/user/add-address", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+        fullname: fullname.value,
+        email: email.value,
+        mobile: mobile.value,
+        houseName: houseName.value,
+        locality: locality.value,
+        pincode: pincode.value,
+        district: district.value,
+        state: state.value,
+        isDefault: document.getElementById("isDefault").checked
+    })
+})
+        .then(res => res.json())  // Make sure your server responds with JSON
+        .then(data => {
+            if(data.success){
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Address Added!',
+                    text: data.message || 'Your address has been saved successfully.',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+                // Optionally, reset form and close modal
+                
+                this.reset();
+                const modal = bootstrap.Modal.getInstance(document.getElementById('addAddressModal'));
+                modal.hide();
+                window.location.reload()
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: data.message || 'Something went wrong.'
+                });
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Server error. Please try again later.'
+            });
+        });
     }
 });
+document.querySelectorAll('.btn-remove').forEach(button => {
+    button.addEventListener('click', function() {
+        const addressId = this.dataset.id;
+
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "You won't be able to revert this!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#FF9500',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, delete it!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch(`/user/delete-address/${addressId}`, {
+                    method: 'DELETE'
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if(data.success){
+                        Swal.fire('Deleted!', data.message, 'success')
+                            .then(() => location.reload());
+                    } else {
+                        Swal.fire('Error!', data.message, 'error');
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    Swal.fire('Error!', 'Server error', 'error');
+                });
+            }
+        })
+    });
+});
+
 </script>
 
 </body>

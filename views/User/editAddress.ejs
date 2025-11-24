@@ -184,195 +184,148 @@
             <h2>Edit ADDRESS</h2>
             <span class="close-icon">&bull;</span>
         </header>
-        <form id="addressForm">
-            <div class="form-group">
-                <label for="fullname">Fullname</label>
-                <input type="text" id="fullname" name="fullname" placeholder="Enter full name" >
-                <span class="error-message" id="fullname-error"></span>
-            </div>
+       <form id="addressForm">
+    <div class="form-group">
+        <label>Fullname</label>
+        <input type="text" id="fullname" name="fullname" value="<%= address.fullname %>">
+        <span class="error-message" id="fullname-error"></span>
+    </div>
 
-            <div class="form-group">
-                <label for="email">Email</label>
-                <input type="email" id="email" name="email" placeholder="Enter email address" >
-                <span class="error-message" id="email-error"></span>
-            </div>
+    <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="email" name="email" value="<%= address.email %>">
+        <span class="error-message" id="email-error"></span>
+    </div>
 
-            <div class="form-group">
-                <label for="mobile">Mobile No</label>
-                <input type="tel" id="mobile" name="mobile" placeholder="Enter 10 digit mobile number" >
-                <span class="error-message" id="mobile-error"></span>
-            </div>
+    <div class="form-group">
+        <label>Mobile No</label>
+        <input type="tel" id="mobile" name="mobile" value="<%= address.mobile %>">
+        <span class="error-message" id="mobile-error"></span>
+    </div>
 
-            <div class="form-group">
-                <label for="houseName" class="address-label">Address</label>
-            </div>
+    <div class="form-group">
+        <label>House Name</label>
+        <input type="text" id="houseName" name="houseName" value="<%= address.houseName %>">
+        <span class="error-message" id="houseName-error"></span>
+    </div>
 
-            <div class="form-group">
-                <input type="text" id="houseName" name="houseName" placeholder="House Name" >
-                <span class="error-message" id="houseName-error"></span>
-            </div>
+    <div class="form-group inline-group">
+        <input type="text" id="locality" name="locality" placeholder="Locality" value="<%= address.locality %>">
+        <span class="error-message" id="locality-error"></span>
 
-            <div class="form-group inline-group">
-                <div class="inline-item">
-                    <input type="text" id="locality" name="locality" placeholder="Locality" >
-                    <span class="error-message" id="locality-error"></span>
-                </div>
-                <div class="inline-item">
-                    <input type="text" id="pincode" name="pincode" placeholder="Pincode" >
-                    <span class="error-message" id="pincode-error"></span>
-                </div>
-            </div>
+        <input type="text" id="pincode" name="pincode" placeholder="Pincode" value="<%= address.pincode %>">
+        <span class="error-message" id="pincode-error"></span>
+    </div>
 
-            <div class="form-group inline-group">
-                <div class="inline-item">
-                    <input type="text" id="district" name="district" placeholder="District">
-                    <span class="error-message" id="district-error"></span>
-                </div>
-                <div class="inline-item">
-                    <input type="text" id="state" name="state" placeholder="State">
-                    <span class="error-message" id="state-error"></span>
-                </div>
-            </div>
-            
-            <div class="button-group">
-                <button type="button" id="cancelButton" class="cancel-button">Cancel</button>
-                <button type="submit" class="save-button">Save Address</button>
-            </div>
-        </form>
+    <div class="form-group inline-group">
+        <input type="text" id="district" name="district" placeholder="District" value="<%= address.district %>">
+        <span class="error-message" id="district-error"></span>
+
+        <input type="text" id="state" name="state" placeholder="State" value="<%= address.state %>">
+        <span class="error-message" id="state-error"></span>
+    </div>
+
+    <div class="button-group">
+        <button type="button" id="cancelButton" class="cancel-button">Cancel</button>
+        <button type="submit" class="save-button">Save Address</button>
+    </div>
+</form>
     </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const form = document.getElementById('addressForm');
-        const cancelButton = document.getElementById('cancelButton');
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; 
+document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('addressForm');
+    const cancelBtn = document.getElementById('cancelButton');
 
-        // Helper function to show error
-        function setError(inputElement, message) {
-            const errorElement = document.getElementById(inputElement.id + '-error');
-            inputElement.classList.add('input-error');
-            errorElement.textContent = message;
-        }
+    const inputs = form.querySelectorAll('input');
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-        // Helper function to clear error
-        function clearError(inputElement) {
-            const errorElement = document.getElementById(inputElement.id + '-error');
-            inputElement.classList.remove('input-error');
-            errorElement.textContent = '';
-        }
+    function setError(input, message) {
+        document.getElementById(input.id + '-error').textContent = message;
+        input.classList.add('input-error');
+    }
 
-        // Validation logic for a single field using if/else
-        function validateField(inputElement) {
-            const value = inputElement.value.trim();
-            const fieldName = inputElement.name;
+    function clearError(input) {
+        document.getElementById(input.id + '-error').textContent = '';
+        input.classList.remove('input-error');
+    }
 
-            // 1. Check for required fields
-            if (value === '') {
-                setError(inputElement, `${fieldName.charAt(0).toUpperCase() + fieldName.slice(1)} is required.`);
-                return false;
-            } 
-            
-            // 2. Specific field validations using if/else if
-            if (fieldName === 'email' && !emailRegex.test(value)) {
-                setError(inputElement, 'Please enter a valid email address.');
-                return false;
-            } else if (fieldName === 'mobile' && !/^[0-9]{10}$/.test(value)) {
-                setError(inputElement, 'Mobile number must be 10 digits.');
-                return false;
-            } else if (fieldName === 'pincode' && !/^[0-9]{6}$/.test(value)) {
-                setError(inputElement, 'Pincode must be 6 digits.');
-                return false;
-            } 
-            
-            // If all checks pass
-            clearError(inputElement);
-            return true;
-        }
+    function validateField(input) {
+        const value = input.value.trim();
+        const name = input.name;
 
-        // Attach real-time validation (on blur) to all input fields
-        const inputs = form.querySelectorAll('input');
-        inputs.forEach(input => {
-            input.addEventListener('blur', () => validateField(input));
-            input.addEventListener('input', () => {
-                if (input.classList.contains('input-error')) {
-                    validateField(input);
-                }
-            });
+        if (!value) { setError(input, name + ' is required'); return false; }
+
+        if (name === 'email' && !emailRegex.test(value)) { setError(input, 'Invalid email'); return false; }
+        if (name === 'mobile' && !/^\d{10}$/.test(value)) { setError(input, 'Mobile must be 10 digits'); return false; }
+        if (name === 'pincode' && !/^\d{6}$/.test(value)) { setError(input, 'Pincode must be 6 digits'); return false; }
+
+        clearError(input);
+        return true;
+    }
+
+    inputs.forEach(input => {
+        input.addEventListener('blur', () => validateField(input));
+        input.addEventListener('input', () => {
+            if (input.classList.contains('input-error')) validateField(input);
         });
+    });
 
-        // --- CANCEL BUTTON HANDLER ---
-        cancelButton.addEventListener('click', function() {
-            Swal.fire({
-                title: 'Are you sure?',
-                text: "All entered data will be lost!",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#ff3b30', // Red for destructive action
-                cancelButtonColor: '#6c757d',
-                confirmButtonText: 'Yes, discard it!',
-                customClass: { 
-                    confirmButton: 'swal2-styled-button-error',
-                    cancelButton: 'swal2-styled-button'
-                }
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    form.reset();
-                    // Optionally: Redirect the user 
-                    // window.history.back(); 
-                    Swal.fire(
-                        'Cancelled!',
-                        'Your address entry has been discarded.',
-                        'info'
-                    )
-                }
-            })
-        });
-
-        // --- FORM SUBMISSION HANDLER ---
-        form.addEventListener('submit', function(event) {
-            event.preventDefault(); 
-            
-            let isFormValid = true;
-
-            // Run validation for ALL fields on submit
-            inputs.forEach(input => {
-                if (!validateField(input)) {
-                    isFormValid = false;
-                }
-            });
-
-            if (isFormValid) {
-                // Success Alert (SweetAlert2)
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Address Saved!',
-                    text: 'Your new delivery address has been recorded successfully.',
-                    confirmButtonText: 'Continue Shopping',
-                    customClass: { confirmButton: 'swal2-styled-button' }
-                }).then(() => {
-                    form.reset();
-                });
-            } else {
-                // Error Alert (SweetAlert2)
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Validation Error',
-                    text: 'Please fill out all required fields and correct the errors before saving.',
-                    confirmButtonText: 'Got It',
-                    customClass: { confirmButton: 'swal2-styled-button-error' }
-                });
-                
-                // Optional: Scroll to the first error
-                const firstError = document.querySelector('.input-error');
-                if (firstError) {
-                    firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }
+    cancelBtn.addEventListener('click', () => {
+        Swal.fire({
+            title: 'Discard changes?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#ff3b30',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Yes, discard'
+        }).then(result => {
+            if (result.isConfirmed) {
+                window.location.href = '/user/addresseManagement';
             }
         });
     });
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        let valid = true;
+        inputs.forEach(input => { if (!validateField(input)) valid = false; });
+        if (!valid) return;
+
+        // Send updated address to backend
+        const data = {};
+        inputs.forEach(input => data[input.name] = input.value.trim());
+
+        try {
+            const res = await fetch(`/user/edit-address/<%= address._id %>`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            const result = await res.json();
+
+            if (result.success) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Updated!',
+                    text: result.message
+                }).then(() => {
+                    window.location.href = '/user/addresseManagement';
+                });
+            } else {
+                Swal.fire({ icon: 'error', title: 'Error', text: result.message });
+            }
+
+        } catch (err) {
+            console.error(err);
+            Swal.fire({ icon: 'error', title: 'Error', text: 'Server error' });
+        }
+    });
+});
 </script>
+
 </body>
 </html>

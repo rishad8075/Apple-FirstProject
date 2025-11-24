@@ -181,20 +181,177 @@ const userProfile = async (req, res) => {
 };
 
 
-const userAddressManagement = async(req,res)=>{
+const userAddressManagement = async (req, res) => {
     try {
-        const user = req.session.userId
-        const userAddress = await UserAddress.findById(req.session.userId);
-        res.render("User/addressManagement",{
-            user:user,
-            addresses:userAddress,
-              activeLink: 'profile'
-        })
+        const userId = req.session.userId;
+
+        // Get all addresses of this user
+        const userAddresses = await UserAddress.find({ user: userId });
+
+        res.render("User/addressManagement", {
+            user: userId,
+            addresses: userAddresses,
+            activeLink: 'profile'
+        });
+
     } catch (error) {
         console.error(error);
-        res.render("page-404")
+        res.render("page-404");
     }
-}
+};
+
+
+
+const addAddress = async (req, res) => { 
+    try {
+        const userId = req.session.userId;
+
+        if (!userId) {
+            return res.status(401).json({ success: false, message: "User not logged in" });
+        }
+
+        const { fullname, email, mobile, houseName, locality, pincode, district, state, isDefault: userSetDefault } = req.body;
+
+        // Basic server-side validation
+        if (!fullname || !email || !mobile || !houseName || !locality || !pincode || !district || !state) {
+            return res.status(400).json({ success: false, message: "All fields are required" });
+        }
+
+        // Check if the user already has addresses
+        const existingAddresses = await UserAddress.find({ user: userId });
+
+        // Determine if this should be default
+        let isDefault = existingAddresses.length === 0 ? true : false;
+        if (userSetDefault) {
+            // If user wants this as default, unset previous default
+            await UserAddress.updateMany({ user: userId, isDefault: true }, { $set: { isDefault: false } });
+            isDefault = true;
+        }
+
+        const newAddress = new UserAddress({
+            user: userId,
+            fullname,
+            email,
+            mobile,
+            houseName,
+            locality,
+            pincode,
+            district,
+            state,
+            isDefault
+        });
+
+        await newAddress.save();
+
+        // Return the newly added address so frontend can update UI dynamically
+        res.json({ success: true, message: "New address added", address: newAddress });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, message: "Server error" });
+    }
+};
+
+
+const deleteAddress = async (req, res) => {
+    try {
+        const addressId = req.params.id;
+        const userId = req.session.userId;
+
+        // Ensure the address belongs to the logged-in user
+        const address = await UserAddress.findOne({ _id: addressId, user: userId });
+        if (!address) {
+            return res.status(404).json({ success: false, message: "Address not found" });
+        }
+
+        await UserAddress.deleteOne({ _id: addressId });
+
+        res.json({ success: true, message: "Address deleted successfully" });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, message: "Server error" });
+    }
+};
+
+
+// GET: Edit Address Page
+const getEditAddress = async (req, res) => {
+    try {
+        const addressId = req.params.id;
+        const userId = req.session.userId;
+
+        if (!userId) throw new Error("User not found, try again");
+
+        const address = await UserAddress.findOne({ _id: addressId, user: userId });
+        if (!address) throw new Error("Address not found");
+
+        res.render("User/editAddress", { address });
+
+    } catch (error) {
+        console.log(error);
+        res.render("page-404");
+    }
+};
+
+// POST: Save Edited Address
+const postEditAddress = async (req, res) => {
+    try {
+        const addressId = req.params.id;
+        const userId = req.session.userId;
+
+        if (!userId) return res.json({ success: false, message: "User not found" });
+
+        const updatedData = req.body;
+
+        const address = await UserAddress.findOneAndUpdate(
+            { _id: addressId, user: userId },
+            { $set: updatedData },
+            { new: true }
+        );
+
+        if (!address) return res.json({ success: false, message: "Address not found" });
+
+        res.json({ success: true, message: "Address updated successfully!" });
+
+    } catch (error) {
+        console.error(error);
+        res.json({ success: false, message: "Server error" });
+    }
+};
+
+const setDefaultAddress = async (req, res) => {
+    try {
+        const userId = req.session.userId;
+        const addressId = req.params.id;
+        //console.log("UserId:", userId, "AddressId:", addressId);
+
+        if (!userId) return res.json({ success: false, message: "User not found" });
+
+        // Set all user addresses to false
+        await UserAddress.updateMany({ user: userId }, { isDefault: false });
+
+        // Set selected address to true
+        const updated = await UserAddress.findOneAndUpdate(
+            { _id: addressId, user: userId },
+            { isDefault: true },
+            { new: true }
+        );
+
+        if (!updated) return res.json({ success: false, message: "Address not found" });
+
+        res.json({ success: true, message: "Default address updated successfully" });
+    } catch (error) {
+        console.error(error);
+        res.json({ success: false, message: "Server error" });
+    }
+};
+
+
+
+
+
+
+
 
 
 
@@ -214,4 +371,9 @@ module.exports = {
     resetPassword,
     userProfile,
     userAddressManagement,
+    addAddress,
+    deleteAddress,
+    getEditAddress,
+    postEditAddress,
+    setDefaultAddress,
 };

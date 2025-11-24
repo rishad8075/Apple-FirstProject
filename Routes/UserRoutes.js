@@ -62,8 +62,15 @@ router.post('/verify-passForgot-otp',profileController.verifyPassForgotOtp)
 router.get('/reset-password',profileController.getResetPassword);
 router.post("/resend-forgot-otp",profileController.resend_ForgotPass_Otp);
 router.post("/reset-password",profileController.resetPassword);
-router.get("/user/profile",authMiddleware,profileController.userProfile)
+router.get("/user/profile",authMiddleware,profileController.userProfile);
 router.get("/user/addresseManagement",authMiddleware,profileController.userAddressManagement);
+router.post("/user/add-address",authMiddleware,profileController.addAddress);
+router.delete("/user/delete-address/:id",authMiddleware,profileController.deleteAddress);
+router.get("/user/edit-address/:id",authMiddleware,profileController.getEditAddress);
+router.patch("/user/edit-address/:id",authMiddleware,profileController.postEditAddress);
+router.patch('/user/set-default-address/:id',authMiddleware,profileController.setDefaultAddress);
+
+
 
 
 
