@@ -1,5 +1,6 @@
 const Product = require('../../model/Product'); 
-const Cart = require('../../model/Cart');      
+const Cart = require('../../model/Cart');  
+const Category = require("../../model/category")    
 const mongoose = require("mongoose");
 
 
@@ -66,7 +67,6 @@ const getCart = async (req, res) => {
   try {
     const userId = req.session.userId;
 
-    // Find cart
     const cart = await Cart.findOne({ userId }).lean();
 
     let items = [];
@@ -77,14 +77,17 @@ const getCart = async (req, res) => {
         cart.items.map(async item => {
           const product = await Product.findById(item.productId).lean();
           if (!product) return null; // product deleted
-          
+
           // Skip blocked products
           if (product.isBlocked) return null;
+
+          // Fetch the category of the product
+          const category = await Category.findById(product.category).lean();
+          if (!category || !category.isListed) return null; // skip if category is unlisted
 
           const variant = product.variants.find(v => v._id.toString() === item.variantId.toString());
           if (!variant) return null;
 
-          // Optional: mark out-of-stock but still show
           const isOutOfStock = variant.stock === 0;
 
           const itemSubtotal = variant.salePrice * item.quantity;
@@ -104,7 +107,6 @@ const getCart = async (req, res) => {
         })
       );
 
-      // Filter out deleted/blocked items
       items = itemsWithDetails.filter(i => i !== null);
     }
 

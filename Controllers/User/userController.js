@@ -20,12 +20,25 @@ const loadHome = async (req, res) => {
         const userData = await User.findById(req.session.userId).lean();
 
         // Fetch available, unblocked products sorted by newest
-        const products = await Product.find({ 
-            isBlocked: false,
-            status: "Available"
-        })
-        .sort({ createdAt: -1 })
-        .lean();
+       const products = await Product.aggregate([
+            {
+                $match: { isBlocked: false }
+            },
+            {
+                $lookup: {
+                    from: 'categories', // Make sure your collection name is correct
+                    localField: 'category',
+                    foreignField: '_id',
+                    as: 'categoryInfo'
+                }
+            },
+            {
+                $unwind: '$categoryInfo'
+            },
+            {
+                $match: { 'categoryInfo.isListed': true } // Only products from listed categories
+            }
+        ]);
 
         // Map products to include first variant info and precompute display price
         const displayProducts = products.map(product => {
@@ -273,10 +286,17 @@ const loadShopPage = async (req, res) => {
             page: Math.max(1, parseInt(req.query.page) || 1)
         };
 
-        // --- Base query ---
-        const query = { isBlocked: false };
+        // --- Get all listed categories first ---
+        const listedCategories = await Category.find({ isListed: true }).select('_id').lean();
+        const listedCategoryIds = listedCategories.map(c => c._id);
 
-        // Search filter
+        // --- Base product query ---
+        const query = {
+            isBlocked: false,
+            category: { $in: listedCategoryIds } // Only products in listed categories
+        };
+
+        // --- Search filter ---
         if (queryParams.search) {
             query.$or = [
                 { productName: { $regex: queryParams.search, $options: 'i' } },
@@ -284,10 +304,17 @@ const loadShopPage = async (req, res) => {
             ];
         }
 
-        // Category filter
-        if (queryParams.category) query.category = queryParams.category;
+        // --- Category filter ---
+        if (queryParams.category) {
+            const selectedCategory = listedCategoryIds.find(
+                id => id.toString() === queryParams.category
+            );
+            if (selectedCategory) {
+                query.category = selectedCategory;
+            }
+        }
 
-        // Price filter
+        // --- Price filter ---
         if (queryParams.price) {
             const [min, max] = queryParams.price.split('-').map(Number);
             query['variants.regularPrice'] = {};
@@ -295,7 +322,7 @@ const loadShopPage = async (req, res) => {
             if (!isNaN(max)) query['variants.regularPrice'].$lte = max;
         }
 
-        // Sort options
+        // --- Sort options ---
         const sortOptions = {
             'price_asc': { 'variants.0.regularPrice': 1 },
             'price_desc': { 'variants.0.regularPrice': -1 },
@@ -308,7 +335,7 @@ const loadShopPage = async (req, res) => {
         const perPage = 3;
         const skip = (queryParams.page - 1) * perPage;
 
-        // --- Fetch products, categories, total count ---
+        // --- Fetch products, categories, total count in parallel ---
         const [totalProducts, products, categories] = await Promise.all([
             Product.countDocuments(query),
             Product.find(query)
@@ -332,11 +359,11 @@ const loadShopPage = async (req, res) => {
             ])
         ]);
 
-        // --- Generate URL for pagination, sort, filters ---
+        // --- Generate URL helper for pagination, sort, filters ---
         const generateShopUrl = (newParams = {}) => {
             const params = { ...queryParams, ...newParams };
 
-            // Reset page to 1 only if a filter/sort/search changes
+            // Reset page to 1 if filters/sort/search change
             if ('search' in newParams || 'category' in newParams || 'price' in newParams || 'sort' in newParams) {
                 if (!('page' in newParams)) params.page = 1;
             }
@@ -349,6 +376,7 @@ const loadShopPage = async (req, res) => {
             return '/shop?' + new URLSearchParams(params).toString();
         };
 
+        // --- Render shop page ---
         res.render('user/shop', {
             products,
             categories,
@@ -367,7 +395,6 @@ const loadShopPage = async (req, res) => {
         res.status(500).send('Error loading shop: ' + error.message);
     }
 };
-
 
 const loadProductDetail = async (req, res) => {
   try {
