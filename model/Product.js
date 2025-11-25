@@ -8,7 +8,7 @@ const VariantSchema = new Schema({
   productOffer: { type: Number, default: 0 },
   stock: { type: Number, required: true },
   images: { type: [String], required: true }
-}, { _id: false });
+}, { _id: true });
 
 const ProductSchema = new Schema({
   productName: { type: String, required: true },

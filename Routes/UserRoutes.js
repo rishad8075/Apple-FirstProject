@@ -1,11 +1,12 @@
 const express = require("express");
 const router = express.Router();
 const UserController = require("../Controllers/User/userController");
-const passport = require("passport")
+const passport = require("passport");
 const authMiddleware = require('../middleware/UserAuth');
 const profileController = require("../Controllers/User/profileController");
+const cartController = require("../Controllers/User/CartController");
 const upload = require('../helpers/multerProfile');
-const checkBlock = require('../middleware/checkBlock')
+const checkBlock = require('../middleware/checkBlock');
 
 
 router.use(checkBlock);
@@ -92,6 +93,18 @@ router.post("/user/ChangeEmail-OtpVerify",authMiddleware,profileController.verif
 router.post("/user/resendOtp-changeEmail",authMiddleware,profileController.resend_changeEmail_Otp);
 router.get("/user/changeEmail",authMiddleware,profileController.getchangeEmail)
 router.post("/user/changeEmail",authMiddleware,profileController.changeEmail);
+
+
+
+//Cart Management
+
+router.post("/cart/add",authMiddleware,cartController.addToCart);
+router.get("/cart",authMiddleware,cartController.getCart);
+router.post("/cart/update-quantity",authMiddleware,cartController.updateQuantity);
+router.post("/cart/remove-item",authMiddleware,cartController.removeItem);
+
+
+
 
 
 

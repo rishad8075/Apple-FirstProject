@@ -264,6 +264,7 @@ const loadShopPage = async (req, res) => {
     try {
         if (!req.session.userId) return res.redirect('/login');
 
+        // --- Get query params ---
         const queryParams = {
             search: req.query.search || '',
             category: req.query.category || '',
@@ -272,10 +273,10 @@ const loadShopPage = async (req, res) => {
             page: Math.max(1, parseInt(req.query.page) || 1)
         };
 
-        // Base query
+        // --- Base query ---
         const query = { isBlocked: false };
 
-        // Search
+        // Search filter
         if (queryParams.search) {
             query.$or = [
                 { productName: { $regex: queryParams.search, $options: 'i' } },
@@ -283,10 +284,10 @@ const loadShopPage = async (req, res) => {
             ];
         }
 
-        // Category
+        // Category filter
         if (queryParams.category) query.category = queryParams.category;
 
-        // Price filter (variant prices)
+        // Price filter
         if (queryParams.price) {
             const [min, max] = queryParams.price.split('-').map(Number);
             query['variants.regularPrice'] = {};
@@ -294,7 +295,7 @@ const loadShopPage = async (req, res) => {
             if (!isNaN(max)) query['variants.regularPrice'].$lte = max;
         }
 
-        // Sort by variant price or name
+        // Sort options
         const sortOptions = {
             'price_asc': { 'variants.0.regularPrice': 1 },
             'price_desc': { 'variants.0.regularPrice': -1 },
@@ -307,7 +308,7 @@ const loadShopPage = async (req, res) => {
         const perPage = 3;
         const skip = (queryParams.page - 1) * perPage;
 
-        // Get total products (filtered) and products for current page
+        // --- Fetch products, categories, total count ---
         const [totalProducts, products, categories] = await Promise.all([
             Product.countDocuments(query),
             Product.find(query)
@@ -322,12 +323,7 @@ const loadShopPage = async (req, res) => {
                         from: 'products',
                         let: { categoryId: '$_id' },
                         pipeline: [
-                            { 
-                                $match: { 
-                                    $expr: { $eq: ['$category', '$$categoryId'] },
-                                    isBlocked: false
-                                }
-                            }
+                            { $match: { $expr: { $eq: ['$category', '$$categoryId'] }, isBlocked: false } }
                         ],
                         as: 'categoryProducts'
                     }
@@ -336,13 +332,20 @@ const loadShopPage = async (req, res) => {
             ])
         ]);
 
-        const generateShopUrl = (newParams) => {
+        // --- Generate URL for pagination, sort, filters ---
+        const generateShopUrl = (newParams = {}) => {
             const params = { ...queryParams, ...newParams };
-            if (newParams.search !== undefined || newParams.category !== undefined || 
-                newParams.price !== undefined || newParams.sort !== undefined) {
-                params.page = 1;
+
+            // Reset page to 1 only if a filter/sort/search changes
+            if ('search' in newParams || 'category' in newParams || 'price' in newParams || 'sort' in newParams) {
+                if (!('page' in newParams)) params.page = 1;
             }
-            Object.keys(params).forEach(key => { if (!params[key]) delete params[key]; });
+
+            // Remove undefined/null
+            Object.keys(params).forEach(key => {
+                if (params[key] === undefined || params[key] === null) delete params[key];
+            });
+
             return '/shop?' + new URLSearchParams(params).toString();
         };
 
@@ -364,7 +367,6 @@ const loadShopPage = async (req, res) => {
         res.status(500).send('Error loading shop: ' + error.message);
     }
 };
-
 
 
 const loadProductDetail = async (req, res) => {

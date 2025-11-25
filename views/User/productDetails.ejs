@@ -164,13 +164,13 @@
       </div>
 
       <!-- Add to Cart -->
-  <form id="addToCartForm" action="/shop" method="POST">
-  <% if (!variant || variant.stock === 0) { %>
-    <button type="button" class="btn btn-secondary" disabled>Sold Out</button>
-  <% } else { %>
-    <button type="submit" class="btn btn-primary btn-lg">Add to Cart</button>
-  <% } %>
-</form>
+ <button id="addToCartBtn" 
+        class="btn btn-primary btn-lg" 
+        data-product-id="<%= product._id %>" 
+        data-variant-id="<%= variant._id %>" 
+        <%= variant.stock === 0 ? 'disabled' : '' %>>
+  <%= variant.stock === 0 ? 'Sold Out' : 'Add to Cart' %>
+</button>
 
       <!-- Description -->
       <div class="mt-4">
@@ -261,15 +261,60 @@
 </div>
 <%- include('../partials/footer.ejs') %>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 
 <script>
-document.getElementById('addToCartForm')?.addEventListener('submit', function(e) {
-  e.preventDefault(); // Stop the default form submission
 
-  // Here you can make an AJAX request to add the product to the cart
-  // For now, just alert and redirect
-  alert("Added to cart");
-  window.location.href = '/shop';
+
+document.getElementById('addToCartBtn')?.addEventListener('click', async function() {
+  const btn = this;
+  const productId = btn.dataset.productId;
+  const variantId = btn.dataset.variantId;
+  const quantity = 1; // default 1, can add quantity selector later
+
+  btn.disabled = true; // prevent double-click
+
+  try {
+    const res = await fetch('/cart/add', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ productId, variantId, quantity })
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
+      Swal.fire({
+        icon: 'success',
+        title: 'Added!',
+        text: 'Product added to your cart.',
+        showCancelButton: true,
+        confirmButtonText: 'Go to Cart',
+        cancelButtonText: 'Continue Shopping'
+      }).then(result => {
+        if (result.isConfirmed) {
+          window.location.href = '/cart';
+        }
+      });
+    } else {
+      Swal.fire({
+        icon: 'error',
+        title: 'Oops!',
+        text: data.message || 'Could not add product to cart.'
+      });
+    }
+
+  } catch (err) {
+    console.error(err);
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: 'Something went wrong. Please try again.'
+    });
+  } finally {
+    btn.disabled = false;
+  }
 });
 
 
