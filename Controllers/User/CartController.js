@@ -77,9 +77,15 @@ const getCart = async (req, res) => {
         cart.items.map(async item => {
           const product = await Product.findById(item.productId).lean();
           if (!product) return null; // product deleted
+          
+          // Skip blocked products
+          if (product.isBlocked) return null;
 
           const variant = product.variants.find(v => v._id.toString() === item.variantId.toString());
           if (!variant) return null;
+
+          // Optional: mark out-of-stock but still show
+          const isOutOfStock = variant.stock === 0;
 
           const itemSubtotal = variant.salePrice * item.quantity;
           subtotal += itemSubtotal;
@@ -91,15 +97,17 @@ const getCart = async (req, res) => {
             image: variant.images[0] || '/uploads/product-images/default.png',
             price: variant.salePrice,
             quantity: item.quantity,
-            subtotal: itemSubtotal
+            subtotal: itemSubtotal,
+            stock: variant.stock,
+            isOutOfStock
           };
         })
       );
 
+      // Filter out deleted/blocked items
       items = itemsWithDetails.filter(i => i !== null);
     }
 
-    // Render the cart page
     res.render('User/cart', { items, subtotal });
   } catch (err) {
     console.error(err);
