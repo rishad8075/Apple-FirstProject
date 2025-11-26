@@ -46,7 +46,7 @@
         .remove-icon:hover { color: #ff3b30; }
 
         /* Out-of-Stock Styling */
-        .out-of-stock-row { opacity: 0.4; pointer-events: none; }
+        .out-of-stock-row { opacity: 0.4;  }
         .out-of-stock-row .stock-warning { font-size: 0.9em; color: #ff3b30; font-weight: 500; margin-top: 5px; pointer-events: auto; }
         .qty-btn:disabled, .qty-input:disabled { background-color: #f7f7f7; cursor: not-allowed; }
 
@@ -109,23 +109,33 @@
             <div class="alert alert-info">Your cart is empty.</div>
         <% } else { %>
             <div class="cart-layout">
+
+
                 
                 <div class="cart-items-column">
+
                     
                     <% items.forEach(item => { %>
                         <% const isOutOfStock = item.stock === 0; %>
+
                         
                         <div class="cart-item-row <%= isOutOfStock ? 'out-of-stock-row' : '' %>" id="row-<%= item.productId %>" data-stock="<%= item.stock %>">
                             
+                            <a href="/productDetails/<%= item.productId %>" style="text-decoration:none; color:inherit;">
                             <img src="<%= item.image %>" alt="<%= item.name %>" class="product-thumbnail">
+
+                            </a>
+                            
                             
                             <div class="item-details">
+
                                 <h4><%= item.name %></h4>
                                 <p>Rs.<%= item.price.toLocaleString('en-IN') %></p>
                                 <% if (isOutOfStock) { %>
                                     <p class="stock-warning">⚠️ Out of Stock! Please remove to proceed.</p>
                                 <% } %>
                             </div>
+                            
                             
                             <div class="item-controls">
                                 <div class="quantity-controls">
@@ -190,79 +200,89 @@
             </div>
         <% } %>
     </div>
+      <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
         // --- Centralized Update Function (for AJAX success) ---
-        function updateCartUI(productId, data) {
-            // Update individual item subtotal
-            const itemRow = document.getElementById('row-' + productId);
-            if (itemRow) {
-                // Assuming your item Subtotal is calculated/returned in the item data
-                itemRow.querySelector('.item-controls .price').innerText = 'Rs.' + data.item.subtotal.toLocaleString('en-IN');
-                
-                // Update quantity input
-                const qtyInput = document.getElementById('qty-' + productId);
-                qtyInput.value = data.item.quantity;
+  function updateCartUI(productId, data) {
+  const itemRow = document.getElementById('row-' + productId);
+  if (!itemRow) return;
 
-                // Re-evaluate button state
-                const plusBtn = itemRow.querySelector('.plus-btn');
-                const minusBtn = itemRow.querySelector('.minus-btn');
-                
-                const stock = Number(itemRow.dataset.stock); // Get stock level
-                const quantity = data.item.quantity;
+  const qtyInput = document.getElementById('qty-' + productId);
+  qtyInput.value = data.item.quantity;
 
-                // Disable PLUS if stock reached
-                plusBtn.disabled = (quantity >= stock);
-                // Disable MINUS if quantity is 1
-                minusBtn.disabled = (quantity <= 1);
-            }
+  // Update item subtotal
+  const priceElem = itemRow.querySelector('.item-controls .price');
+  if (priceElem && data.item.subtotal !== undefined) {
+    priceElem.innerText = 'Rs.' + data.item.subtotal.toLocaleString('en-IN');
+  }
 
-            // Update cart totals
-            document.getElementById('cart-subtotal').innerText = 'Rs.' + data.cart.subtotal.toLocaleString('en-IN');
-            document.getElementById('cart-total').innerText = 'Rs.' + data.cart.total.toLocaleString('en-IN');
-            // Assuming the total is passed back with discount/delivery applied from server
-        }
+  // Update buttons
+  const plusBtn = itemRow.querySelector('.plus-btn');
+  const minusBtn = itemRow.querySelector('.minus-btn');
 
-        // --- Handle Increment and Decrement Buttons ---
-        document.querySelectorAll('.qty-btn').forEach(btn => {
-            btn.addEventListener('click', async function() {
-                const productId = this.dataset.id;
-                const itemRow = document.getElementById('row-' + productId);
-                const qtyInput = itemRow.querySelector('.qty-input');
-                let newQuantity = parseInt(qtyInput.value);
-                const isPlus = this.classList.contains('plus-btn');
+  const stock = Number(itemRow.dataset.stock);
+  const maxLimit = Number(itemRow.dataset.max) || 5;
+  const quantity = data.item.quantity;
 
-                // Determine new quantity
-                newQuantity = isPlus ? newQuantity + 1 : newQuantity - 1;
+  plusBtn.disabled = (quantity >= Math.min(stock, maxLimit));
+  minusBtn.disabled = (quantity <= 1);
 
-                // Disable button immediately
-                this.disabled = true;
+  // Update cart totals
+  document.getElementById('cart-subtotal').innerText = 'Rs.' + data.cart.subtotal.toLocaleString('en-IN');
+  document.getElementById('cart-total').innerText = 'Rs.' + data.cart.total.toLocaleString('en-IN');
+}
 
-                try {
-                    const res = await fetch('/cart/update-quantity', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ productId, quantity: newQuantity })
-                    });
-                    const data = await res.json();
+// --- Handle + / - buttons ---
+document.querySelectorAll('.qty-btn').forEach(btn => {
+  btn.addEventListener('click', async function () {
+    const productId = this.dataset.id;
+    const itemRow = document.getElementById('row-' + productId);
+    const qtyInput = itemRow.querySelector('.qty-input');
+    const isPlus = this.classList.contains('plus-btn');
 
-                    if (data.success) {
-                        // Success: Update UI
-                        updateCartUI(productId, data);
-                    } else {
-                        // Error: Show alert and revert quantity input visually
-                        Swal.fire('Error', data.message, 'error');
-                        // Revert the input value to the quantity the server confirmed
-                        if (data.item) qtyInput.value = data.item.quantity;
-                    }
-                } catch (error) {
-                    Swal.fire('Connection Error', 'Failed to communicate with server.', 'error');
-                } finally {
-                    // Re-enable all buttons in the row (re-evaluation happens in updateCartUI)
-                    itemRow.querySelectorAll('.qty-btn').forEach(b => b.disabled = false);
-                }
-            });
-        });
+    let newQuantity = parseInt(qtyInput.value);
+    if (isNaN(newQuantity)) newQuantity = 1;
+
+    newQuantity = isPlus ? newQuantity + 1 : newQuantity - 1;
+    if (newQuantity < 1) newQuantity = 1;
+
+    // Disable row buttons
+    itemRow.querySelectorAll('.qty-btn').forEach(b => b.disabled = true);
+
+    try {
+      const res = await fetch('/cart/update-quantity', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ productId, quantity: newQuantity })
+      });
+
+      let data;
+      try {
+        data = await res.json();
+      } catch (err) {
+        const text = await res.text();
+        console.error('Invalid JSON:', text);
+        throw new Error('Server returned invalid JSON');
+      }
+
+      if (data.success) {
+        updateCartUI(productId, data);
+      } else {
+        Swal.fire('Error', data.message, 'error');
+        if (data.item) qtyInput.value = data.item.quantity;
+      }
+    } catch (error) {
+      console.error('Fetch error:', error);
+      Swal.fire('Connection Error', 'Failed to communicate with server.', 'error');
+    } finally {
+      itemRow.querySelectorAll('.qty-btn').forEach(b => b.disabled = false);
+    }
+  });
+});
 
 
         // --- Handle Remove Item ---
@@ -333,7 +353,7 @@
                 // If button is disabled due to EJS render, do nothing, the warning is visible.
                 return;
             }
-            window.location.href = '/checkout';
+            window.location.href = "/checkout";
         });
 
     </script>

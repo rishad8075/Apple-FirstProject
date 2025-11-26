@@ -5,6 +5,8 @@ const passport = require("passport");
 const authMiddleware = require('../middleware/UserAuth');
 const profileController = require("../Controllers/User/profileController");
 const cartController = require("../Controllers/User/CartController");
+const checkoutController = require("../Controllers/User/checkoutController");
+const ordersController = require("../Controllers/User/orderController");
 const upload = require('../helpers/multerProfile');
 const checkBlock = require('../middleware/checkBlock');
 
@@ -104,6 +106,32 @@ router.post("/cart/update-quantity",authMiddleware,cartController.updateQuantity
 router.post("/cart/remove-item",authMiddleware,cartController.removeItem);
 
 
+//checkout Management
+
+router.get("/checkout",authMiddleware,checkoutController.getCheckoutPage);
+router.get("/checkout/AddAddress",authMiddleware,checkoutController.checkoutAdd_Address);
+router.post("/checkout/AddAddress",authMiddleware,checkoutController.checkoutAddAddress);
+router.post("/place-order/:addressId", checkoutController.placeOrderCOD);
+router.get("/order-success/:orderId", checkoutController.orderSuccessPage);
+
+
+//Order management
+
+router.get("/orders", authMiddleware, ordersController.listOrders);
+
+// View order details
+router.get("/orders/detail/:orderId", authMiddleware, ordersController.orderDetail);
+
+// Cancel order or individual product
+router.post("/orders/cancel-entire", authMiddleware, ordersController.cancelEntireOrder);
+router.post('/orders/cancel-product',authMiddleware,ordersController.cancelProduct);
+
+// Return order or individual product
+router.post("/return-order", ordersController.returnOrder);
+
+
+// Download invoice as PDF
+router.get("/order/invoice/:orderId", ordersController.downloadInvoice);
 
 
 

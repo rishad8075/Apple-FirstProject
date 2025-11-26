@@ -430,7 +430,7 @@ document.getElementById("addAddressForm").addEventListener("submit", function(e)
                 this.reset();
                 const modal = bootstrap.Modal.getInstance(document.getElementById('addAddressModal'));
                 modal.hide();
-                window.location.reload()
+                window.history.back()
             } else {
                 Swal.fire({
                     icon: 'error',

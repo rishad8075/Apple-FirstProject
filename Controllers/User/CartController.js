@@ -1,6 +1,7 @@
 const Product = require('../../model/Product'); 
 const Cart = require('../../model/Cart');  
-const Category = require("../../model/category")    
+const Category = require("../../model/category")  
+const User = require("../../model/user");
 const mongoose = require("mongoose");
 
 
@@ -66,6 +67,7 @@ const addToCart = async (req, res) => {
 const getCart = async (req, res) => {
   try {
     const userId = req.session.userId;
+    const userData = await User.findById(userId)
 
     const cart = await Cart.findOne({ userId }).lean();
 
@@ -110,7 +112,7 @@ const getCart = async (req, res) => {
       items = itemsWithDetails.filter(i => i !== null);
     }
 
-    res.render('User/cart', { items, subtotal });
+    res.render('User/cart', { user:userData,items, subtotal });
   } catch (err) {
     console.error(err);
     res.render('User/cart', { items: [], subtotal: 0, error: err.message });
@@ -125,28 +127,58 @@ const updateQuantity = async (req, res) => {
     const userId = req.session.userId;
     const { productId, quantity } = req.body;
 
-    let cart = await Cart.findOne({ userId });
+    if (!userId) return res.status(401).json({ success: false, message: "Unauthorized" });
+
+    const cart = await Cart.findOne({ userId });
     if (!cart) return res.json({ success: false, message: "Cart not found" });
 
-    const item = cart.items.find(i => i.productId.equals(productId));
-    if (!item) return res.json({ success: false, message: "Item not found in cart" });
+    const prodId = new mongoose.Types.ObjectId(productId);
+    const item = cart.items.find(i => i.productId.equals(prodId));
+    if (!item) return res.json({ success: false, message: "Item not in cart" });
 
-    // Check stock
-    const product = await Product.findById(productId);
+    // Get product & variant
+    const product = await Product.findById(prodId);
+    if (!product) return res.json({ success: false, message: "Product not found" });
+
     const variant = product.variants.id(item.variantId);
-    if (quantity > variant.stock) return res.json({ success: false, message: "Cannot exceed stock limit" });
+    if (!variant) return res.json({ success: false, message: "Variant not found" });
 
+    // --- Stock check ---
+    if (quantity > variant.stock) {
+      return res.json({ 
+        success: false, 
+        message: `Cannot exceed stock limit (${variant.stock})`,
+        item: { ...item._doc, quantity: item.quantity }
+      });
+    }
+
+    // --- Max per user check ---
+    const MAX_LIMIT = variant.maxQtyPerUser || 5;
+    if (quantity > MAX_LIMIT) {
+      return res.json({
+        success: false,
+        message: `You can only buy up to ${MAX_LIMIT} units of this product`,
+        item: { ...item._doc, quantity: item.quantity }
+      });
+    }
+
+    // --- Update quantity ---
     item.quantity = quantity;
     await cart.save();
 
-    // Calculate item subtotal and cart subtotal
+    // --- Calculate totals ---
     const itemSubtotal = item.price * item.quantity;
     const cartSubtotal = cart.items.reduce((sum, i) => sum + i.price * i.quantity, 0);
 
-    return res.json({ success: true, item: { ...item.toObject(), subtotal: itemSubtotal }, cart: { subtotal: cartSubtotal } });
+    return res.json({
+      success: true,
+      item: { ...item._doc, subtotal: itemSubtotal },
+      cart: { subtotal: cartSubtotal, total: cartSubtotal } // adjust if discount/delivery
+    });
+
   } catch (err) {
-    console.error(err);
-    return res.json({ success: false, message: err.message });
+    console.error("Update quantity error:", err);
+    return res.status(500).json({ success: false, message: err.message });
   }
 };
 

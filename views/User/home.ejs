@@ -191,11 +191,14 @@
     <div class="col-md-6 col-lg-4 col-xl-3 animate__animated animate__fadeInUp">
         <div class="product-card h-100">
             <div class="product-img-container">
+                                <a href="/productDetails/<%= product._id %>" style="text-decoration:none; color:inherit;">
+
                 <% if(product.image && product.image[0]) { %>
                     <img src="<%= product.image[0] %>" class="product-img" alt="<%= product.productName %>">
                 <% } else { %>
                     <img src="/images/default-product.jpg" class="product-img" alt="Default product image">
                 <% } %>
+                                </a>
             </div>
             <div class="product-body text-center">
                 <h5 class="product-title"><%= product.productName %></h5>

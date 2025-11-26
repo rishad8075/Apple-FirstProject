@@ -313,7 +313,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     title: 'Updated!',
                     text: result.message
                 }).then(() => {
-                    window.location.href = '/user/addresseManagement';
+                                        window.history.back(); 
+
                 });
             } else {
                 Swal.fire({ icon: 'error', title: 'Error', text: result.message });

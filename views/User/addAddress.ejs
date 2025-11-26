@@ -8,7 +8,6 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     
     <style>
-        /* Basic Reset and Setup */
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             background-color: #f5f5f7;
@@ -18,30 +17,23 @@
             min-height: 100vh;
             margin: 0;
         }
-
-        /* Container for the Card */
         .address-container {
             padding: 20px;
             width: 100%;
             max-width: 400px;
         }
-
-        /* The Address Card Styling */
         .address-card {
             background-color: #ffffff;
             border-radius: 12px;
             padding: 30px 25px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
         }
-
-        /* Card Header */
         .card-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 25px;
         }
-
         .card-header h2 {
             font-size: 16px;
             font-weight: 600;
@@ -49,19 +41,15 @@
             letter-spacing: 0.5px;
             margin: 0;
         }
-
         .close-icon {
             font-size: 24px;
             color: #a0a0a0;
             cursor: pointer;
             line-height: 1;
         }
-
-        /* Form Groups and Inputs */
         .form-group {
             margin-bottom: 18px;
         }
-
         .address-label {
             font-size: 14px;
             font-weight: 500;
@@ -69,7 +57,6 @@
             display: block;
             margin-bottom: 5px;
         }
-
         input[type="text"],
         input[type="email"],
         input[type="tel"] {
@@ -82,98 +69,24 @@
             color: #333;
             transition: border-color 0.2s;
         }
-
-        input::placeholder {
-            color: #c0c0c0;
-        }
-
-        input:focus {
-            border-color: #007aff;
-            outline: none;
-            box-shadow: 0 0 0 1px #007aff;
-        }
-
-        /* Inline Group for Address Fields */
-        .inline-group {
-            display: flex;
-            gap: 10px;
-        }
-
-        .inline-item {
-            flex: 1;
-        }
-
-        /* --- BUTTON GROUP STYLES --- */
-        .button-group {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-        }
-
+        input::placeholder { color: #c0c0c0; }
+        input:focus { border-color: #007aff; outline: none; box-shadow: 0 0 0 1px #007aff; }
+        .inline-group { display: flex; gap: 10px; }
+        .inline-item { flex: 1; }
+        .button-group { display: flex; gap: 10px; margin-top: 20px; }
         .save-button, .cancel-button {
-            padding: 12px 20px;
-            font-size: 16px;
-            font-weight: 600;
-            border-radius: 8px;
-            cursor: pointer;
-            flex: 1; /* Makes both buttons take equal space */
+            padding: 12px 20px; font-size: 16px; font-weight: 600; border-radius: 8px; cursor: pointer; flex: 1;
             transition: background-color 0.2s, opacity 0.2s;
         }
-
-        /* Primary Button: Save */
-        .save-button {
-            background-color: #ff9500; /* Primary Orange */
-            color: white;
-            border: none;
-        }
-
-        .save-button:hover {
-            background-color: #e58600;
-        }
-        
-        /* Secondary Button: Cancel */
-        .cancel-button {
-            background-color: #e0e0e0; /* Light Gray */
-            color: #333;
-            border: 1px solid #c0c0c0;
-        }
-        
-        .cancel-button:hover {
-            background-color: #d0d0d0;
-        }
-
-        /* Validation Error Styling */
-        .error-message {
-            color: #ff3b30;
-            font-size: 12px;
-            display: block;
-            margin-top: 4px;
-        }
-
-        .input-error {
-            border-color: #ff3b30 !important;
-        }
-        
-        /* SweetAlert2 Custom Styling */
-        .swal2-styled-button {
-            background-color: #ff9500 !important;
-            color: white !important;
-            font-weight: 600 !important;
-            border-radius: 8px !important;
-            box-shadow: none !important;
-        }
-
-        .swal2-styled-button:hover {
-            background-color: #e58600 !important;
-        }
-        
-        .swal2-styled-button-error {
-            background-color: #6c757d !important; 
-            color: white !important;
-            font-weight: 600 !important;
-            border-radius: 8px !important;
-            box-shadow: none !important;
-        }
+        .save-button { background-color: #ff9500; color: white; border: none; }
+        .save-button:hover { background-color: #e58600; }
+        .cancel-button { background-color: #e0e0e0; color: #333; border: 1px solid #c0c0c0; }
+        .cancel-button:hover { background-color: #d0d0d0; }
+        .error-message { color: #ff3b30; font-size: 12px; display: block; margin-top: 4px; }
+        .input-error { border-color: #ff3b30 !important; }
+        .swal2-styled-button { background-color: #ff9500 !important; color: white !important; font-weight: 600 !important; border-radius: 8px !important; box-shadow: none !important; }
+        .swal2-styled-button:hover { background-color: #e58600 !important; }
+        .swal2-styled-button-error { background-color: #6c757d !important; color: white !important; font-weight: 600 !important; border-radius: 8px !important; box-shadow: none !important; }
     </style>
 </head>
 <body>
@@ -182,43 +95,40 @@
     <div class="address-card">
         <header class="card-header">
             <h2>ADD NEW ADDRESS</h2>
-            <span class="close-icon">&bull;</span>
+            <span class="close-icon" id="closeIcon">&times;</span>
         </header>
         <form id="addressForm">
             <div class="form-group">
                 <label for="fullname">Fullname</label>
-                <input type="text" id="fullname" name="fullname" placeholder="Enter full name" >
+                <input type="text" id="fullname" name="fullname" placeholder="Enter full name">
                 <span class="error-message" id="fullname-error"></span>
             </div>
 
             <div class="form-group">
                 <label for="email">Email</label>
-                <input type="email" id="email" name="email" placeholder="Enter email address" >
+                <input type="email" id="email" name="email" placeholder="Enter email address">
                 <span class="error-message" id="email-error"></span>
             </div>
 
             <div class="form-group">
                 <label for="mobile">Mobile No</label>
-                <input type="tel" id="mobile" name="mobile" placeholder="Enter 10 digit mobile number" >
+                <input type="tel" id="mobile" name="mobile" placeholder="Enter 10 digit mobile number">
                 <span class="error-message" id="mobile-error"></span>
             </div>
 
             <div class="form-group">
-                <label for="houseName" class="address-label">Address</label>
-            </div>
-
-            <div class="form-group">
-                <input type="text" id="houseName" name="houseName" placeholder="House Name" >
+                <label class="address-label">Address</label>
+                <input type="text" id="houseName" name="houseName" placeholder="House Name">
                 <span class="error-message" id="houseName-error"></span>
             </div>
 
             <div class="form-group inline-group">
                 <div class="inline-item">
-                    <input type="text" id="locality" name="locality" placeholder="Locality" >
+                    <input type="text" id="locality" name="locality" placeholder="Locality">
                     <span class="error-message" id="locality-error"></span>
                 </div>
                 <div class="inline-item">
-                    <input type="text" id="pincode" name="pincode" placeholder="Pincode" >
+                    <input type="text" id="pincode" name="pincode" placeholder="Pincode">
                     <span class="error-message" id="pincode-error"></span>
                 </div>
             </div>
@@ -233,7 +143,12 @@
                     <span class="error-message" id="state-error"></span>
                 </div>
             </div>
-            
+
+            <!-- Default Address Checkbox -->
+            <div class="form-group">
+                <label><input type="checkbox" id="isDefault" name="isDefault"> Set as default address</label>
+            </div>
+
             <div class="button-group">
                 <button type="button" id="cancelButton" class="cancel-button">Cancel</button>
                 <button type="submit" class="save-button">Save Address</button>
@@ -243,136 +158,105 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const form = document.getElementById('addressForm');
-        const cancelButton = document.getElementById('cancelButton');
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; 
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('addressForm');
+    const cancelButton = document.getElementById('cancelButton');
+    const closeIcon = document.getElementById('closeIcon');
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-        // Helper function to show error
-        function setError(inputElement, message) {
-            const errorElement = document.getElementById(inputElement.id + '-error');
-            inputElement.classList.add('input-error');
-            errorElement.textContent = message;
-        }
+    function setError(input, message) {
+        const errorEl = document.getElementById(input.id + '-error');
+        input.classList.add('input-error');
+        errorEl.textContent = message;
+    }
+    function clearError(input) {
+        const errorEl = document.getElementById(input.id + '-error');
+        input.classList.remove('input-error');
+        errorEl.textContent = '';
+    }
 
-        // Helper function to clear error
-        function clearError(inputElement) {
-            const errorElement = document.getElementById(inputElement.id + '-error');
-            inputElement.classList.remove('input-error');
-            errorElement.textContent = '';
-        }
+    function validateField(input) {
+        const val = input.value.trim();
+        const name = input.name;
+        if (!val) { setError(input, `${name.charAt(0).toUpperCase()+name.slice(1)} is required.`); return false; }
+        if (name==='email' && !emailRegex.test(val)) { setError(input, 'Enter valid email'); return false; }
+        if (name==='mobile' && !/^[0-9]{10}$/.test(val)) { setError(input, 'Mobile must be 10 digits'); return false; }
+        if (name==='pincode' && !/^[0-9]{6}$/.test(val)) { setError(input, 'Pincode must be 6 digits'); return false; }
+        clearError(input);
+        return true;
+    }
 
-        // Validation logic for a single field using if/else
-        function validateField(inputElement) {
-            const value = inputElement.value.trim();
-            const fieldName = inputElement.name;
+    const inputs = form.querySelectorAll('input[type=text], input[type=email], input[type=tel]');
+    inputs.forEach(input => {
+        input.addEventListener('blur', ()=>validateField(input));
+        input.addEventListener('input', ()=>{ if(input.classList.contains('input-error')) validateField(input); });
+    });
 
-            // 1. Check for required fields
-            if (value === '') {
-                setError(inputElement, `${fieldName.charAt(0).toUpperCase() + fieldName.slice(1)} is required.`);
-                return false;
-            } 
-            
-            // 2. Specific field validations using if/else if
-            if (fieldName === 'email' && !emailRegex.test(value)) {
-                setError(inputElement, 'Please enter a valid email address.');
-                return false;
-            } else if (fieldName === 'mobile' && !/^[0-9]{10}$/.test(value)) {
-                setError(inputElement, 'Mobile number must be 10 digits.');
-                return false;
-            } else if (fieldName === 'pincode' && !/^[0-9]{6}$/.test(value)) {
-                setError(inputElement, 'Pincode must be 6 digits.');
-                return false;
-            } 
-            
-            // If all checks pass
-            clearError(inputElement);
-            return true;
-        }
+    cancelButton.addEventListener('click', cancelAction);
+    closeIcon.addEventListener('click', cancelAction);
 
-        // Attach real-time validation (on blur) to all input fields
-        const inputs = form.querySelectorAll('input');
-        inputs.forEach(input => {
-            input.addEventListener('blur', () => validateField(input));
-            input.addEventListener('input', () => {
-                if (input.classList.contains('input-error')) {
-                    validateField(input);
-                }
-            });
-        });
-
-        // --- CANCEL BUTTON HANDLER ---
-        cancelButton.addEventListener('click', function() {
-            Swal.fire({
-                title: 'Are you sure?',
-                text: "All entered data will be lost!",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#ff3b30', // Red for destructive action
-                cancelButtonColor: '#6c757d',
-                confirmButtonText: 'Yes, discard it!',
-                customClass: { 
-                    confirmButton: 'swal2-styled-button-error',
-                    cancelButton: 'swal2-styled-button'
-                }
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    form.reset();
-                    // Optionally: Redirect the user 
-                    // window.history.back(); 
-                    Swal.fire(
-                        'Cancelled!',
-                        'Your address entry has been discarded.',
-                        'info'
-                    )
-                }
-            })
-        });
-
-        // --- FORM SUBMISSION HANDLER ---
-        form.addEventListener('submit', function(event) {
-            event.preventDefault(); 
-            
-            let isFormValid = true;
-
-            // Run validation for ALL fields on submit
-            inputs.forEach(input => {
-                if (!validateField(input)) {
-                    isFormValid = false;
-                }
-            });
-
-            if (isFormValid) {
-                // Success Alert (SweetAlert2)
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Address Saved!',
-                    text: 'Your new delivery address has been recorded successfully.',
-                    confirmButtonText: 'Continue Shopping',
-                    customClass: { confirmButton: 'swal2-styled-button' }
-                }).then(() => {
-                    form.reset();
-                });
-            } else {
-                // Error Alert (SweetAlert2)
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Validation Error',
-                    text: 'Please fill out all required fields and correct the errors before saving.',
-                    confirmButtonText: 'Got It',
-                    customClass: { confirmButton: 'swal2-styled-button-error' }
-                });
-                
-                // Optional: Scroll to the first error
-                const firstError = document.querySelector('.input-error');
-                if (firstError) {
-                    firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }
+    function cancelAction() {
+        Swal.fire({
+            title: 'Are you sure?',
+            text: 'All entered data will be lost!',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#ff3b30',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Yes, discard it!',
+            customClass: { confirmButton: 'swal2-styled-button-error', cancelButton: 'swal2-styled-button' }
+        }).then(result=>{
+            if(result.isConfirmed){
+                form.reset();
+                window.location.href="/checkout";
             }
         });
+    }
+
+    form.addEventListener('submit', async function(e){
+        e.preventDefault();
+        let isValid = true;
+        inputs.forEach(input=>{ if(!validateField(input)) isValid=false; });
+        if(!isValid){
+            const firstError = document.querySelector('.input-error');
+            if(firstError) firstError.scrollIntoView({behavior:'smooth', block:'center'});
+            Swal.fire({icon:'error', title:'Validation Error', text:'Please fix errors.', confirmButtonText:'Got It', customClass:{confirmButton:'swal2-styled-button-error'}});
+            return;
+        }
+
+        const data = {
+            fullname: form.fullname.value.trim(),
+            email: form.email.value.trim(),
+            mobile: form.mobile.value.trim(),
+            houseName: form.houseName.value.trim(),
+            locality: form.locality.value.trim(),
+            pincode: form.pincode.value.trim(),
+            district: form.district.value.trim(),
+            state: form.state.value.trim(),
+            isDefault: form.isDefault.checked
+        };
+
+        try {
+            const res = await fetch("/checkout/AddAddress", {
+                method:'POST',
+                headers:{'Content-Type':'application/json'},
+                body: JSON.stringify(data)
+            });
+            const result = await res.json();
+            if(result.success){
+                Swal.fire({icon:'success', title:'Address Saved!', text:result.message, confirmButtonText:'Continue', customClass:{confirmButton:'swal2-styled-button'}})
+                .then(()=>window.location.href="/checkout");
+                
+            } else {
+                Swal.fire({icon:'error', title:'Error', text:result.message, confirmButtonText:'OK', customClass:{confirmButton:'swal2-styled-button-error'}});
+            }
+        } catch(err){
+            console.error(err);
+            Swal.fire({icon:'error', title:'Server Error', text:'Could not save address.', confirmButtonText:'OK', customClass:{confirmButton:'swal2-styled-button-error'}});
+        }
     });
+});
 </script>
 </body>
 </html>
