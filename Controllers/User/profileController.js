@@ -438,12 +438,13 @@ const changeEmail = async (req, res) => {
 const userAddressManagement = async (req, res) => {
     try {
         const userId = req.session.userId;
+        const user = await User.findById(userId)
 
         // Get all addresses of this user
         const userAddresses = await UserAddress.find({ user: userId });
 
         res.render("User/addressManagement", {
-            user: userId,
+            user,
             addresses: userAddresses,
             activeLink: 'profile'
         });

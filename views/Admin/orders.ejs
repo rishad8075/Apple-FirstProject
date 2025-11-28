@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Order Management</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <style>
+        /* 🎨 Custom Styles to Match Figma Dark UI */
+        body { background-color: #000; color: #f8f9fa; }
+        .admin-container { 
+            background-color: #121212; /* Slightly lighter dark background for the content area */
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .admin-card {
+            margin-left: 250px;
+            background-color:whitesmoke;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 20px;
+        }
+        .table-dark-custom {
+            color: #f8f9fa;
+            background-color: white;
+        }
+        .table-dark-custom th {
+            background-color:whitesmoke; /* Darker header row */
+            border-bottom: 2px solid #555;
+        }
+        .table-dark-custom td {
+            border-top: 1px solid #333;
+        }
+        /* Status Badge Colors (Matching the Figma look) */
+        .badge-delivered { background-color: #28a745; color: #fff; } /* Green */
+        .badge-cancelled { background-color: #dc3545; color: #fff; } /* Red */
+        .badge-shipped { background-color: #ffc107; color: #000; } /* Yellow */
+        .badge-pending { background-color: #007bff; color: #fff; } /* Blue */
+        .btn-status-change {
+            font-size: 12px;
+            padding: 3px 8px;
+        }
+        /* Style for the product thumbnail */
+        .product-thumb {
+            width: 40px; 
+            height: 40px; 
+            object-fit: cover; 
+            margin-right: 10px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="admin-container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-white">Orders</h2>
+        <div class="text-end">
+            <span class="text-white me-2">Admin User</span>
+            <img src="/images/admin-profile.png" alt="Admin" style="width:30px; height:30px; border-radius:50%;">
+        </div>
+    </div>
+    <%-include("../partials/adminSide-bar.ejs") %>
+    
+    <div class="admin-card">
+        
+        <div class="mb-4 d-flex justify-content-between align-items-center">
+            <h5 class="text-white mb-0">List of Orders</h5>
+            
+            <form method="GET" action="/admin/orders" class="d-flex flex-grow-1 mx-4" style="max-width: 400px;">
+                <input type="text" name="search" class="form-control me-2 bg-white text-white border-secondary" 
+                    placeholder="Search for Order ID, User Name, etc." value="<%= search || '' %>">
+                <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i></button>
+            </form>
+
+            <a href="/admin/orders" class="btn btn-outline-secondary"><i class="fas fa-redo-alt"></i> Clear Search</a>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-dark-custom align-middle">
+                <thead>
+                    <tr>
+                        <th><a href="/admin/orders?sort=date&order=<%= sortOrder === 'asc' ? 'desc' : 'asc' %>" class="text-white text-decoration-none">
+                            Order Date <i class="fas fa-sort<%= (sortBy === 'date' ? (sortOrder === 'asc' ? '-up' : '-down') : '') %>"></i>
+                        </a></th>
+                        <th>Order ID</th>
+                        <th>Product</th> 
+                        <th>User Name</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% orders.forEach(order => { %>
+                    <tr>
+                        <td><%= order.createdAt.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) %></td>
+                        
+                        <td><%= order.orderId %></td> 
+
+                        <td>
+                            <% if (order.primaryImage) { %>
+                                <img src="<%= order.primaryImage %>" alt="Product Image" class="product-thumb">
+                            <% } else { %>
+                                <i class="fas fa-image text-secondary"></i>
+                            <% } %>
+                        </td>
+                        
+                        <td><%= order.userId ? order.userId.name : 'N/A' %></td> 
+
+                        <td>₹ <%= order.totalPrice.toLocaleString('en-IN') %></td>
+
+                        <td>
+                            <span class="badge 
+                                <% if(order.status === 'Delivered') { %>badge-delivered
+                                <% } else if(order.status === 'Cancelled' || order.status === 'Returned') { %>badge-cancelled
+                                <% } else if(order.status === 'Shipped' || order.status === 'Out for Delivery') { %>badge-shipped
+                                <% } else { %>badge-pending
+                                <% } %>
+                                "><%= order.status %></span>
+
+                            <div class="dropdown d-inline-block ms-2">
+                                <button class="btn btn-secondary btn-status-change dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Change
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-dark">
+                                    <% ['Pending', 'Confirmed', 'Shipped', 'Out for Delivery', 'Delivered', 'Cancelled'].forEach(status => { %>
+                                        <li><a class="dropdown-item change-status-btn" href="#" 
+                                            data-orderid="<%= order._id %>" data-newstatus="<%= status %>">
+                                            <%= status %>
+                                        </a></li>
+                                    <% }) %>
+                                </ul>
+                            </div>
+                        </td>
+                        
+                        <td>
+                            <a href="/admin/orders/detail/<%= order._id %>" class="btn btn-info btn-sm">
+                                <i class="fas fa-info-circle"></i> View Detail
+                            </a>
+                        </td>
+                    </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+        </div>
+
+        <% if(totalPages > 1) { %>
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center">
+                <li class="page-item <%= currentPage === 1 ? 'disabled' : '' %>">
+                    <a class="page-link bg-dark border-secondary text-white" href="/admin/orders?page=<%= currentPage - 1 %>&search=<%= search || '' %>&sort=<%= sortBy %>&order=<%= sortOrder %>" aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+                <% for(let i = 1; i <= totalPages; i++) { %>
+                <li class="page-item <%= currentPage === i ? 'active' : '' %>">
+                    <a class="page-link <%= currentPage === i ? 'bg-primary border-primary' : 'bg-dark border-secondary text-white' %>" href="/admin/orders?page=<%= i %>&search=<%= search || '' %>&sort=<%= sortBy %>&order=<%= sortOrder %>">
+                        <%= i %>
+                    </a>
+                </li>
+                <% } %>
+                <li class="page-item <%= currentPage === totalPages ? 'disabled' : '' %>">
+                    <a class="page-link bg-dark border-secondary text-white" href="/admin/orders?page=<%= currentPage + 1 %>&search=<%= search || '' %>&sort=<%= sortBy %>&order=<%= sortOrder %>" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+        <% } %>
+
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    document.querySelectorAll('.change-status-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const orderId = this.dataset.orderid;
+            const newStatus = this.dataset.newstatus;
+
+            Swal.fire({
+                title: 'Change Order Status?',
+                text: `Set status of Order ID ${orderId} to: ${newStatus}?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#007bff',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, Change Status'
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    try {
+                        const res = await fetch('/admin/orders/update-status', { 
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ orderId: orderId, status: newStatus })
+                        });
+                        const data = await res.json();
+                        if (data.success) {
+                            Swal.fire('Updated!', 'Order status has been changed.', 'success').then(() => location.reload());
+                        } else {
+                            Swal.fire('Error', data.message || 'Failed to update status.', 'error');
+                        }
+                    } catch (err) {
+                        Swal.fire('Error', 'Server error while updating status.', 'error');
+                    }
+                }
+            });
+        });
+    });
+</script>
+</body>
+</html>

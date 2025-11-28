@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin - Order Detail</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+<style>
+  body { background-color: #121212; color: #f8f9fa; }
+  .admin-container { padding: 20px; min-height: 100vh; }
+  .card-order { background-color: #1e1e1e; border-radius: 10px; padding: 25px; margin-bottom: 20px; margin-left: 250px; }
+  .section-title { border-bottom: 1px solid #444; padding-bottom: 5px; margin-bottom: 15px; font-weight: 600; font-size: 1.2rem; }
+  .product-thumb { width: 60px; height: 60px; object-fit: cover; border-radius: 8px; margin-right: 15px; }
+  .badge-delivered { background-color: #28a745; color: #fff; }
+  .badge-cancelled { background-color: #dc3545; color: #fff; }
+  .badge-shipped { background-color: #ffc107; color: #000; }
+  .badge-pending { background-color: #007bff; color: #fff; }
+  .flex-row { display: flex; align-items: center; }
+  .order-summary { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 15px; margin-bottom: 20px; }
+  .summary-card { flex: 1; min-width: 200px; background-color: #1b1b1b; padding: 15px; border-radius: 8px; }
+  .btn-status-change { font-size: 0.85rem; padding: 4px 8px; }
+</style>
+</head>
+<body>
+
+<div class="admin-container">
+
+  <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2>Order Detail</h2>
+      <a href="/admin/orders" class="btn btn-outline-light"><i class="fas fa-arrow-left"></i> Back to Orders</a>
+  </div>
+
+  <%- include("../partials/adminSide-bar.ejs") %>
+
+  <div class="card-order">
+
+    <!-- ORDER SUMMARY -->
+    <div class="order-summary">
+      <div class="summary-card">
+        <h6 class="section-title">Order Info</h6>
+        <p><strong>Order ID:</strong> <%= order.orderId %></p>
+        <p><strong>Date:</strong> <%= order.createdAt.toLocaleDateString('en-US', { year:'numeric', month:'short', day:'numeric' }) %></p>
+        <p><strong>Total:</strong> ₹ <%= order.totalPrice.toLocaleString('en-IN') %></p>
+        <p>
+          <strong>Status:</strong> 
+          <span class="badge
+            <% if(order.status==='Delivered'){ %>badge-delivered
+            <% } else if(order.status==='Cancelled' || order.status==='Returned'){ %>badge-cancelled
+            <% } else if(order.status==='Shipped' || order.status==='Out for Delivery'){ %>badge-shipped
+            <% } else { %>badge-pending<% } %>">
+            <%= order.status %>
+          </span>
+        </p>
+      </div>
+      <div class="summary-card">
+        <h6 class="section-title">User & Shipping</h6>
+        <p><strong>Name:</strong> <%= user ? user.name : 'N/A' %></p>
+        <p><strong>Phone:</strong> <%= order.address.phone %></p>
+        <p><strong>Address:</strong> <%= order.address.street %>, <%= order.address.city %>, <%= order.address.state %> - <%= order.address.postalCode %>, <%= order.address.country %></p>
+      </div>
+    </div>
+
+    <!-- PRODUCTS -->
+    <h5 class="section-title">Products in Order</h5>
+    <% order.orderItems.forEach(item => { %>
+      <div class="flex-row mb-3 p-3" style="background-color:#1b1b1b; border-radius:8px;">
+        <% if(item.image){ %>
+          <img src="<%= item.image %>" alt="Product Image" class="product-thumb">
+        <% } else { %>
+          <i class="fas fa-image text-secondary product-thumb"></i>
+        <% } %>
+        <div>
+          <h6><%= item.name %></h6>
+          <p>Qty: <%= item.quantity %> | Price: ₹ <%= item.price.toLocaleString('en-IN') %> | Subtotal: ₹ <%= item.subtotal.toLocaleString('en-IN') %></p>
+          <span class="badge
+            <% if(item.status==='Delivered'){ %>badge-delivered
+            <% } else if(item.status==='Cancelled' || item.status==='Returned'){ %>badge-cancelled
+            <% } else if(item.status==='Shipped' || item.status==='Out for Delivery'){ %>badge-shipped
+            <% } else { %>badge-pending<% } %>">
+            <%= item.status %>
+          </span>
+        </div>
+      </div>
+    <% }) %>
+
+    <!-- STATUS CHANGE -->
+    <h5 class="section-title mt-4">Change Order Status</h5>
+    <div class="dropdown">
+      <button class="btn btn-secondary dropdown-toggle btn-status-change" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+        Change Status
+      </button>
+      <ul class="dropdown-menu dropdown-menu-dark">
+        <% ['Pending','Confirmed','Shipped','Out for Delivery','Delivered','Cancelled','Returned'].forEach(status => { %>
+          <li><a class="dropdown-item change-status-btn" href="#" data-orderid="<%= order._id %>" data-newstatus="<%= status %>"><%= status %></a></li>
+        <% }) %>
+      </ul>
+    </div>
+
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+document.querySelectorAll('.change-status-btn').forEach(btn => {
+    btn.addEventListener('click', async function(e) {
+        e.preventDefault();
+        const orderId = this.dataset.orderid;
+        const newStatus = this.dataset.newstatus;
+
+        Swal.fire({
+            title: 'Change Order Status?',
+            text: `Set status of Order ID ${orderId} to: ${newStatus}?`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#007bff',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Yes, Change Status'
+        }).then(async (result) => {
+            if(result.isConfirmed){
+                try{
+                    const res = await fetch('/admin/orders/update-status',{
+                        method:'POST',
+                        headers:{'Content-Type':'application/json'},
+                        body:JSON.stringify({ orderId, status:newStatus })
+                    });
+                    const data = await res.json();
+                    if(data.success){
+                        Swal.fire('Updated!','Order status has been changed.','success').then(()=>location.reload());
+                    } else{
+                        Swal.fire('Error', data.message || 'Failed to update status.','error');
+                    }
+                }catch(err){
+                    Swal.fire('Error', 'Server error while updating status.','error');
+                }
+            }
+        });
+    });
+});
+</script>
+</body>
+</html>

@@ -6,6 +6,7 @@ const { model } = require("mongoose");
 const CategoryController = require("../Controllers/Admin/categoryController");
 const adminAuth = require("../middleware/adminAuth");
 const productController = require("../Controllers/Admin/productController");
+const adminOrderController = require("../Controllers/Admin/orderController");
 const multer = require('../helpers/multer');
 
 
@@ -42,6 +43,15 @@ router.patch("/admin/unblock-product/:id",adminAuth,productController.unblockPro
 router.delete("/admin/delete-product/:id",adminAuth,productController.deleteProduct);
 router.get("/admin/edit-product/:id",adminAuth,productController.editProductGet);
 router.post('/admin/edit-product/:id', adminAuth, multer.any(), productController.editProductPost);
+
+
+//admin order Management
+
+router.get('/admin/orders',adminAuth, adminOrderController.listOrdersAdmin);
+router.get('/admin/orders/detail/:id',adminAuth, adminOrderController.orderDetailAdmin);
+router.post('/admin/orders/update-status',adminAuth, adminOrderController.updateOrderStatusAdmin);
+router.post('/admin/orders/cancel-product',adminAuth, adminOrderController.cancelProductAdmin);
+
 
 
 

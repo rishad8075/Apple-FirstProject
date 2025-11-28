@@ -9,6 +9,7 @@ const listOrders = async (req, res) => {
         const userId = req.user._id;
 
         const search = req.query.search || "";  
+        const user = await User.findById(userId)
 
         const orders = await Orders.find({
             userId,
@@ -16,6 +17,7 @@ const listOrders = async (req, res) => {
         }).sort({ createdAt: -1 });
 
         res.render("User/orders-list", {
+            user,
             orders,
             search,            
             activeLink: "orders"
@@ -53,7 +55,7 @@ const cancelEntireOrder = async (req, res) => {
         for(const item of order.orderItems){
             await Products.updateOne(
                 { _id: item.productId },
-                { $inc: { 'variants.0.stock': item.quantity } } // assuming first variant if no variantId
+                { $inc: { 'variants.0.stock': item.quantity } } 
             );
         }
 
@@ -78,10 +80,10 @@ const cancelProduct = async (req, res) => {
         const item = order.orderItems.find(i => i.productId.toString() === productId);
         if(!item) return res.json({ success: false, message: 'Product not found in order' });
 
-        // Update stock
+      
         await Products.updateOne(
             { _id: item.productId },
-            { $inc: { 'variants.0.stock': item.quantity } } // adjust if using variants
+            { $inc: { 'variants.0.stock': item.quantity } } 
         );
 
         item.status = 'Cancelled';
@@ -94,73 +96,55 @@ const cancelProduct = async (req, res) => {
     }
 };
 
-// RETURN ORDER OR ITEM 
-// RETURN ORDER CONTROLLER
+
 const returnOrder = async (req, res) => {
     try {
         const { orderId, productId, reason } = req.body;
 
-        // Reason mandatory
         if (!reason || reason.trim() === "") {
             return res.status(400).json({ success: false, message: "Return reason is required." });
         }
 
         const order = await Orders.findOne({ orderId });
-        if (!order) {
-            return res.status(404).json({ success: false, message: "Order not found." });
-        }
+        if (!order) return res.status(404).json({ success: false, message: "Order not found." });
 
-        // Return SINGLE product
+        // Single Product Return
         if (productId) {
-            const item = order.orderItems.find(
-                item => item.productId.toString() === productId
-            );
-
-            if (!item) {
-                return res.status(404).json({ success: false, message: "Product not found in this order." });
-            }
-
-            if (item.status !== "Delivered") {
+            const item = order.orderItems.find(item => item.productId.toString() === productId);
+            if (!item) return res.status(404).json({ success: false, message: "Product not found in this order." });
+            if (item.status !== "Delivered") 
                 return res.status(400).json({ success: false, message: "Product cannot be returned before delivery." });
-            }
 
-            // Mark item as returned
             item.status = "Returned";
             item.returnReason = reason;
 
-        } else {
-            // Return FULL ORDER
-            let deliveredItems = 0;
+            // Check if all items returned → update order status
+            if (order.orderItems.every(i => i.status === "Returned")) order.status = "Returned";
 
+        } else {
+            // Full Order Return
+            let returnedCount = 0;
             order.orderItems.forEach(item => {
                 if (item.status === "Delivered") {
                     item.status = "Returned";
                     item.returnReason = reason;
-                    deliveredItems++;
+                    returnedCount++;
                 }
             });
 
-            if (deliveredItems === 0) {
-                return res.status(400).json({
-                    success: false,
-                    message: "No delivered items available for return."
-                });
-            }
+            if (returnedCount === 0) 
+                return res.status(400).json({ success: false, message: "No delivered items available for return." });
+
+            order.status = "Returned";
         }
 
         await order.save();
 
-        return res.status(200).json({
-            success: true,
-            message: "Return request submitted successfully."
-        });
+        return res.status(200).json({ success: true, message: "Return request submitted successfully." });
 
     } catch (error) {
         console.error("Return Error:", error);
-        return res.status(500).json({
-            success: false,
-            message: "Server error. Please try again later."
-        });
+        return res.status(500).json({ success: false, message: "Server error. Please try again later." });
     }
 };
 

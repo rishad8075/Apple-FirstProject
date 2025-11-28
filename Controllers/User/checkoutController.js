@@ -12,18 +12,18 @@ const getCheckoutPage = async (req, res) => {
 
     const user = await User.findById(userId);
 
-    // Fetch all addresses of the user
+    
     const addresses = await Address.find({ user: userId }).lean();
 
-    // Fetch cart items
+    
      const cart = await Cart.findOne({ userId })
-      .populate("items.productId"); // only product is populated
+      .populate("items.productId"); 
 
     if (!cart) return res.redirect("/cart");
 
     const items = cart.items.map(item => {
 
-      // Find correct variant inside product
+     
       const product = item.productId;
       const variant = product.variants.find(v => v._id.toString() === item.variantId.toString());
 
@@ -38,7 +38,7 @@ const getCheckoutPage = async (req, res) => {
 
       const subtotal = items.reduce((acc, item) => acc + item.total, 0);
 
-    // OPTIONAL CHARGES (add when needed)
+    
     const tax = (subtotal*18)/100
     const shipping = 70;
    
@@ -68,12 +68,12 @@ const getCheckoutPage = async (req, res) => {
 
 
 
-// Show Add Address Page
+
 const checkoutAdd_Address = async (req, res) => {
     try {
         const userId = req.session.userId;
 
-        if (!userId) return res.redirect('/login'); // Redirect if not logged in
+        if (!userId) return res.redirect('/login');
 
         const userAddresses = await Address.find({ user: userId });
 
@@ -89,7 +89,7 @@ const checkoutAdd_Address = async (req, res) => {
     }
 };
 
-// Handle AJAX Add Address
+//   Add Address
 const checkoutAddAddress = async (req, res) => { 
     try {
         const userId = req.session.userId;
@@ -100,18 +100,18 @@ const checkoutAddAddress = async (req, res) => {
 
         const { fullname, email, mobile, houseName, locality, pincode, district, state, isDefault } = req.body;
 
-        // Basic server-side validation
+        
         if (!fullname || !email || !mobile || !houseName || !locality || !pincode || !district || !state) {
             return res.status(400).json({ success: false, message: "All fields are required" });
         }
 
-        // Check if the user already has addresses
+        
         const existingAddresses = await Address.find({ user: userId });
 
-        // Determine if this should be default
+        
         let defaultFlag = false;
         if (existingAddresses.length === 0) {
-            defaultFlag = true; // First address is automatically default
+            defaultFlag = true; 
         } else if (isDefault) {
             // If user checked "set as default", unset previous default
             await UserAddress.updateMany({ user: userId, isDefault: true }, { $set: { isDefault: false } });
