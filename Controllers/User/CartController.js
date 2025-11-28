@@ -1,6 +1,7 @@
 const Product = require('../../model/Product'); 
 const Cart = require('../../model/Cart');  
 const Category = require("../../model/category")  
+const Wishlist = require("../../model/wishlist");
 const User = require("../../model/user");
 const mongoose = require("mongoose");
 

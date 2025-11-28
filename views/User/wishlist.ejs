@@ -183,84 +183,89 @@
     </div>
     
     <%- include('../partials/footer.ejs') %> <script>
-        // --- Handle Remove Item from Wishlist ---
-        document.querySelectorAll('.remove-item-btn').forEach(btn => {
-            btn.addEventListener('click', async function() {
-                const productId = this.dataset.id;
-                
-                const confirmDelete = await Swal.fire({
-                    title: 'Remove item?',
-                    text: "This will permanently remove the item from your wishlist.",
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#ff3b30',
-                    cancelButtonColor: '#3085d6',
-                    confirmButtonText: 'Yes, remove it'
+        
+    <script>
+    // --- Handle Remove Item from Wishlist ---
+    document.querySelectorAll('.remove-item-btn').forEach(btn => {
+        btn.addEventListener('click', async function() {
+            const productId = this.dataset.id;
+            
+            const confirmDelete = await Swal.fire({
+                title: 'Remove item?',
+                text: "This will permanently remove the item from your wishlist.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ff3b30',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, remove it'
+            });
+            
+            if (!confirmDelete.isConfirmed) return;
+
+            try {
+                const res = await fetch('/wishlist/remove', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ productId })
                 });
                 
-                if (!confirmDelete.isConfirmed) return;
+                const data = await res.json();
 
-                try {
-                    const res = await fetch('/wishlist/remove', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ productId })
-                    });
-                    
-                    const data = await res.json();
-
-                    if (data.success) {
-                        Swal.fire('Removed!', 'Item removed from wishlist.', 'success');
-                        document.getElementById('wishlist-row-' + productId).remove();
-                        // Optional: Reload if the last item was removed to show the empty message
-                        if (document.querySelectorAll('.wishlist-item-row').length === 0) {
-                             window.location.reload(); 
-                        }
-                    } else {
-                        Swal.fire('Error', data.message || 'Failed to remove item.', 'error');
+                if (data.success) {
+                    Swal.fire('Removed!', 'Item removed from wishlist.', 'success');
+                    document.getElementById('wishlist-row-' + productId).remove();
+                    if (document.querySelectorAll('.wishlist-item-row').length === 0) {
+                        window.location.reload(); 
                     }
-                } catch (error) {
-                    Swal.fire('Connection Error', 'Failed to communicate with server.', 'error');
+                } else {
+                    Swal.fire('Error', data.message || 'Failed to remove item.', 'error');
                 }
-            });
+            } catch (error) {
+                Swal.fire('Connection Error', 'Failed to communicate with server.', 'error');
+            }
         });
+    });
 
-        // --- Handle Add to Cart from Wishlist ---
-        document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
-            btn.addEventListener('click', async function() {
-                const productId = this.dataset.id;
+    // --- Handle Add to Cart from Wishlist ---
+    document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
+        btn.addEventListener('click', async function() {
+            const productId = this.dataset.id;
+            
+            this.disabled = true;
+            this.innerText = 'Adding...';
+
+            try {
+                const res = await fetch('/cart/add-from-wishlist', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ productId, quantity: 1 })
+                });
                 
-                // Disable button on click
-                this.disabled = true;
-                this.innerText = 'Adding...';
+                const data = await res.json();
 
-                try {
-                    const res = await fetch('/cart/add-from-wishlist', { // Use a specific endpoint for this action
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ productId, quantity: 1 }) // Always start with quantity 1
-                    });
-                    
-                    const data = await res.json();
+                if (data.success) {
+                    Swal.fire('Added!', 'Item added to your shopping cart.', 'success');
 
-                    if (data.success) {
-                        Swal.fire('Added!', 'Item added to your shopping cart.', 'success');
-                        
-                        // Recommended UX: Remove from wishlist after successful move to cart
-                        // document.getElementById('wishlist-row-' + productId).remove(); 
+                    // ✅ Remove the product from the wishlist UI immediately
+                    const row = document.getElementById('wishlist-row-' + productId);
+                    if (row) row.remove();
 
-                    } else {
-                        Swal.fire('Error', data.message || 'Failed to add to cart.', 'error');
+                    // Reload page if wishlist becomes empty
+                    if (document.querySelectorAll('.wishlist-item-row').length === 0) {
+                        window.location.reload();
                     }
-                } catch (error) {
-                    Swal.fire('Connection Error', 'Failed to communicate with server.', 'error');
-                } finally {
-                    // Re-enable button on complete/failure
-                    this.disabled = false;
-                    this.innerText = 'Add to Cart';
+                } else {
+                    Swal.fire('Error', data.message || 'Failed to add to cart.', 'error');
                 }
-            });
+            } catch (error) {
+                Swal.fire('Connection Error', 'Failed to communicate with server.', 'error');
+            } finally {
+                this.disabled = false;
+                this.innerText = 'Add to Cart';
+            }
         });
-    </script>
+    });
+</script>
+
 </body>
 </html>

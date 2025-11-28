@@ -4,7 +4,7 @@ const { Schema } = mongoose;
 const OrdersSchema = new Schema({
   orderId: { type: String, required: true, unique: true }, // custom unique orderID
   userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-  status: { type: String, enum:  ["Pending", "Confirmed", "Shipped", "Out for Delivery", "Delivered", "Cancelled", "Returned"], default: 'Pending' },
+  status: { type: String, enum:  ["Ordered", "Pending", "Confirmed", "Shipped", "Out for Delivery", "Delivered", "Cancelled", "Returned"], default: 'Pending' },
   orderItems: [{
     productId: { type: Schema.Types.ObjectId, ref: 'Product', required: true },
     name: String,
@@ -14,7 +14,7 @@ const OrdersSchema = new Schema({
     subtotal: Number,
     discount: { type: Number, default: 0 },
     tax: { type: Number, default: 0 },
-    status: { type: String, enum: ["Pending", "Confirmed", "Shipped", "Out for Delivery", "Delivered", "Cancelled", "Returned"], default: 'Ordered' },
+    status: { type: String, enum: ["Ordered", "Pending", "Confirmed", "Shipped", "Out for Delivery", "Delivered", "Cancelled", "Returned"], default: 'Ordered' },
     cancellationReason: { type: String, default: null },
     returnReason: { type: String, default: null }
   }],
