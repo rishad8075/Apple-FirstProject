@@ -283,7 +283,8 @@ document.addEventListener('DOMContentLoaded', () => {
             confirmButtonText: 'Yes, discard'
         }).then(result => {
             if (result.isConfirmed) {
-                window.location.href = '/user/addresseManagement';
+                window.history.back();
+               
             }
         });
     });

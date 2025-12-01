@@ -82,7 +82,7 @@ const postForgot_password = async (req, res) => {
 
 const verifyPassForgotOtp = async (req, res) => {
     try {
-        const enteredOtp = req.body.otp; // FIXED
+        const enteredOtp = req.body.otp; 
 
         if (!enteredOtp) {
             return res.json({ success: false, message: "OTP is missing" });
@@ -104,7 +104,7 @@ const getResetPassword = async (req, res) => {
     try {
         res.render("User/resetPassword");
     } catch (error) {
-        res.redirect("/pageNotFound");
+        res.render("page-404")
     }
 };
 
@@ -117,7 +117,7 @@ const resend_ForgotPass_Otp = async (req,res)=>{
         }
 
         const otp = generateOtp();
-        req.session.Otp = otp;
+        req.session.otp = otp;
 
         console.log("Resending OTP to:", email);
 
@@ -215,10 +215,9 @@ const postEditProfile = async (req, res) => {
 
     if (!user) return res.status(404).send("User not found");
 
-    const { name, email, phoneNumber, dob, removeImage } = req.body;
+    const { name, phoneNumber, dob, removeImage } = req.body;
 
     user.name = name;
-    user.email = email;
     user.phoneNumber = phoneNumber;
     user.dob = dob ? new Date(dob) : null;
 

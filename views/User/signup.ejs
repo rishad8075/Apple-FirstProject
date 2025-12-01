@@ -81,6 +81,50 @@ function togglePassword(fieldId, button) {
     button.textContent = field.type === "password" ? "👁️" : "HIDE";
 }
 
+// Remove error when typing
+function clearError(field, errorBox) {
+    field.classList.remove("border-danger");
+    errorBox.textContent = "";
+}
+
+// Show error
+function showError(field, errorBox, message) {
+    field.classList.add("border-danger");
+    errorBox.textContent = message;
+}
+
+// Attach live listeners
+nameField.addEventListener("input", () => {
+    if (nameField.value.trim().length >= 3 && /^[A-Za-z ]+$/.test(nameField.value)) {
+        clearError(nameField, error1);
+    }
+});
+
+phoneNumber.addEventListener("input", () => {
+    if (/^[6-9]\d{9}$/.test(phoneNumber.value.trim())) {
+        clearError(phoneNumber, error2);
+    }
+});
+
+email.addEventListener("input", () => {
+    if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value.trim())) {
+        clearError(email, error3);
+    }
+});
+
+password.addEventListener("input", () => {
+    if (password.value.length >= 6) {
+        clearError(password, error4);
+    }
+});
+
+confirmPassword.addEventListener("input", () => {
+    if (confirmPassword.value === password.value) {
+        clearError(confirmPassword, error5);
+    }
+});
+
+
 document.querySelector("form").addEventListener("submit", function (e) {
     let isValid = true;
 

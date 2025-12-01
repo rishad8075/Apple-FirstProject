@@ -6,59 +6,164 @@
     <title>Admin - Order Management</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-    <style>
-        /* 🎨 Custom Styles to Match Figma Dark UI */
-        body { background-color: #000; color: #f8f9fa; }
-        .admin-container { 
-            background-color: #121212; /* Slightly lighter dark background for the content area */
-            padding: 20px;
-            min-height: 100vh;
-        }
-        .admin-card {
-            margin-left: 250px;
-            background-color:whitesmoke;
-            border: 1px solid #333;
-            border-radius: 8px;
-            padding: 20px;
-        }
-        .table-dark-custom {
-            color: #f8f9fa;
-            background-color: white;
-        }
-        .table-dark-custom th {
-            background-color:whitesmoke; /* Darker header row */
-            border-bottom: 2px solid #555;
-        }
-        .table-dark-custom td {
-            border-top: 1px solid #333;
-        }
-        /* Status Badge Colors (Matching the Figma look) */
-        .badge-delivered { background-color: #28a745; color: #fff; } /* Green */
-        .badge-cancelled { background-color: #dc3545; color: #fff; } /* Red */
-        .badge-shipped { background-color: #ffc107; color: #000; } /* Yellow */
-        .badge-pending { background-color: #007bff; color: #fff; } /* Blue */
-        .btn-status-change {
-            font-size: 12px;
-            padding: 3px 8px;
-        }
-        /* Style for the product thumbnail */
-        .product-thumb {
-            width: 40px; 
-            height: 40px; 
-            object-fit: cover; 
-            margin-right: 10px;
-            border-radius: 4px;
-        }
-    </style>
+ <style>
+   body {
+    background-color: #181818;
+    color: #e8e8e8;
+    font-family: "Inter", sans-serif;
+    letter-spacing: 0.2px;
+}
+
+/* Admin Container */
+.admin-container {
+    background-color: transparent;
+    min-height: 100vh;
+    padding: 30px;
+}
+
+/* Admin Header */
+.admin-header {
+    background-color: #121214;
+    border: 1px solid #ffffff33; /* white border */
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    padding: 15px 20px;
+    margin-left: 250px;
+    margin-bottom: 20px;
+}
+
+/* Admin Profile Image */
+.admin-img {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 2px solid #ffffff55;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+    object-fit: cover;
+}
+
+/* Admin Card */
+.admin-card {
+    margin-left: 250px;
+    background: #181818;
+    border: 1px solid #ffffff22; /* subtle white border */
+    border-radius: 14px;
+    padding: 28px;
+    box-shadow: 0 0 25px rgba(0,0,0,0.45);
+}
+
+/* Search Bar */
+.form-control {
+    background-color: #18181a !important;
+    color: #f2f2f2 !important;
+    border: 1px solid #29292b !important;
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-size: 14px;
+}
+.form-control::placeholder {
+    color: #8b8b8c;
+}
+
+/* Table */
+.table-dark-custom {
+    background: #121214;
+    color: #f1f1f1;
+    border-collapse: separate;
+    border-spacing: 0 12px; /* space between rows */
+    width: 100%;
+}
+
+.table-dark-custom th {
+    background-color: #1f1f21; /* more contrast */
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 12px;
+    border-bottom: 1px solid #ffffff55; /* white border */
+    padding: 14px;
+    letter-spacing: 0.7px;
+    color: #ffffff;
+}
+
+.table-dark-custom td {
+    padding: 16px 14px;
+    vertical-align: middle;
+}
+
+/* Row Box Shadow */
+.table-dark-custom tbody tr {
+    background-color: #1a1a1c;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    transition: 0.25s ease;
+}
+
+.table-dark-custom tbody tr:hover {
+    background-color: #1f1f21;
+}
+
+/* Product Thumbnail */
+.product-thumb {
+    width: 44px;
+    height: 44px;
+    border-radius: 8px;
+    object-fit: cover;
+    border: 1px solid #272727;
+}
+
+/* Buttons */
+.btn {
+    border-radius: 8px !important;
+    padding: 8px 14px !important;
+    font-size: 14px !important;
+    font-weight: 500;
+}
+
+/* Status Badges */
+.badge-delivered { background-color: #2ecc71 !important; font-weight: 600; padding: 6px 10px; border-radius: 8px; }
+.badge-cancelled { background-color: #e74c3c !important; font-weight: 600; padding: 6px 10px; border-radius: 8px; }
+.badge-shipped { background-color: #f1c40f !important; color: #000 !important; font-weight: 600; padding: 6px 10px; border-radius: 8px; }
+.badge-pending { background-color: #3498db !important; font-weight: 600; padding: 6px 10px; border-radius: 8px; }
+
+/* Status Change Button */
+.btn-status-change {
+    font-size: 13px;
+    background-color: #1f1f21;
+    color: #e1e1e1;
+    border: 1px solid #2c2c2e;
+    border-radius: 6px;
+    padding: 4px 10px;
+}
+.btn-status-change:hover {
+    background-color: #2a2a2c;
+    color: white;
+}
+
+/* Pagination */
+.pagination .page-link {
+    background: #151517;
+    border: 1px solid #262628;
+    color: #e6e6e6;
+}
+.pagination .page-item.active .page-link {
+    background: #0066ff;
+    border-color: #0066ff;
+}
+.pagination .page-link:hover {
+    background: #232325;
+    color: white;
+}
+    
+</style>
 </head>
 <body>
 
-<div class="admin-container">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+<div class="admin-container" >
+    <div class="admin-header d-flex justify-content-between align-items-center mb-4">
         <h2 class="text-white">Orders</h2>
-        <div class="text-end">
+        <div class="text-end admin-profile">
             <span class="text-white me-2">Admin User</span>
-            <img src="/images/admin-profile.png" alt="Admin" style="width:30px; height:30px; border-radius:50%;">
+            <img src="/images/admin-profile.png" alt="Admin" class="admin-img">
         </div>
     </div>
     <%-include("../partials/adminSide-bar.ejs") %>

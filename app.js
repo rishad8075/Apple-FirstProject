@@ -6,7 +6,7 @@ const DB = require("./config/db");
 const path = require("path");
 const session = require("express-session");
 const userRoutes = require("./routes/user/userRoutes");
-const adminRoutes = require("./Routes/adminRoutes");
+const adminRoutes = require("./Routes/admin/adminRoutes");
 
 
 

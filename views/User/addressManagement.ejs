@@ -401,6 +401,13 @@ document.getElementById("addAddressForm").addEventListener("submit", function(e)
     if(state.value.trim().length < 2 || !nameRegex.test(state.value.trim())){
         setError(state, "State must contain letters only.");
     }
+       document.querySelectorAll("#addAddressForm input").forEach(input => {
+       input.addEventListener("input", function () {
+           this.classList.remove("form-error");
+           const errDiv = document.getElementById(this.name + "Error");
+           if (errDiv) errDiv.innerText = "";
+       });
+   });
 
     if(isValid){
         // Prepare form data

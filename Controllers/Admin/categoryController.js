@@ -35,7 +35,7 @@ const categoryInfo = async (req, res) => {
         });
     } catch (err) {
         console.log(err);
-        res.send("Server Error");
+        res.render("page-500");
     }
 }
 

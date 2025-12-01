@@ -4,8 +4,8 @@ const CustomerController = require("../../Controllers/Admin/customerController")
 const adminAuth = require("../../middleware/adminAuth");
 
 // Customer Management
-router.get("/", adminAuth, CustomerController.customerInfo);
-router.post("/:id/block", adminAuth, CustomerController.BlockUser);
-router.post("/:id/unblock", adminAuth, CustomerController.UnblockUser);
+router.get("/admin/users", adminAuth, CustomerController.customerInfo);
+router.post('/admin/users/:id/block', adminAuth, CustomerController.BlockUser);
+router.post('/admin/users/:id/unblock', adminAuth, CustomerController.UnblockUser);
 
 module.exports = router;

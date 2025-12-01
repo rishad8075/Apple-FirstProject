@@ -4,13 +4,17 @@ const productController = require("../../Controllers/Admin/productController");
 const adminAuth = require("../../middleware/adminAuth");
 const multer = require('../../helpers/multer');
 
-router.get("/", adminAuth, productController.listProducts);
-router.get("/add", adminAuth, productController.addProducts);
-router.post("/add", multer.any(), adminAuth, productController.addProductPost);
-router.patch("/block/:id", adminAuth, productController.blockProduct);
-router.patch("/unblock/:id", adminAuth, productController.unblockProduct);
-router.delete("/delete/:id", adminAuth, productController.deleteProduct);
-router.get("/edit/:id", adminAuth, productController.editProductGet);
-router.post("/edit/:id", adminAuth, multer.any(), productController.editProductPost);
+router.get("/admin/products",adminAuth,productController.listProducts)
+router.get("/admin/addProducts",adminAuth,productController.addProducts);
+router.post('/admin/addProducts', multer.any(),    // ← IMPORTANT (accepts all dynamic field names)
+  adminAuth,productController.addProductPost
+);
+router.patch("/admin/block-product/:id",adminAuth,productController.blockProduct);
+router.patch("/admin/unblock-product/:id",adminAuth,productController.unblockProduct);
+router.delete("/admin/delete-product/:id",adminAuth,productController.deleteProduct);
+router.get("/admin/edit-product/:id",adminAuth,productController.editProductGet);
+router.post('/admin/edit-product/:id', adminAuth, multer.any(), productController.editProductPost);
+
+
 
 module.exports = router;

@@ -114,7 +114,7 @@ const checkoutAddAddress = async (req, res) => {
             defaultFlag = true; 
         } else if (isDefault) {
             // If user checked "set as default", unset previous default
-            await UserAddress.updateMany({ user: userId, isDefault: true }, { $set: { isDefault: false } });
+            await Address.updateMany({ user: userId, isDefault: true }, { $set: { isDefault: false } });
             defaultFlag = true;
         }
 
@@ -206,7 +206,7 @@ const placeOrderCOD = async (req, res) => {
                     );
                 }
       
-        await Cart.deleteMany({ userId: userId }); // clear cart
+        await Cart.deleteMany({ userId: userId });
 
         res.redirect(`/order-success/${order._id}`);
     } catch (err) {
@@ -220,10 +220,11 @@ const orderSuccessPage = async (req, res) => {
     try {
         const orderId = req.params.orderId;
         const order = await Orders.findById(orderId);
+        const user = await User.findById(order.userId)
 
         if (!order) return res.redirect("/");
 
-        res.render("User/order-success", { order });
+        res.render("User/order-success", { order,user });
     } catch (err) {
         console.error(err);
         res.redirect("/");
