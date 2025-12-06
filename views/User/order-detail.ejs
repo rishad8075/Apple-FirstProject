@@ -102,7 +102,9 @@
                                 <!-- RETURN PRODUCT -->
                                 <button class="btn btn-sm btn-warning return-product-btn"
                                     data-orderid="<%= order.orderId %>"
-                                    data-productid="<%= item.productId %>">
+                                    data-productid="<%= item.productId %>"
+                                    data-quantity = "<% item.quantity %>">
+
                                     Return
                                 </button>
                             <% } %>
@@ -197,6 +199,7 @@ document.querySelectorAll('.return-product-btn').forEach(btn => {
     btn.addEventListener('click', () => {
         const orderId = btn.dataset.orderid;
         const productId = btn.dataset.productid;
+        const quantity =btn.dataset.quantity
 
         Swal.fire({
             title: 'Return this Product?',
@@ -208,10 +211,10 @@ document.querySelectorAll('.return-product-btn').forEach(btn => {
             confirmButtonText: 'Return Product'
         }).then(async result => {
             if(result.isConfirmed){
-                const res = await fetch('/orders/return', {
+                const res = await fetch("/return-order", {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ orderId, productId, reason: result.value })
+                    body: JSON.stringify({ orderId, productId, reason: result.value,quantity })
                 });
                 const data = await res.json();
                 if(data.success) Swal.fire('Returned!', '', 'success').then(() => location.reload());

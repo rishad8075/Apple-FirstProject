@@ -179,10 +179,12 @@ class="btn btn-outline-success btn-sm">
                 
                 <% if(firstItem.status === 'Delivered' && firstItem.status !== 'Returned') { %>
                     <% for(let item of order.orderItems){ %>
+                        <% if(order.orderItems.length>=2){ %>
 
                                     <button class="return-order-btn" data-orderid="<%= order.orderId %>">
                         Return Full Order
                     </button>
+                    <% }%>
 
                     <!-- For Single Product Return -->
                     <button class="return-order-btn" 

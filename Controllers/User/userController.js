@@ -332,7 +332,7 @@ const loadShopPage = async (req, res) => {
         };
         const sort = sortOptions[queryParams.sort] || sortOptions[''];
 
-        const perPage = 3;
+        const perPage = 5;
         const skip = (queryParams.page - 1) * perPage;
 
         // --- Fetch products, categories, total count in parallel ---

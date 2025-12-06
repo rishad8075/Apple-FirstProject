@@ -6,7 +6,7 @@ const PDFDocument = require("pdfkit");
 //  LIST ORDERS 
 const listOrders = async (req, res) => {
     try {
-        const userId = req.user._id;
+        const userId = req.session.userId;
 
         const search = req.query.search || "";  
         const user = await User.findById(userId)
@@ -64,6 +64,7 @@ const cancelEntireOrder = async (req, res) => {
             item.status = "Cancelled"
             item.cancellationReason=reason
         }
+        order.status="Cancelled"
         await order.save();
 
         res.json({ success: true });
@@ -99,7 +100,7 @@ const cancelProduct = async (req, res) => {
 
 const returnOrder = async (req, res) => {
     try {
-        const { orderId, productId, reason } = req.body;
+        const { orderId, productId, reason , quantity} = req.body;
 
         if (!reason || reason.trim() === "") {
             return res.status(400).json({ success: false, message: "Return reason is required." });
@@ -115,8 +116,15 @@ const returnOrder = async (req, res) => {
             if (item.status !== "Delivered") 
                 return res.status(400).json({ success: false, message: "Product cannot be returned before delivery." });
 
+              await Products.updateOne(
+            { _id: item.productId },
+            { $inc: { 'variants.0.stock':quantity } } 
+        );
+
             item.status = "Returned";
             item.returnReason = reason;
+            
+            
 
             // Check if all items returned → update order status
             if (order.orderItems.every(i => i.status === "Returned")) order.status = "Returned";
