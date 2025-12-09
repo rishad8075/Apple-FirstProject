@@ -150,12 +150,9 @@
                 <span>₹ <%= total.toLocaleString('en-IN') %></span>
             </div>
 
-            <!-- HIDDEN FORM -->
-            <form id="placeOrderForm" method="POST"></form>
-
-            <!-- PROCEED BUTTON -->
+            <!-- Proceed to Payment button -->
             <div class="text-center my-4">
-                <button id="proceedBtn" class="btn-yellow" >Proceed to Pay (COD)</button>
+                <button id="proceedBtn" class="btn-yellow" disabled>Proceed to Payment</button>
             </div>
         </div>
     </div>
@@ -225,14 +222,15 @@
         });
     });
 
-    // Proceed to Pay (POST request)
+    // Redirect to payment page with selected address
     document.getElementById('proceedBtn').addEventListener('click', () => {
-        if (!selectedAddress) return;
+        if (!selectedAddress) {
+            Swal.fire('Select Address', 'Please select an address to continue.', 'warning');
+            return;
+        }
 
-        const form = document.getElementById('placeOrderForm');
-        form.action = `/place-order/${selectedAddress}`;
-        form.method = "POST";
-        form.submit();
+        const query = new URLSearchParams({ addressId: selectedAddress }).toString();
+        window.location.href = `/payment?${query}`;
     });
 </script>
 

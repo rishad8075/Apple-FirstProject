@@ -207,6 +207,85 @@ const removeItem = async (req, res) => {
 };
 
 
+const addToCartFromWishlist = async (req, res) => {
+    try {
+        const userId = req.session.userId;
+        const { productId } = req.body;
+        const quantity = 1;
+
+        if (!userId) {
+            return res.json({ success: false, message: "User not logged in" });
+        }
+
+        const product = await Product.findById(productId);
+        if (!product) {
+            return res.json({ success: false, message: "Product not found" });
+        }
+
+        // ✔️ MUST HAVE VARIANT ID
+        if (!product.variants || product.variants.length === 0) {
+            return res.json({ success: false, message: "Product has no variants" });
+        }
+
+        const defaultVariant = product.variants[0]; // FIRST VARIANT
+        const variantId = defaultVariant._id;
+        const price = defaultVariant.salePrice;
+
+        // 1️⃣ FIND OR CREATE CART
+        let cart = await Cart.findOne({ userId });
+
+        if (!cart) {
+            cart = new Cart({
+                userId,
+                items: [{
+                    productId,
+                    variantId,
+                    quantity,
+                    price
+                }]
+            });
+        } else {
+            const existingItem = cart.items.find(
+                item =>
+                    item.productId.toString() === productId &&
+                    item.variantId.toString() === variantId.toString()
+            );
+
+            if (existingItem) {
+                existingItem.quantity += 1;
+            } else {
+                cart.items.push({
+                    productId,
+                    variantId,
+                    quantity,
+                    price
+                });
+            }
+        }
+
+        await cart.save();
+
+        // 2️⃣ REMOVE FROM WISHLIST
+        await Wishlist.updateOne(
+            { userId },
+            { $pull: { products: { productId } } }
+        );
+
+        return res.json({
+            success: true,
+            message: "Product added to cart (default variant) & removed from wishlist"
+        });
+
+    } catch (error) {
+        console.error("Add-from-wishlist error:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Server error"
+        });
+    }
+};
+
+
 
 
 
@@ -217,5 +296,6 @@ module.exports = {
     getCart,
     updateQuantity,
     removeItem,
+    addToCartFromWishlist
 
  };

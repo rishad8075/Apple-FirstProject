@@ -168,7 +168,8 @@ class="btn btn-outline-success btn-sm">
               
                 <% if(firstItem.status !== 'Delivered' &&
                       firstItem.status !== 'Cancelled' &&
-                      firstItem.status !== 'Returned') { %>
+                      firstItem.status !== 'Returned' &&
+                      firstItem.status !== 'Return Requested') { %>
 
                     <button class="btn btn-danger btn-sm cancel-order-btn"
                             data-orderid="<%= order._id %>">
@@ -177,7 +178,7 @@ class="btn btn-outline-success btn-sm">
                 <% } %>
 
                 
-                <% if(firstItem.status === 'Delivered' && firstItem.status !== 'Returned') { %>
+                <% if(firstItem.status === 'Delivered' && firstItem.status !== 'Returned' && firstItem.status !== 'Return Requested') { %>
                     <% for(let item of order.orderItems){ %>
                         <% if(order.orderItems.length>=2){ %>
 

@@ -188,15 +188,44 @@ $(document).ready(function() {
         window.location.href = url.toString();
     });
 
-    // Wishlist toggle
-    $('.wishlist-btn').on('click', function(e) {
-        e.preventDefault();
-        const btn = $(this);
-        const productId = btn.data('product-id');
-        $.post('/wishlist/toggle', { productId }, function(res) {
-            if(res.success) btn.toggleClass('active');
-        });
+    // Wishlist toggle 
+$('.wishlist-btn').on('click', function(e) {
+    e.preventDefault();
+    const btn = $(this);
+    const productId = btn.data('product-id');
+
+    $.post('/wishlist/toggle', { productId }, function(res) {
+        if(res.success) {
+            // Toggle heart
+            btn.toggleClass('active');
+
+            // Show SweetAlert notification
+            if(btn.hasClass('active')) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Added to Wishlist!',
+                    text: 'This product has been added to your wishlist.',
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+            } else {
+                Swal.fire({
+                    icon: 'info',
+                    title: 'Removed from Wishlist!',
+                    text: 'This product has been removed from your wishlist.',
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+            }
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops!',
+                text: res.message || 'Something went wrong.',
+            });
+        }
     });
+});
 
     // Add to Cart - delegated click handler
     $(document).on('click', '.add-to-cart-btn', async function() {

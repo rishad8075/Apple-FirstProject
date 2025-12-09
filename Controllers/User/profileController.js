@@ -104,7 +104,7 @@ const getResetPassword = async (req, res) => {
     try {
         res.render("User/resetPassword");
     } catch (error) {
-        res.render("page-404")
+        res.render("page-404");
     }
 };
 
@@ -210,7 +210,7 @@ const getEditProfile = async (req, res) => {
 
 const postEditProfile = async (req, res) => {
   try {
-    const userId = req.session.userId;
+    const userId = req.user._id;
     const user = await User.findById(userId);
 
     if (!user) return res.status(404).send("User not found");
@@ -303,12 +303,7 @@ const postchangeEmail = async (req, res) => {
     try {
         const { email } = req.body;
 
-        const user = await User.findOne({ email: email });
-        if (!user) {
-            return res.render("User/changeEmail-valid", {
-                errorMessage: "Email does not exist"
-            });
-        }
+       
 
         const otp = generateOtp();
         req.session.otp = otp;
@@ -333,7 +328,8 @@ const postchangeEmail = async (req, res) => {
 const verifyChangeEmail_otp = async (req, res) => {
     try {
         const enteredOtp = req.body.otp;
-      
+        const user = await User.findById(req.session.userId)
+        const newEmail = req.session.userData
 
         if (!enteredOtp) {
             return res.json({ success: false, message: "OTP is missing" });
@@ -343,7 +339,9 @@ const verifyChangeEmail_otp = async (req, res) => {
         console.log("Session OTP:", req.session.otp);
 
         if (enteredOtp.toString() === req.session.otp.toString()) {
-            return res.json({ success: true, redirectUrl: "/user/changeEmail" });
+            user.email =newEmail;
+        await user.save();
+            return res.json({ success: true, redirectUrl: "/user/profile" });
         } else {
             return res.json({ success: false, message: "OTP not matching" });
         }
@@ -387,7 +385,7 @@ const getchangeEmail = async (req, res) => {
     try {
         res.render("User/changeEmail");
     } catch (error) {
-        res.redirect("/pageNotFound");
+        res.render("page-404");
     }
 };
 
@@ -409,8 +407,8 @@ const changeEmail = async (req, res) => {
         res.redirect("/user/profile");
 
     } catch (error) {
-        console.error("Error resetting password:", error);
-        res.redirect("/pageNotFound");
+        console.error("Error changing email:", error);
+        res.render("page-404");
     }
 };
 

@@ -13,5 +13,6 @@ router.use(require("./addressRoutes"));
 router.use(require("./cartRoutes"));
 router.use(require("./checkoutRoutes"));
 router.use(require("./orderRoutes"));
+router.use(require("./wishlistRoutes"));
 
 module.exports = router;

@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Payment Checkout</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; margin: 0; padding: 0; background-color: #f4f7fa; color: #1a1a1a; }
+        .payment-container { max-width: 1200px; margin: 60px auto; padding: 20px; }
+        h2 { font-size: 28px; font-weight: 700; margin-bottom: 30px; color: #333; text-transform: uppercase; }
+        .payment-selection-area { display: flex; gap: 30px; align-items: flex-start; }
+        .payment-options-col { flex: 2; padding: 30px; background-color: #fff; border-radius: 12px; box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08); }
+        .total-amount-col { flex: 1; min-width: 300px; }
+        .payment-option-group { border: 1px solid #e0e0e0; border-radius: 8px; margin-bottom: 15px; transition: all 0.2s; }
+        .payment-option { display: flex; align-items: center; padding: 15px 20px; cursor: pointer; border-bottom: 1px solid #f0f0f0; }
+        .payment-option:last-child { border-bottom: none; }
+        .payment-option label { font-size: 16px; font-weight: 500; cursor: pointer; flex-grow: 1; margin-left: 10px; color: #333; }
+        .payment-option input[type="radio"] { -webkit-appearance: none; -moz-appearance: none; appearance: none; width: 20px; height: 20px; border: 2px solid #ccc; border-radius: 50%; outline: none; cursor: pointer; transition: all 0.2s; }
+        .payment-option input[type="radio"]:checked { background-color: #000; border-color: #000; box-shadow: 0 0 0 3px #fff inset, 0 0 0 5px #000; }
+        .card-icons i { color: #999; font-size: 22px; margin-left: 8px; }
+        .payment-option input[type="radio"]:checked ~ label { color: #000; }
+        .payment-option input[type="radio"]:checked ~ .card-icons i { color: #000; }
+        .complete-payment-btn { background-color: #FFC000; color: #1a1a1a; border: none; padding: 18px 30px; font-size: 18px; font-weight: 700; border-radius: 8px; cursor: pointer; margin-top: 30px; width: 100%; transition: background-color 0.2s, transform 0.1s; }
+        .complete-payment-btn:hover { background-color: #E6AD00; transform: translateY(-1px); }
+        .summary-box { background-color: #fff; padding: 30px; border-radius: 12px; box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08); position: sticky; top: 20px; }
+        .summary-box h3 { font-size: 18px; font-weight: 700; margin-bottom: 25px; color: #555; text-transform: uppercase; border-bottom: 2px solid #f0f0f0; padding-bottom: 10px; }
+        .summary-item { display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 16px; color: #555; }
+        .summary-item.total { font-size: 24px; font-weight: 700; color: #1a1a1a; margin-top: 20px; padding-top: 15px; border-top: 2px solid #000; }
+        .summary-item .price-value { font-weight: 600; }
+        @media (max-width: 900px) { .payment-selection-area { flex-direction: column; } .total-amount-col { min-width: 100%; } .summary-box { position: static; } }
+    </style>
+</head>
+<body>
+
+<header class="header">
+    <%- include("../partials/header.ejs") %>
+</header>
+
+<div class="payment-container">
+    <h2>CHOOSE PAYMENT METHOD</h2>
+    <div class="payment-selection-area">
+
+        <!-- Payment Options -->
+        <div class="payment-options-col">
+            <form id="paymentForm">
+                <div class="payment-option-group">
+                    <div class="payment-option">
+                        <input type="radio" id="cod" name="payment_method" value="COD" checked>
+                        <label for="cod">Cash on Delivery</label>
+                        <div class="card-icons"><i class="fa-solid fa-money-bill-wave"></i></div>
+                    </div>
+                    <div class="payment-option">
+                        <input type="radio" id="card" name="payment_method" value="Razorpay">
+                        <label for="card">Credit/Debit/UPI (Razorpay)</label>
+                        <div class="card-icons"><i class="fa-brands fa-cc-visa"></i><i class="fa-brands fa-cc-mastercard"></i><i class="fa-solid fa-credit-card"></i></div>
+                    </div>
+                    <div class="payment-option">
+                        <input type="radio" id="wallet" name="payment_method" value="Wallet">
+                        <label for="wallet">Wallet (Balance: ₹<%= (locals.walletBalance || 0).toFixed(2) %>)</label>
+                        <div class="card-icons"><i class="fa-solid fa-wallet"></i></div>
+                    </div>
+                </div>
+
+                <button type="submit" class="complete-payment-btn">Complete Payment</button>
+            </form>
+        </div>
+
+        <!-- Order Summary -->
+        <div class="total-amount-col">
+            <div class="summary-box">
+                <h3>Order Summary</h3>
+                <% 
+                    const subtotalVal = typeof subtotal !== 'undefined' ? subtotal : 0;
+                    const taxVal = typeof tax !== 'undefined' ? tax : 0;
+                    const shippingVal = typeof shipping !== 'undefined' ? shipping : 0;
+                    const totalVal = typeof total !== 'undefined' ? total : subtotalVal + taxVal + shippingVal;
+                %>
+                <div class="summary-item"><span>Subtotal</span><span class="price-value">₹<%= subtotalVal.toFixed(2) %></span></div>
+                <div class="summary-item"><span>Tax (18%)</span><span class="price-value">₹<%= taxVal.toFixed(2) %></span></div>
+                <div class="summary-item"><span>Shipping</span><span class="price-value">₹<%= shippingVal.toFixed(2) %></span></div>
+                <div class="summary-item total"><span>Grand TOTAL</span><span class="price-value final-total">₹<%= totalVal.toFixed(2) %></span></div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+const RAZORPAY_KEY_ID = "<%= process.env.RAZORPAY_KEY_ID %>";
+const userId = "<%= userId %>";
+const selectedAddress = <%- JSON.stringify(selectedAddress) %>;
+const cartItems = <%- JSON.stringify(items) %>;
+const grandTotal = <%= totalVal %>;
+
+function getOrderPayload(paymentMethod) {
+    return {
+        userId,
+        orderItems: cartItems.map(item => ({
+            productId: item.productId,
+            variantId: item.variantId,
+            name: item.name,
+            image: item.image,
+            quantity: item.qty,
+            price: item.price,
+            subtotal: item.total,
+            tax: (item.total * 18) / 100
+        })),
+        addressId: selectedAddress._id,
+        shippingAddress: selectedAddress,
+        paymentMethod,
+        grandTotal
+    };
+}
+
+document.getElementById('paymentForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const selectedMethod = document.querySelector('input[name="payment_method"]:checked').value;
+
+    Swal.fire({ title: 'Processing Order...', text: 'Please wait...', icon: 'info', allowOutsideClick: false, showConfirmButton: false, didOpen: () => Swal.showLoading() });
+
+    try {
+        if (selectedMethod === 'Razorpay') {
+            const orderResp = await fetch('/api/payment/razorpay/create', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ amount: grandTotal }) });
+            const data = await orderResp.json();
+            Swal.close();
+            if (!data.success) return Swal.fire('Error', data.message || 'Failed to initiate payment', 'error');
+
+            const options = {
+                key: RAZORPAY_KEY_ID,
+                amount: data.order.amount,
+                currency: data.order.currency,
+                name: "Your Store Name",
+                description: `Order Payment ₹${grandTotal.toFixed(2)}`,
+                order_id: data.order.id,
+                handler: async function(response) {
+                    Swal.fire({ title: 'Verifying Payment...', icon: 'info', allowOutsideClick: false, showConfirmButton: false, didOpen: () => Swal.showLoading() });
+                    const verifyResp = await fetch('/api/payment/razorpay/verify', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            razorpay_payment_id: response.razorpay_payment_id,
+                            razorpay_order_id: response.razorpay_order_id,
+                            razorpay_signature: response.razorpay_signature,
+                            orderDetails: getOrderPayload(selectedMethod)
+                        })
+                    });
+                    const verifyData = await verifyResp.json();
+                    Swal.close();
+                    if (verifyData.success) {
+                        Swal.fire('Payment Successful! 🎉', 'Your order has been placed.', 'success').then(() => { window.location.href = verifyData.redirectUrl; });
+                    } else {
+                        Swal.fire('Transaction Failed 😔', 'Payment verification failed.', 'error').then(()=>{window.location.href = "/order-failure"})
+                    }
+                },
+                modal: { ondismiss: function() { Swal.close(); Swal.fire('Payment Cancelled', 'You closed the payment window.', 'info'); } }
+            };
+            new Razorpay(options).open();
+
+        } else if (selectedMethod === 'COD' || selectedMethod === 'Wallet') {
+            const response = await fetch('/checkout/complete-order', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(getOrderPayload(selectedMethod)) });
+            const data = await response.json();
+            Swal.close();
+            if (data.success) {
+                const title = selectedMethod === 'COD' ? 'Order Placed (COD) ✅' : 'Payment Successful (Wallet) 💳';
+                const html = selectedMethod === 'COD' ? `Your order is confirmed. Please keep ₹${grandTotal.toFixed(2)} ready at delivery.` : 'Your wallet balance has been debited.';
+                Swal.fire({ title, html, icon: 'success' }).then(() => { window.location.href = data.redirectUrl; });
+            } else {
+                Swal.fire('Error', data.message || `${selectedMethod} order placement failed.`, 'error');
+            }
+
+        } else {
+            Swal.close();
+            Swal.fire('Info', `The payment method "${selectedMethod}" is not yet implemented.`, 'info');
+        }
+
+    } catch(err) {
+        Swal.close();
+        Swal.fire('Server Error', 'Something went wrong. Please try again.', 'error');
+        console.error(err);
+    }
+});
+</script>
+
+</body>
+</html>

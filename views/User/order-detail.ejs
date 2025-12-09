@@ -22,6 +22,10 @@
         .status-Shipped { background: #ffc107; color: #000; }
         .status-Delivered { background: #28a745; }
         .status-Cancelled, .status-Returned { background: #dc3545; }
+        .status-Return-Requested { 
+    background: #ffc107; 
+    color: #000;
+}
         table img { width: 80px; height: 80px; object-fit: cover; border-radius: 5px; }
     </style>
 </head>
@@ -44,7 +48,10 @@
     <div class="card-box">
         <div class="d-flex justify-content-between">
             <div><strong>Order ID:</strong> <%= order.orderId %></div>
-            <span class="status-badge status-<%= order.status %>"><%= order.status %></span>
+                                    <!-- For order status -->
+<span class="status-badge status-<%= order.status.replace(/\s+/g, '-') %>">
+    <%= order.status %>
+</span>
         </div>
         <div>Order Date: <%= order.createdAt.toLocaleString() %></div>
         <div>Payment Method: <%= order.paymentMethod %></div>
@@ -91,9 +98,12 @@
                         <td>₹ <%= item.discount.toLocaleString('en-IN') %></td>
                         <td>₹ <%= item.tax.toLocaleString('en-IN') %></td>
                         <td>
-                            <span class="status-badge status-<%= item.status %>">
-                                <%= item.status %>
-                            </span>
+    
+
+                        <!-- For each item status -->
+                        <span class="status-badge status-<%= item.status.replace(/\s+/g, '-') %>">
+                            <%= item.status %>
+                        </span>
                         </td>
 
                         <!-- ACTION BUTTONS -->
@@ -109,7 +119,7 @@
                                 </button>
                             <% } %>
 
-                            <% if(item.status !== "Delivered" && item.status !== "Cancelled" && item.status !== "Returned") { %>
+                            <% if(item.status !== "Delivered" && item.status !== "Cancelled" && item.status !== "Returned"  && item.status !== "Return Requested") { %>
                                 <!-- CANCEL PRODUCT -->
                                 <button class="btn btn-sm btn-danger cancel-product-btn"
                                     data-orderid="<%= order._id %>"
@@ -147,14 +157,14 @@
     </div>
 
     <!-- CANCEL ENTIRE ORDER -->
-    <% if(order.status !== "Delivered" && order.status !== "Cancelled" && order.status !== "Returned") { %>
+    <% if(order.status !== "Delivered" && order.status !== "Cancelled" && order.status !== "Returned" && order.status !=="Return Requested") { %>
         <button class="btn btn-danger cancel-order-btn" data-orderid="<%= order._id %>">
             <i class="fas fa-times-circle"></i> Cancel Entire Order
         </button>
     <% } %>
 
     <!-- RETURN ENTIRE ORDER -->
-    <% if(order.status === "Delivered") { %>
+    <% if(order.status === "Delivered" ) { %>
         <button class="btn btn-warning mt-3 return-order-btn" data-orderid="<%= order.orderId %>">
             <i class="fas fa-undo"></i> Return Entire Order
         </button>
@@ -181,7 +191,7 @@ document.querySelectorAll('.return-order-btn').forEach(btn => {
             confirmButtonText: 'Return Order'
         }).then(async result => {
             if(result.isConfirmed){
-                const res = await fetch('/orders/return', {
+                const res = await fetch("/return-order", {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({ orderId, reason: result.value })
