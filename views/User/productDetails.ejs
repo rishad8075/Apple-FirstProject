@@ -117,6 +117,13 @@
     <!-- Product Info -->
     <div class="col-lg-6">
       <h2><%= product.productName %></h2>
+      <!-- Wishlist Button -->
+<button 
+  class="btn btn-light border wishlist-btn" 
+  data-id="<%= product._id %>" 
+  style="border-radius: 50%; width: 45px; height: 45px;">
+  <i class="fa-regular fa-heart" id="wishlistIcon"></i>
+</button>
 
       <!-- Category -->
       <% if(product.category && product.category.name) { %>
@@ -357,6 +364,58 @@ function changeImage(src, thumb) {
 
   thumb.classList.add("active");
 }
+
+
+document.querySelector('.wishlist-btn')?.addEventListener('click', async function () {
+    const button = this;
+    const productId = button.dataset.id;
+
+    try {
+        const res = await fetch('/wishlist/toggle', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ productId })
+        });
+
+        const data = await res.json();
+
+        if (data.success && data.action === "added") {
+            Swal.fire({
+                icon: "success",
+                title: "Added to Wishlist",
+                text: "Product added to your wishlist!"
+            });
+
+            document.getElementById("wishlistIcon").classList.remove("fa-regular");
+            document.getElementById("wishlistIcon").classList.add("fa-solid");
+
+        } else if (!data.success && data.message === "Product is already in wishlist") {
+            Swal.fire({
+                icon: "info",
+                title: "Already Added",
+                text: "This product is already in your wishlist!"
+            });
+
+        } else if (data.action === "removed") {
+            Swal.fire({
+                icon: "info",
+                title: "Removed",
+                text: "Product removed from wishlist!"
+            });
+
+            document.getElementById("wishlistIcon").classList.remove("fa-solid");
+            document.getElementById("wishlistIcon").classList.add("fa-regular");
+        }
+
+    } catch (err) {
+        console.error(err);
+        Swal.fire({
+            icon: "error",
+            title: "Error",
+            text: "Connection failed. Try again."
+        });
+    }
+});
 </script>
 
 </body>

@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Edit Coupon | Admin Panel</title>
+
+<!-- BOOTSTRAP -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<!-- SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<style>
+    body {
+        background: #1a1b21;
+        font-family: "Poppins", sans-serif;
+    }
+    .main-content {
+        margin-left: 260px;
+        padding: 30px;
+        color: #fff;
+    }
+    .coupon-card {
+        background: #2b2e38;
+        border-radius: 12px;
+        padding: 30px;
+        box-shadow: 0 0 12px rgba(0,0,0,0.3);
+    }
+    label {
+        font-weight: 500;
+        color: #e2e2e2;
+    }
+    input, select, textarea {
+        background: #3a3d47 !important;
+        border: 1px solid #555 !important;
+        color: #fff !important;
+        border-radius: 8px !important;
+    }
+    input:focus, select:focus, textarea:focus {
+        border-color: #0d6efd !important;
+        box-shadow: 0 0 4px #0d6efd;
+    }
+    .error-text {
+        font-size: 0.85rem;
+        color: #ff6b6b;
+        display: none;
+    }
+    .success { border-color: #28a745 !important; }
+    .error { border-color: #dc3545 !important; }
+</style>
+</head>
+
+<body class="bg-dark">
+
+<%- include("../partials/adminSide-bar.ejs") %>
+
+<div class="main-content">
+    <h2 class="mb-4">✏️ Edit Coupon</h2>
+
+    <div class="coupon-card">
+        <form id="couponForm" novalidate>
+            <!-- Hidden coupon ID -->
+            <input type="hidden" id="couponId" value="<%= coupon._id %>">
+
+            <div class="row g-4">
+
+                <div class="col-md-6">
+                    <label>Coupon Code</label>
+                    <input type="text" class="form-control" id="code" name="code" placeholder="e.g., NEW50" value="<%=coupon.code %>">
+                    <p class="error-text" id="codeError">Enter a valid coupon code (min 3 chars).</p>
+                </div>
+
+                <div class="col-md-6">
+                    <label>Discount Type</label>
+                    <select class="form-control" id="discountType" name="discountType">
+                        <option value="">Select type</option>
+                        <option value="percentage" <%= coupon.discountType==='percentage' ? 'selected' : '' %>>Percentage</option>
+                        <option value="fixed" <%= coupon.discountType==='fixed' ? 'selected' : '' %>>Fixed Amount</option>
+                    </select>
+                    <p class="error-text" id="discountTypeError">Choose discount type.</p>
+                </div>
+
+                <div class="col-md-6">
+                    <label>Discount Value</label>
+                    <input type="number" class="form-control" id="discountValue" name="discountValue" placeholder="e.g., 20" value="<%=coupon.discountValue %>" >
+                    <p class="error-text" id="discountValueError">Enter a valid discount value.</p>
+                </div>
+
+                <div class="col-md-6">
+                    <label>Maximum Discount Amount</label>
+                    <input type="number" class="form-control" id="maxDiscount" name="maxDiscount" placeholder="optional" value="<%=coupon.maxDiscountAmount || '' %>"  >
+                </div>
+
+                <div class="col-md-12">
+                    <label>Description</label>
+                    <textarea class="form-control" id="description" name="description" rows="2" placeholder="Short description about this coupon"><%=coupon.description %></textarea>
+                    <p class="error-text" id="descriptionError">Description must be at least 5 characters.</p>
+                </div>
+
+                <div class="col-md-6">
+                    <label>Minimum Order Amount</label>
+                    <input type="number" class="form-control" id="minAmount" name="minAmount" placeholder="e.g., 499" value="<%=coupon.minOrderAmount %>"  >
+                    <p class="error-text" id="minAmountError">Enter a minimum amount.</p>
+                </div>
+
+                <div class="col-md-6">
+                    <label>Max Uses</label>
+                    <input type="number" class="form-control" id="maxUses" name="maxUses" placeholder="e.g., 100" value="<%=coupon.maxUses %>"  >
+                    <p class="error-text" id="maxUsesError">Enter valid number of uses.</p>
+                </div>
+
+                <div class="col-md-6">
+                    <label>Start Date</label>
+                    <input type="date" class="form-control" id="startDate" name="startDate" value="<%= coupon.startDate ? coupon.startDate.toISOString().substring(0,10) : '' %>">
+                    <p class="error-text" id="startDateError">Select a start date.</p>
+                </div>
+
+                <div class="col-md-6">
+                    <label>End Date</label>
+                    <input type="date" class="form-control" id="endDate" name="endDate" value="<%= coupon.expiryDate ? coupon.expiryDate.toISOString().substring(0,10) : '' %>">
+                    <p class="error-text" id="endDateError">End date must be after start date.</p>
+                </div>
+
+            </div>
+
+            <div class="text-end mt-4">
+                <button type="submit" class="btn btn-primary px-4 py-2">Edit Coupon</button>
+                <a href="/admin/coupons" class="btn btn-secondary px-4 py-2 ms-2">Cancel</a>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+<script>
+    const fields = {
+        code: v => v.length >= 3,
+        discountType: v => v !== "",
+        discountValue: v => v > 0,
+        minAmount: v => v >= 0,
+        maxUses: v => v > 0,
+        startDate: v => v !== "",
+        endDate: v => {
+            const start = document.getElementById("startDate").value;
+            return start && v > start;
+        },
+        description: v => v.length >= 5
+    };
+
+    Object.keys(fields).forEach(id => {
+        const input = document.getElementById(id);
+        const error = document.getElementById(id + "Error");
+        if (input) {
+            input.addEventListener("input", () => {
+                const isValid = fields[id](input.value);
+                input.classList.toggle("error", !isValid);
+                input.classList.toggle("success", isValid);
+                error.style.display = isValid ? "none" : "block";
+            });
+        }
+    });
+
+    document.getElementById("couponForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        let invalid = false;
+
+        Object.keys(fields).forEach(id => {
+            const input = document.getElementById(id);
+            if (!fields[id](input.value)) {
+                invalid = true;
+                input.classList.add("error");
+                document.getElementById(id + "Error").style.display = "block";
+            }
+        });
+
+        if (invalid) return;
+
+        const couponId = document.getElementById("couponId").value;
+        const formData = {
+            code: document.getElementById("code").value.trim(),
+            discountType: document.getElementById("discountType").value,
+            discountValue: document.getElementById("discountValue").value,
+            maxDiscount: document.getElementById("maxDiscount").value,
+            minAmount: document.getElementById("minAmount").value,
+            maxUses: document.getElementById("maxUses").value,
+            startDate: document.getElementById("startDate").value,
+            endDate: document.getElementById("endDate").value,
+            description: document.getElementById("description").value.trim()
+        };
+
+        try {
+            const res = await fetch(`/admin/coupons/edit/${couponId}`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(formData)
+            });
+            const result = await res.json();
+
+            if(result.success){
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Coupon edited',
+                    text: result.message
+                }).then(() => window.location.href="/admin/coupons");
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: result.message
+                });
+            }
+
+        } catch(err){
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Something went wrong!'
+            });
+        }
+    });
+</script>
+
+</body>
+</html>

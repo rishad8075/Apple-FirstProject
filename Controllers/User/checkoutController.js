@@ -330,7 +330,7 @@ const verifyRazorpayPayment = async (req, res) => {
             userId,
             orderItems: orderDetails.orderItems,
             address: fullAddress,
-            paymentMethod: "Razorpay", // Must match Orders schema enum
+            paymentMethod: "Razorpay", 
             status: "Pending",
             shippingCharge: 70,
             totalPrice: orderDetails.grandTotal
@@ -340,9 +340,9 @@ const verifyRazorpayPayment = async (req, res) => {
 
         // 3️⃣ Update stock
         for (const item of order.orderItems) {
-            await Product.updateOne(
-                { _id: item.productId, "variants._id": item.variantId },
-                { $inc: { "variants.$.stock": -item.quantity } }
+             await Product.updateOne(
+                { _id: item.productId },
+                { $inc: { "variants.0.stock": -item.quantity } }
             );
         }
 
@@ -376,7 +376,7 @@ const orderFailurePage = async (req, res) => {
         // Grab reason from query params
         const reason = req.query.reason || "Transaction failed";
 
-        // Render failure page
+        
         res.render("User/order-failure", { reason });
     } catch (err) {
         console.error(err);
