@@ -5,9 +5,10 @@ const Product = require("../../model/Product");
 const User = require("../../model/user");
 const Orders = require("../../model/Orders");
 const { v4: uuidv4 } = require("uuid");// for unique id
-const Payment = require("../../model/payment")
+const Payment = require("../../model/payment");
 const Razorpay = require("razorpay");
 const Coupon = require("../../model/Coupon");
+const Wallet = require("../../model/wallet");
 
 
 const razorpayInstance = new Razorpay({
@@ -175,9 +176,11 @@ const paymentPage = async (req, res) => {
 
     if (!userId) return res.redirect("/login");
     if (!addressId) return res.redirect("/checkout");
+    const wallet = await Wallet.findOne({userId:userId}).lean()
 
     const cart = await Cart.findOne({ userId }).populate("items.productId");
     if (!cart || cart.items.length === 0) return res.redirect("/cart");
+    const user = await User.findById(userId)
 
     const items = cart.items.map(item => {
       const product = item.productId;
@@ -224,7 +227,9 @@ const paymentPage = async (req, res) => {
     const selectedAddress = await Address.findById(addressId).lean();
 
     res.render("User/payment", {
+        user,
       userId,
+      walletBalance: wallet ? wallet.balance : 0,
       items,
       selectedAddress,
       subtotal,
@@ -456,7 +461,7 @@ const orderSuccessPage = async (req, res) => {
     try {
         const orderId = req.params.orderId;
         const order = await Orders.findById(orderId);
-        const user = await User.findById(order.userId);
+        const user = await User.findById(req.session.userId);
         if (!order) return res.redirect("/");
         res.render("User/order-success", { order, user });
     } catch (err) {

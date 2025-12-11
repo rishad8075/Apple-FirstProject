@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>My Wallet | User Panel</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+<!-- SweetAlert2 + Razorpay (Razorpay script also included at end before using it) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
+<style>
+  /* ---------- Page theme ---------- */
+  body { background-color: #101018; color: #fff; font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; }
+
+  /* Sidebar adjustments when included partial is fixed */
+  .page-wrapper { padding-top: 20px; }
+
+  /* Wallet card (glass + neon) */
+  .wallet-card-modern {
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    border: 1px solid rgba(255,255,255,0.04);
+    border-radius: 16px;
+    padding: 34px;
+    box-shadow: 0 10px 30px rgba(2,6,23,0.6);
+    transition: transform .18s ease;
+  }
+  .wallet-card-modern:hover { transform: translateY(-6px); }
+
+  .wallet-money {
+    font-size: 3rem;
+    font-weight: 800;
+    background: linear-gradient(90deg,#00d4ff,#00ff9d);
+    -webkit-background-clip: text;
+    color: transparent;
+  }
+
+  .wallet-input {
+    max-width: 220px;
+    background: #1b1d24;
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.04);
+    border-radius: 10px;
+    padding: .5rem .75rem;
+  }
+
+  .btn-neon {
+    background: linear-gradient(90deg,#007bff,#00d4ff);
+    color: #fff;
+    font-weight: 700;
+    border-radius: 10px;
+    padding: .55rem 1rem;
+    border: none;
+    box-shadow: 0 6px 18px rgba(0,212,255,0.12);
+    transition: transform .12s ease, box-shadow .12s ease;
+  }
+  .btn-neon:active { transform: translateY(1px); }
+  .btn-neon:hover { box-shadow: 0 10px 30px rgba(0,212,255,0.18); transform: translateY(-2px); }
+
+  /* Table / card */
+  .card-modern-table {
+    background: rgba(255,255,255,0.02);
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.03);
+    overflow: hidden;
+  }
+  .table-modern thead th { color: #a8aab0; text-transform: uppercase; font-weight: 600; font-size: .8rem; border-bottom: 1px solid rgba(255,255,255,0.03); }
+  .table-modern td { color: #e9eef8; vertical-align: middle; }
+  .table-modern tbody tr:hover { background: rgba(255,255,255,0.02); }
+
+  .badge-success-glow { background: rgba(0,255,150,0.08); color: #00ff9d; border: 1px solid rgba(0,255,150,0.18); padding: .45rem .7rem; border-radius: 999px; font-weight:700; }
+  .badge-danger-glow { background: rgba(255,80,80,0.06); color: #ff7b7b; border: 1px solid rgba(255,80,80,0.14); padding: .45rem .7rem; border-radius: 999px; font-weight:700; }
+
+  /* Responsive adjustments */
+  @media (max-width: 992px) {
+    .col-main { margin-left: 0 !important; padding-left: 1rem !important; padding-right: 1rem !important; }
+  }
+  @media (max-width: 576px) {
+    .wallet-money { font-size: 2.2rem; }
+    .wallet-card-modern { padding: 18px; }
+    .wallet-input { max-width: 100%; width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+  <!-- Header + Sidebar partials (keep your existing partials) -->
+  <header><%- include('../partials/header') %></header>
+  <%- include('../partials/UserSide-bar.ejs') %>
+
+  <div class="container-fluid page-wrapper">
+    <div class="row">
+      <!-- main column; when sidebar is fixed you'll want margin-left similar to existing layout -->
+      <div class="col-lg-9 col-main" style="margin-left: 260px; padding-left: 20px;">
+
+        <!-- Wallet card -->
+        <div class="wallet-card-modern mb-4 text-center">
+          <div class="d-flex flex-column align-items-center">
+            <small class="text-muted mb-2">Available Wallet Balance</small>
+            <div class="wallet-money mb-3">₹<%= (walletBalance || 0).toFixed(2) %></div>
+
+            <div class="d-flex gap-2 align-items-center justify-content-center flex-wrap">
+              <input id="walletAmount" type="number" min="10" step="1" placeholder="Enter amount (min ₹10)" class="wallet-input me-2" />
+              <button id="addMoneyBtn" class="btn-neon"><i class="fa-solid fa-wallet-plus me-2"></i> Add Money</button>
+            </div>
+
+            <small class="text-muted mt-2">Top up your wallet instantly using Razorpay.</small>
+          </div>
+        </div>
+
+        <!-- Transactions heading -->
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h3 class="mb-0">Transaction History</h3>
+        </div>
+
+        <!-- Transactions table -->
+       <div class="card-modern-table mt-4">
+  <div class="table-responsive">
+    <table class="table table-modern mb-0">
+      <thead>
+        <tr>
+          <th style="width:5%">#</th>
+          <th style="width:18%">Amount</th>
+          <th style="width:12%">Type</th>
+          <th>Description</th>
+          <th style="width:15%">Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (walletHistory && walletHistory.length > 0) { %>
+          <% walletHistory.forEach((txn, idx) => { %>
+            <tr>
+              <td><%= (currentPage-1)*5 + idx + 1 %></td>
+              <td class="fw-bold <%= txn.type.toLowerCase() === 'credit' ? 'text-success' : 'text-danger' %>">
+                <%= txn.type.toLowerCase() === 'credit' ? '+' : '-' %> ₹<%= txn.amount.toFixed(2) %>
+              </td>
+              <td>
+                <span class="<%= txn.type.toLowerCase() === 'credit' ? 'badge-success-glow' : 'badge-danger-glow' %>">
+                  <%= txn.type %>
+                </span>
+              </td>
+              <td><%= txn.description || '-' %></td>
+              <td><%= new Date(txn.date).toLocaleDateString('en-IN') %></td>
+            </tr>
+          <% }) %>
+        <% } else { %>
+          <tr>
+            <td colspan="5" class="text-center py-4 text-muted">No transactions yet.</td>
+          </tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Pagination -->
+<nav aria-label="Wallet transactions pagination" class="mt-3">
+  <ul class="pagination justify-content-center">
+    <% if (currentPage > 1) { %>
+      <li class="page-item">
+        <a class="page-link" href="?page=1">&laquo; First</a>
+      </li>
+      <li class="page-item">
+        <a class="page-link" href="?page=<%= currentPage - 1 %>">&lsaquo; Prev</a>
+      </li>
+    <% } %>
+
+    <% for(let i = 1; i <= totalPages; i++) { %>
+      <li class="page-item <%= currentPage === i ? 'active' : '' %>">
+        <a class="page-link" href="?page=<%= i %>"><%= i %></a>
+      </li>
+    <% } %>
+
+    <% if (currentPage < totalPages) { %>
+      <li class="page-item">
+        <a class="page-link" href="?page=<%= currentPage + 1 %>">Next &rsaquo;</a>
+      </li>
+      <li class="page-item">
+        <a class="page-link" href="?page=<%= totalPages %>">Last &raquo;</a>
+      </li>
+    <% } %>
+  </ul>
+</nav>
+
+
+  <!-- Scripts (Razorpay + SweetAlert) -->
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <script>
+    // Server-provided keys / user info (ensure your controller passes razorpayKeyId & user)
+    const RAZORPAY_KEY_ID = '<%= razorpayKeyId || process.env.RAZORPAY_KEY_ID %>';
+    const USER_NAME = '<%= (user && user.name) ? user.name : "" %>';
+    const USER_EMAIL = '<%= (user && user.email) ? user.email : "" %>';
+    const USER_PHONE = '<%= (user && user.phoneNumber) ? user.phoneNumber : (user && user.phone) ? user.phone : "" %>';
+
+    // Utility: show loading Swal
+    function showLoading(title = "Please wait...") {
+      Swal.fire({ title, allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+    }
+
+    // Click handler for Add Money (Option B)
+    document.getElementById('addMoneyBtn').addEventListener('click', async function () {
+      const raw = document.getElementById('walletAmount').value;
+      const amount = parseFloat(raw);
+
+      if (!amount || isNaN(amount) || amount < 10) {
+        return Swal.fire({ icon: 'warning', title: 'Invalid amount', text: 'Please enter a minimum amount of ₹10.' });
+      }
+
+      try {
+        showLoading('Creating order...');
+
+        // Create order at server (route: /wallet/add-balance/create-order)
+        const createRes = await fetch('/wallet/add-balance/create-order', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ amount })
+        });
+
+        const createData = await createRes.json();
+        Swal.close();
+
+        if (!createData || !createData.success) {
+          console.error('Create order failed:', createData);
+          return Swal.fire({ icon: 'error', title: 'Order creation failed', text: (createData && createData.message) ? createData.message : 'Unable to create payment order.' });
+        }
+
+        // Prepare Razorpay options
+        const order = createData.order;
+        const options = {
+          key: RAZORPAY_KEY_ID,
+          amount: order.amount, // in paise
+          currency: order.currency || 'INR',
+          name: 'Wallet Top-up',
+          description: `Add ₹${(order.amount/100).toFixed(2)} to wallet`,
+          order_id: order.id,
+          prefill: { name: USER_NAME, email: USER_EMAIL, contact: USER_PHONE },
+          theme: { color: '#007bff' },
+
+          // Success handler
+          handler: async function (razorResp) {
+            try {
+              showLoading('Verifying payment...');
+              const verifyRes = await fetch('/wallet/add-balance/verify-payment', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  payment_id: razorResp.razorpay_payment_id,
+                  order_id: razorResp.razorpay_order_id,
+                  signature: razorResp.razorpay_signature,
+                  amount: order.amount
+                })
+              });
+
+              const verifyData = await verifyRes.json();
+              Swal.close();
+
+              if (verifyData && verifyData.success) {
+                Swal.fire({ icon: 'success', title: 'Success', text: 'Wallet credited successfully.' })
+                  .then(() => window.location.reload());
+              } else {
+                console.error('Verify failed:', verifyData);
+                Swal.fire({ icon: 'error', title: 'Verification failed', text: (verifyData && verifyData.message) ? verifyData.message : 'Payment verification failed.' });
+              }
+            } catch (err) {
+              console.error('Verify error', err);
+              Swal.close();
+              Swal.fire({ icon: 'error', title: 'Verification Error', text: 'An error occurred while verifying payment.' });
+            }
+          },
+
+          // Payment failed handler
+          modal: {
+            ondismiss: function () {
+              // Called when user closes the checkout
+              Swal.fire({ icon: 'info', title: 'Payment Cancelled', text: 'You closed the payment window.' });
+            }
+          }
+        };
+
+        const rzp = new Razorpay(options);
+
+        // Listen payment failed event
+        rzp.on('payment.failed', function (resp) {
+          console.error('Razorpay payment failed', resp);
+          Swal.fire({ icon: 'error', title: 'Payment Failed', text: 'Your transaction could not be completed.' });
+        });
+
+        // Open checkout
+        rzp.open();
+
+      } catch (err) {
+        console.error('Unexpected error during add money flow:', err);
+        Swal.close();
+        Swal.fire({ icon: 'error', title: 'Error', text: 'Unexpected error occurred. Please try again.' });
+      }
+    });
+  </script>
+
+</body>
+</html>
