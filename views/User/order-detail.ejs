@@ -95,7 +95,14 @@
                         <td><%= item.quantity %></td>
                         <td>₹ <%= item.price.toLocaleString('en-IN') %></td>
                         <td>₹ <%= item.subtotal.toLocaleString('en-IN') %></td>
-                        <td>₹ <%= item.discount.toLocaleString('en-IN') %></td>
+                          <td>
+            <% if(order.coupon) { %>
+                <span class="text-success fw-bold"><%= order.coupon %></span>
+            <% } else { %>
+                <span>-</span>
+            <% } %>
+        </td>
+
                         <td>₹ <%= item.tax.toLocaleString('en-IN') %></td>
                         <td>
     
@@ -146,12 +153,12 @@
         <% } %>
 
         <% if(order.coupon) { %>
-            <p>Coupon Discount: ₹ <%= order.coupon.discount.toLocaleString('en-IN') %></p>
+            <p>Coupon Discount: ₹ <%= order.coupon.toLocaleString('en-IN') %></p>
         <% } %>
 
         <p>
             <strong>Grand Total: ₹ 
-                <%= (order.totalPrice + (order.shippingCharge || 0) - (order.coupon ? order.coupon.discount : 0)).toLocaleString('en-IN') %>
+                <%= (order.totalPrice + (order.shippingCharge || 0) - (order.coupon ? order.coupon : 0)).toLocaleString('en-IN') %>
             </strong>
         </p>
     </div>

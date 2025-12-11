@@ -7,6 +7,8 @@ const Orders = require("../../model/Orders");
 const { v4: uuidv4 } = require("uuid");// for unique id
 const Payment = require("../../model/payment")
 const Razorpay = require("razorpay");
+const Coupon = require("../../model/Coupon");
+
 
 const razorpayInstance = new Razorpay({
     key_id: process.env.RAZORPAY_KEY_ID,
@@ -15,62 +17,78 @@ const razorpayInstance = new Razorpay({
 
 
 const getCheckoutPage = async (req, res) => {
-  try {
-    const userId = req.session.userId;
+    try {
+        const userId = req.session.userId;
 
-    const user = await User.findById(userId);
+        if (!userId) return res.redirect("/login");
 
-    
-    const addresses = await Address.find({ user: userId }).lean();
+        const user = await User.findById(userId);
+        const addresses = await Address.find({ user: userId }).lean();
 
-    
-     const cart = await Cart.findOne({ userId })
-      .populate("items.productId"); 
+        const cart = await Cart.findOne({ userId }).populate("items.productId");
+        if (!cart || cart.items.length === 0) return res.redirect("/cart");
 
-    if (!cart) return res.redirect("/cart");
+        // Prepare items
+        const items = cart.items.map(item => {
+            const product = item.productId;
+            const variant = product.variants.find(v => v._id.toString() === item.variantId.toString());
+            const price = variant.salePrice || variant.regularPrice;
 
-    const items = cart.items.map(item => {
+            return {
+                name: product.productName,
+                image: variant?.images?.[0] || "/images/no-image.png",
+                qty: item.quantity,
+                price,
+                total: price * item.quantity
+            };
+        });
 
-     
-      const product = item.productId;
-      const variant = product.variants.find(v => v._id.toString() === item.variantId.toString());
+        // Calculate totals
+        const subtotal = items.reduce((acc, item) => acc + item.total, 0);
+        const tax = (subtotal * 18) / 100;
+        const shipping = 70;
 
-      return {
-        name: product.productName,
-        image: variant?.images?.[0] || "/images/no-image.png",
-        qty: item.quantity,
-        price: variant.salePrice || variant.regularPrice,
-        total: (variant.salePrice || variant.regularPrice) * item.quantity
-      };
-    });
+        // Coupon logic
+        let discountAmount = 0;
+        let appliedCoupon = req.session.appliedCoupon || null;
 
-      const subtotal = items.reduce((acc, item) => acc + item.total, 0);
+        if (appliedCoupon) {
+            const coupon = await Coupon.findOne({ code: appliedCoupon, isActive: true });
+            const now = new Date();
 
-    
-    const tax = (subtotal*18)/100
-    const shipping = 70;
-   
+            if (coupon && coupon.startDate <= now && coupon.expiryDate >= now && coupon.usedCount < coupon.maxUses && subtotal >= coupon.minOrderAmount) {
+                if (coupon.discountType === "percentage") {
+                    discountAmount = (subtotal * coupon.discountValue) / 100;
+                    if (coupon.maxDiscountAmount) discountAmount = Math.min(discountAmount, coupon.maxDiscountAmount);
+                } else {
+                    discountAmount = coupon.discountValue;
+                }
+            } else {
+                appliedCoupon = null;
+                discountAmount = 0;
+                req.session.appliedCoupon = null;
+            }
+        }
 
-    const couponDiscount = 0;
+        const grandTotal = subtotal + tax + shipping - discountAmount;
 
-    const grandTotal = subtotal + tax + shipping - couponDiscount;
+        res.render("User/checkout", {
+            user,
+            addresses,
+            items,
+            subtotal,
+            tax,
+            shipping,
+            couponDiscount: discountAmount,
+            discountAmount, // ✅ send this for your EJS
+            total: grandTotal,
+            appliedCoupon
+        });
 
-    res.render("User/checkout", {
-        user,
-        addresses,
-      items,
-      subtotal,
-      tax,
-      shipping,
-    
-      couponDiscount,
-      total: grandTotal
-    });
-
-  } catch (err) {
-    console.log("Checkout Error:", err);
-    res.status(500).render("page-404");
-  }
+    } catch (err) {
+        console.error("Checkout Error:", err);
+        res.status(500).render("page-404");
+    }
 };
 
 
@@ -165,6 +183,7 @@ const paymentPage = async (req, res) => {
       const product = item.productId;
       const variant = product.variants.find(v => v._id.toString() === item.variantId.toString());
       const price = variant.salePrice || variant.regularPrice;
+
       return {
         productId: product._id,
         variantId: variant._id,
@@ -172,17 +191,37 @@ const paymentPage = async (req, res) => {
         qty: item.quantity,
         price,
         total: price * item.quantity,
-        image: variant.images[0] || "/images/no-image.png"
+        image: variant.images?.[0] || "/images/no-image.png"
       };
     });
 
     const subtotal = items.reduce((acc, i) => acc + i.total, 0);
     const tax = (subtotal * 18) / 100;
     const shipping = 70;
-    const total = subtotal + tax + shipping;
+
+    // ✅ Coupon handling
+    let couponDiscount = 0;
+    let appliedCoupon = null;
+
+    if (req.session.appliedCoupon) {
+      const coupon = await Coupon.findOne({ code: req.session.appliedCoupon });
+      if (coupon && coupon.isActive) {
+        appliedCoupon = coupon.code;
+
+        if (coupon.discountType === "percentage") {
+          couponDiscount = (subtotal * coupon.discountValue) / 100;
+          if (coupon.maxDiscountAmount && couponDiscount > coupon.maxDiscountAmount) {
+            couponDiscount = coupon.maxDiscountAmount;
+          }
+        } else {
+          couponDiscount = coupon.discountValue;
+        }
+      }
+    }
+
+    const grandTotal = subtotal + tax + shipping - couponDiscount;
 
     const selectedAddress = await Address.findById(addressId).lean();
-    if (!selectedAddress) return res.redirect("/checkout");
 
     res.render("User/payment", {
       userId,
@@ -191,8 +230,9 @@ const paymentPage = async (req, res) => {
       subtotal,
       tax,
       shipping,
-      total,
-      walletBalance: 0 // optional
+      couponDiscount,
+      appliedCoupon,
+      total: grandTotal
     });
 
   } catch (err) {
@@ -203,7 +243,8 @@ const paymentPage = async (req, res) => {
 
 
 
-// PLACE ORDER (COD or Wallet)
+
+// PLACE ORDER (COD or Wallet) with coupon
 const placeOrder = async (req, res) => {
     try {
         const userId = req.session.userId;
@@ -241,7 +282,28 @@ const placeOrder = async (req, res) => {
         const subtotal = orderItems.reduce((acc, i) => acc + i.subtotal, 0);
         const tax = orderItems.reduce((acc, i) => acc + i.tax, 0);
         const shippingCharge = 70;
-        const totalPrice = subtotal + tax + shippingCharge;
+
+        // ✅ Handle applied coupon
+        let couponDiscount = 0;
+        let appliedCouponCode = null;
+        if (req.session.appliedCoupon) {
+            const coupon = await Coupon.findOne({ code: req.session.appliedCoupon });
+            if (coupon) {
+                appliedCouponCode = coupon.code;
+                if (coupon.discountType === "percentage") {
+                    couponDiscount = (subtotal * coupon.discountValue) / 100;
+                    if (coupon.maxDiscountAmount) couponDiscount = Math.min(couponDiscount, coupon.maxDiscountAmount);
+                } else {
+                    couponDiscount = coupon.discountValue;
+                }
+                // Increment usedCount & add user to appliedUsers
+                coupon.usedCount += 1;
+                coupon.appliedUsers.push({ userId, usedAt: new Date() });
+                await coupon.save();
+            }
+        }
+
+        const totalPrice = subtotal + tax + shippingCharge - couponDiscount;
 
         const order = new Orders({
             orderId: uuidv4(),
@@ -260,6 +322,7 @@ const placeOrder = async (req, res) => {
             paymentMethod,
             paymentStatus: paymentMethod === "COD" || paymentMethod === "WALLET" ? "Pending" : "Paid",
             shippingCharge,
+            coupon:  couponDiscount,   // store coupon code                  
             totalPrice
         });
 
@@ -275,12 +338,16 @@ const placeOrder = async (req, res) => {
 
         await Cart.deleteMany({ userId });
 
+        // Clear applied coupon from session
+        req.session.appliedCoupon = null;
+
         res.json({ success: true, redirectUrl: `/order-success/${order._id}` });
     } catch (err) {
         console.error(err);
         res.status(500).json({ success: false, message: "Server error" });
     }
 };
+
 
 // RAZORPAY: Create Order
 const createRazorpayOrder = async (req, res) => {
@@ -307,56 +374,83 @@ const verifyRazorpayPayment = async (req, res) => {
         const userId = orderDetails.userId;
         const addressId = orderDetails.addressId;
 
-        // 1️⃣ Fetch full address
+        // 1️⃣ Fetch address
         const addressDoc = await Address.findById(addressId).lean();
-        if (!addressDoc) {
-            return res.status(400).json({ success: false, message: "Address not found" });
+        if (!addressDoc) return res.status(400).json({ success: false, message: "Address not found" });
+
+        // 2️⃣ Calculate order totals
+        const orderItems = orderDetails.orderItems.map(item => ({
+            ...item,
+            tax: (item.subtotal * 18) / 100
+        }));
+
+        const subtotal = orderItems.reduce((acc, i) => acc + i.subtotal, 0);
+        const tax = orderItems.reduce((acc, i) => acc + i.tax, 0);
+        const shippingCharge = 70;
+
+        // 3️⃣ Coupon discount
+        let couponDiscount = 0;
+        if (req.session.appliedCoupon) {
+            const coupon = await Coupon.findOne({ code: req.session.appliedCoupon });
+            if (coupon) {
+                if (coupon.discountType === "percentage") {
+                    couponDiscount = (subtotal * coupon.discountValue) / 100;
+                    if (coupon.maxDiscountAmount) couponDiscount = Math.min(couponDiscount, coupon.maxDiscountAmount);
+                } else {
+                    couponDiscount = coupon.discountValue;
+                }
+
+                // Increment used count
+                coupon.usedCount += 1;
+                coupon.appliedUsers.push({ userId, usedAt: new Date() });
+                await coupon.save();
+            }
         }
 
-        const fullAddress = {
-            fullName: addressDoc.fullname,
-            phone: addressDoc.mobile,
-            street: `${addressDoc.houseName}, ${addressDoc.locality}`,
-            city: addressDoc.district,
-            state: addressDoc.state,
-            postalCode: addressDoc.pincode,
-            country: "India",
-            isDefault: addressDoc.isDefault
-        };
+        const totalPrice = subtotal + tax + shippingCharge - couponDiscount;
 
-        // 2️⃣ Create order
+        // 4️⃣ Create order
         const order = new Orders({
             orderId: uuidv4(),
             userId,
-            orderItems: orderDetails.orderItems,
-            address: fullAddress,
-            paymentMethod: "Razorpay", 
+            orderItems,
+            address: {
+                fullName: addressDoc.fullname,
+                phone: addressDoc.mobile,
+                street: `${addressDoc.houseName}, ${addressDoc.locality}`,
+                city: addressDoc.district,
+                state: addressDoc.state,
+                postalCode: addressDoc.pincode,
+                country: "India",
+                isDefault: addressDoc.isDefault
+            },
+            paymentMethod: "Razorpay",
             status: "Pending",
-            shippingCharge: 70,
-            totalPrice: orderDetails.grandTotal
+            shippingCharge,
+            coupon: couponDiscount,
+            totalPrice
         });
 
         await order.save();
 
-        // 3️⃣ Update stock
+        // 5️⃣ Update stock & clear cart
         for (const item of order.orderItems) {
-             await Product.updateOne(
+            await Product.updateOne(
                 { _id: item.productId },
                 { $inc: { "variants.0.stock": -item.quantity } }
             );
         }
-
-        // 4️⃣ Clear user cart
         await Cart.deleteMany({ userId });
+        req.session.appliedCoupon = null;
 
-        // 5️⃣ Respond with success
         res.json({ success: true, redirectUrl: `/order-success/${order._id}` });
 
     } catch (err) {
         console.error("Razorpay Payment Error:", err);
-       res.redirect(`/order-failure?reason=Payment verification failed`);
+        res.redirect(`/order-failure?reason=Payment verification failed`);
     }
 };
+
 // Order Success Page
 const orderSuccessPage = async (req, res) => {
     try {
@@ -384,6 +478,81 @@ const orderFailurePage = async (req, res) => {
     }
 };
 
+
+// APPLY COUPON
+// APPLY COUPON
+const applyCoupon = async (req, res) => {
+    try {
+        const userId = req.session.userId;
+        const { couponCode } = req.body;
+
+        if (!userId) return res.status(401).json({ success: false, message: "User not logged in" });
+
+        const cart = await Cart.findOne({ userId }).populate("items.productId");
+        if (!cart || cart.items.length === 0) return res.json({ success: false, message: "Cart is empty" });
+        
+        const coupon = await Coupon.findOne({ code: couponCode.trim().toUpperCase(), isActive: true });
+        if (!coupon) return res.json({ success: false, message: "Invalid coupon code" });
+
+        const now = new Date();
+        if (coupon.startDate > now || coupon.expiryDate < now) {
+            return res.json({ success: false, message: "Coupon expired or not started yet" });
+        }
+
+        if (coupon.usedCount >= coupon.maxUses) {
+            return res.json({ success: false, message: "Coupon usage limit reached" });
+        }
+
+        if (coupon.appliedUsers.some(u => u.userId.toString() === userId.toString())) {
+            return res.json({ success: false, message: "You have already used this coupon" });
+        }
+
+        const subtotal = cart.items.reduce((acc, item) => {
+            const price = item.productId.variants.find(v => v._id.toString() === item.variantId.toString()).salePrice ||
+                item.productId.variants.find(v => v._id.toString() === item.variantId.toString()).regularPrice;
+            return acc + price * item.quantity;
+        }, 0);
+
+        if (subtotal < coupon.minOrderAmount) {
+            return res.json({ success: false, message: `Minimum order ₹${coupon.minOrderAmount} required` });
+        }
+
+        // Calculate discount
+        let discountAmount = 0;
+        if (coupon.discountType === "percentage") {
+            discountAmount = (subtotal * coupon.discountValue) / 100;
+            if (coupon.maxDiscountAmount) discountAmount = Math.min(discountAmount, coupon.maxDiscountAmount);
+        } else {
+            discountAmount = coupon.discountValue;
+        }
+
+        // Store applied coupon in session
+        req.session.appliedCoupon = coupon.code;
+
+        res.json({
+            success: true,
+            message: "Coupon applied",
+            discountAmount,
+            code: coupon.code
+        });
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: "Server error" });
+    }
+};
+
+// REMOVE COUPON
+const removeCoupon = async (req, res) => {
+    try {
+        req.session.appliedCoupon = null;
+        res.json({ success: true, message: "Coupon removed" });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: "Server error" });
+    }
+};
+
 module.exports = {
     getCheckoutPage,
     checkoutAdd_Address,
@@ -393,5 +562,7 @@ module.exports = {
     verifyRazorpayPayment,
     orderSuccessPage,
     paymentPage,
-    orderFailurePage
+    orderFailurePage,
+    applyCoupon,
+    removeCoupon
 };

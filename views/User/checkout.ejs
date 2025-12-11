@@ -140,6 +140,25 @@
                 <span>Shipping Charge</span>
                 <span>₹ <%= shipping || 0 %></span>
             </div>
+                            <div class="mt-3">
+                    <label class="fw-semibold">Have a Coupon?</label>
+                    <div class="input-group mt-2">
+                        <input type="text" name="couponCode" id="couponCode" class="form-control" placeholder="Enter coupon code">
+                        <button class="btn btn-dark" id="applyCouponBtn">Apply</button>
+                    </div>
+
+                    <% if (appliedCoupon) { %>
+                        <div class="mt-2">
+                            <span class="badge bg-success">Applied: <%= appliedCoupon %></span>
+                            <button class="btn btn-sm btn-danger ms-2" id="removeCouponBtn">Remove</button>
+                        </div>
+                    <% } %>
+                </div>
+
+                <div class="d-flex justify-content-between mt-2">
+                    <span>Coupon Applied</span>
+                    <span class="text-success fw-bold">- ₹<%= discountAmount %></span>
+                </div>
             <div class="d-flex justify-content-between mt-2">
                 <span>Coupon Applied</span>
                 <span>- ₹ <%= couponDiscount || 0 %></span>
@@ -232,6 +251,50 @@
         const query = new URLSearchParams({ addressId: selectedAddress }).toString();
         window.location.href = `/payment?${query}`;
     });
+
+    //coupon
+
+    document.getElementById("applyCouponBtn")?.addEventListener("click", async () => {
+    const code = document.getElementById("couponCode").value.trim();
+
+    if (!code) {
+        Swal.fire("Error", "Please enter a coupon code", "warning");
+        return;
+    }
+
+    const res = await fetch("/apply-coupon", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ couponCode: code })
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
+        Swal.fire("Success", data.message, "success")
+            .then(() => location.reload());
+    } else {
+        Swal.fire("Error", data.message, "error");
+    }
+});
+
+document.getElementById("removeCouponBtn")?.addEventListener("click", async () => {
+    const res = await fetch("/remove-coupon", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" }
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
+        Swal.fire("Removed", data.message, "success")
+            .then(() => location.reload());
+    } else {
+        Swal.fire("Error", data.message, "error");
+    }
+});
+
+
 </script>
 
 </body>

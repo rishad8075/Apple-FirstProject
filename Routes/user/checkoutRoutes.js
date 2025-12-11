@@ -12,4 +12,7 @@ router.post("/api/payment/razorpay/create", auth, checkout.createRazorpayOrder);
 router.post("/api/payment/razorpay/verify", auth, checkout.verifyRazorpayPayment);
 router.get("/order-success/:orderId", auth, checkout.orderSuccessPage);
 router.get("/order-failure",auth,checkout.orderFailurePage)
+router.post("/apply-coupon", auth, checkout.applyCoupon);
+router.post("/remove-coupon", auth, checkout.removeCoupon);
+
 module.exports = router;
