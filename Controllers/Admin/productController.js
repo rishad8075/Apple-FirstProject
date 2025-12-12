@@ -326,6 +326,47 @@ const editProductPost = async (req, res) => {
 
 
 
+const addProductOffer = async (req, res) => {
+    try {
+        const { offer } = req.body;
+        const productId = req.params.id;
+
+        const product = await Product.findById(productId);
+        product.variants.forEach(v => v.productOffer = offer);
+        product.variants.forEach(v=>v.productOfferPrice=v.salePrice*offer/100)
+        product.variants.forEach(v=>v.salePrice-=v.productOfferPrice)
+
+        await product.save();
+        res.json({ success: true });
+
+    } catch (err) {
+        console.error(err);
+        res.json({ success: false });
+    }
+};
+
+const removeProductOffer = async (req, res) => {
+    try {
+        const productId = req.params.id;
+
+        const product = await Product.findById(productId);
+        product.variants.forEach(v=>v.salePrice+=v.productOfferPrice)
+        
+        product.variants.forEach(v => v.productOffer = 0);
+        product.variants.forEach(v => v.productOfferPrice = 0);
+        
+
+        await product.save();
+        res.json({ success: true });
+
+    } catch (err) {
+        res.json({ success: false });
+    }
+};
+
+
+
+
 
 
 
@@ -343,4 +384,6 @@ module.exports={
     deleteProduct,
     editProductGet,
     editProductPost,
+    addProductOffer,
+    removeProductOffer
 }

@@ -132,6 +132,10 @@
                 <textarea placeholder="Type here" name="description" class="form-control" id="descriptionId" ></textarea>
                 <div id="description-error" class="error-message"></div>
               </div>
+              <div class="mb-4">
+  <label class="form-label">Category Offer (%)</label>
+  <input type="number" min="0" max="90" name="categoryOffer" class="form-control" placeholder="Enter offer %" />
+</div>
               <div class="d-grid">
                 <button class="btn btn-primary" type="submit">
                   Create category
@@ -164,16 +168,20 @@
                     <td>
                     </td>
                     <td class="text-start">
-                        <% if (category. categoryOffer){%>
-                      <button class="btn btn-info" style="width: 100px">
-                        <a href="#" class="text-white">Add Offer</a>
-                      </button>
-                      <%}else{%>
-                      <button class="btn btn-info"style="width: 100px">
-                        <a href="#" class="text-white">Remove</a>
-                      </button>
-                      <%}%>
-                    </td>
+    <% if (category.categoryOffer > 0) { %>
+        <span class="badge bg-success"><%= category.categoryOffer %>% Off</span>
+    <% } else { %>
+        <span class="badge bg-secondary">No Offer</span>
+    <% } %>
+</td>
+
+<td>
+    <% if (category.categoryOffer > 0) { %>
+        <button class="btn btn-danger" onclick="removeCategoryOffer('<%= category._id %>')">Remove</button>
+    <% } else { %>
+        <button class="btn btn-info" onclick="showOfferModal('<%= category._id %>')">Add Offer</button>
+    <% } %>
+</td>
                     <td class="text-start">
                         <% if (category.isListed){%>
                       <span class="badge rounded-pill alert-success" style="width: 60px ; color:green; margin-top: 5px; background-color: rgb(118, 241, 118);">Listed</span>
@@ -236,11 +244,63 @@
             <% } %>
  
     </div>
+    <div class="modal fade" id="offerModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content text-dark">
+      <div class="modal-header">
+        <h5 class="modal-title">Add Category Offer</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+        <label class="form-label">Offer Percentage (%)</label>
+        <input type="number" class="form-control" id="offerInput" min="0" max="90">
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-primary" onclick="saveCategoryOffer()">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
   </section>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 
 <Script>
+  let selectedCategoryId = null;
+
+function showOfferModal(id) {
+  selectedCategoryId = id;
+  const modal = new bootstrap.Modal(document.getElementById("offerModal"));
+  modal.show();
+}
+
+function saveCategoryOffer() {
+  const offer = document.getElementById("offerInput").value;
+
+  fetch("/admin/category/add-offer", {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ id: selectedCategoryId, offer })
+  })
+  .then(res => res.json())
+  .then(data => {
+    Swal.fire("Success", data.message, "success").then(() => location.reload());
+  });
+}
+
+function removeCategoryOffer(id) {
+  fetch("/admin/category/remove-offer", {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ id })
+  })
+  .then(res => res.json())
+  .then(data => {
+    Swal.fire("Removed", data.message, "success").then(() => location.reload());
+  });
+}
  
 function confirmAction(id, list) {
     const action = list ? "List" : "Unlist";
