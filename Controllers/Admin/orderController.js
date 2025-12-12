@@ -1,7 +1,33 @@
 const Orders = require('../../model/Orders');
 const Product = require('../../model/Product');
 const User = require('../../model/user');
+const Wallet = require("../../model/wallet");
+
 const mongoose = require('mongoose');
+
+async function refundToWallet(userId, amount, source) {
+    let wallet = await Wallet.findOne({ userId });
+
+    if (!wallet) {
+        wallet = new Wallet({
+            userId,
+            balance: 0,
+            transactions: []
+        });
+    }
+
+    wallet.balance += amount;
+
+    wallet.transactions.push({
+        amount,
+        type: 'CREDIT',
+        source,
+        description: `Refund of ₹${amount}`,
+        date: new Date()
+    });
+
+    await wallet.save();
+}
 
 
 const listOrdersAdmin = async (req, res) => {
@@ -98,143 +124,188 @@ const orderDetailAdmin = async (req, res) => {
 };
 
 
-// const allowedTransitions = {
-//     "Pending": ["Confirmed", "Cancelled"],
-//     "Confirmed": ["Shipped", "Cancelled"],
-//     "Shipped": ["Out for Delivery"],
-//     "Out for Delivery": ["Delivered"],
-//     "Delivered": ["Return Requested"],
-//     "Return Requested": ["Returned"],
-//     "Returned": [],
-//     "Cancelled": []
-// };
+const isStatusRollback = (currentStatus, newStatus) => {
+    const flow = ["Pending", "Processing", "Shipped", "Out for Delivery", "Delivered"];
 
+    const cur = flow.indexOf(currentStatus);
+    const next = flow.indexOf(newStatus);
+
+    if (next === -1 || cur === -1) return false; // if not in flow → ignore
+    return next < cur; // rollback detected
+};
 
 const updateOrderStatusAdmin = async (req, res) => {
-  try {
-    const { orderId, status } = req.body;
+    try {
+        const { orderId, status } = req.body;
 
-    if (!orderId || !status)
-      return res.json({ success: false, message: "orderId and status required" });
-
-    const order = await Orders.findById(orderId);
-    if (!order)
-      return res.json({ success: false, message: "Order not found" });
-
-
-    if (order.status === "Return Requested" && status === "Confirmed") {
-      order.orderItems.forEach(item => {
-        if (item.status === "Return Requested") {
-          item.status = "Returned";
-
-          Product.findById(item.productId).then(prod => {
-            if (prod && prod.variants.length > 0) {
-              prod.variants[0].stock += item.quantity;
-              prod.save();
-            }
-          });
+        if (!orderId || !status) {
+            return res.json({ success: false, message: "orderId and status required" });
         }
-      });
 
-      order.status = "Returned";
-      await order.save();
-      return res.json({ success: true, message: "Return approved & stock updated" });
-    }
+        const order = await Orders.findById(orderId);
+        if (!order) return res.json({ success: false, message: "Order not found" });
 
-
-    if (status === "Cancelled") {
-      order.orderItems.forEach(item => {
-        if (item.status !== "Cancelled") {
-          item.status = "Cancelled";
-
-          Product.findById(item.productId).then(prod => {
-            if (prod && prod.variants.length > 0) {
-              prod.variants[0].stock += item.quantity;
-              prod.save();
-            }
-          });
+        // 🚫 BLOCK STATUS ROLLBACK
+        if (isStatusRollback(order.status, status)) {
+            return res.json({
+                success: false,
+                message: "❌ Cannot rollback shipment status"
+            });
         }
-      });
 
-      order.status = "Cancelled";
-      await order.save();
-      return res.json({ success: true, message: "Order cancelled & stock updated" });
-    }
+        // 🚫 BLOCK CANCEL WHEN SHIPPED / DELIVERED
+        if (
+            status === "Cancelled" &&
+            ["Shipped", "Out for Delivery", "Delivered"].includes(order.status)
+        ) {
+            return res.json({
+                success: false,
+                message: "❌ Order already shipped → cannot cancel now"
+            });
+        }
 
- 
-    order.status = status;
+        //
+        // 1️⃣ RETURN APPROVAL (Admin confirms return request)
+        //
+        if (order.status === "Return Requested" && status === "Confirmed") {
 
-    order.orderItems.forEach(item => {
+            for (const item of order.orderItems) {
+                if (item.status === "Return Requested") {
+                    item.status = "Returned";
 
-     
-      if (["Ordered", "Pending", "Confirmed", "Shipped", "Out for Delivery"].includes(item.status)) {
-        item.status = status;
-      }
-
-     
-      if (status === "Delivered") {
-        item.status = "Delivered";
-         Product.findById(item.productId).then(prod => {
-            if (prod && prod.variants.length > 0) {
-              prod.variants[0].stock -= item.quantity;
-              prod.save();
+                    await Product.updateOne(
+                        { _id: item.productId },
+                        { $inc: { "variants.0.stock": item.quantity } }
+                    );
+                }
             }
-          });
-      }
-    });
 
-    await order.save();
+            order.status = "Returned";
 
-    return res.json({ success: true, message: "Order status updated successfully" });
+            if (order.paymentMethod !== "COD" && order.paymentStatus !== "Refunded") {
+                await refundToWallet(order.userId, order.totalPrice, "RETURN");
+                order.paymentStatus = "Refunded";
+            }
 
-  } catch (error) {
-    console.log(error);
-    return res.json({ success: false, message: "Server error" });
-  }
+            await order.save();
+            return res.json({ success: true, message: "Return approved & refunded" });
+        }
+
+        //
+        // 2️⃣ ADMIN CANCEL ENTIRE ORDER
+        //
+        if (status === "Cancelled") {
+
+            // Restore stock for all non-cancelled items  
+            for (const item of order.orderItems) {
+                if (item.status !== "Cancelled") {
+                    item.status = "Cancelled";
+
+                    await Product.updateOne(
+                        { _id: item.productId },
+                        { $inc: { "variants.0.stock": item.quantity } }
+                    );
+                }
+            }
+
+            order.status = "Cancelled";
+
+            if (
+                (order.paymentMethod === "Razorpay" || order.paymentMethod === "Wallet") &&
+                order.paymentStatus !== "Refunded"
+            ) {
+                await refundToWallet(order.userId, order.totalPrice, "CANCEL");
+                order.paymentStatus = "Refunded";
+            }
+
+            await order.save();
+            return res.json({ success: true, message: "Order cancelled & refunded" });
+        }
+
+        //
+        // 3️⃣ NORMAL STATUS UPDATE (Shipped / Delivered etc.)
+        //
+        for (const item of order.orderItems) {
+            item.status = status;
+
+            // 🔥 If delivered → decrease stock
+            if (status === "Delivered") {
+                await Product.updateOne(
+                    { _id: item.productId },
+                    { $inc: { "variants.0.stock": -item.quantity } }
+                );
+            }
+        }
+
+        order.status = status;
+        await order.save();
+
+        return res.json({ success: true, message: "Order status updated successfully" });
+
+    } catch (err) {
+        console.log(err);
+        return res.json({ success: false, message: "Server error" });
+    }
 };
 
 
 const cancelProductAdmin = async (req, res) => {
-  try {
-    const { orderId, productId, reason } = req.body;
-    if (!orderId || !productId) return res.json({ success: false, message: 'orderId and productId required' });
-
-    const order = await Orders.findById(orderId);
-    if (!order) return res.json({ success: false, message: 'Order not found' });
-
-    const item = order.orderItems.find(i => i.productId.toString() === productId.toString());
-    if (!item) return res.json({ success: false, message: 'Product not found in order' });
-
-    if (item.status === 'Cancelled') return res.json({ success: false, message: 'Already cancelled' });
-
-   
-    item.status = 'Cancelled';
-    item.cancellationReason = reason || 'Cancelled by Admin';
-
-    
     try {
-  
-      const prod = await Product.findById(item.productId);
-      if (prod && prod.variants && prod.variants.length) {
-        prod.variants[0].stock = (prod.variants[0].stock || 0) + item.quantity;
-        await prod.save();
-      }
-    } catch (e) {
-      console.log('cancelProductAdmin stock update error', e.message);
-    }
+        const { orderId, productId, reason } = req.body;
 
-    
-    if (order.orderItems.every(it => it.status === 'Cancelled')) {
-      order.status = 'Cancelled';
-    }
+        if (!orderId || !productId)
+            return res.json({ success: false, message: "orderId and productId required" });
 
-    await order.save();
-    return res.json({ success: true, message: 'Product cancelled and stock updated' });
-  } catch (err) {
-    console.error('cancelProductAdmin error:', err);
-    return res.status(500).json({ success: false, message: 'Server error' });
-  }
+        const order = await Orders.findById(orderId);
+        if (!order) return res.json({ success: false, message: "Order not found" });
+
+        const item = order.orderItems.find(
+            i => i.productId.toString() === productId.toString()
+        );
+
+        if (!item) return res.json({ success: false, message: "Product not found in order" });
+
+        if (item.status === "Cancelled")
+            return res.json({ success: false, message: "Product already cancelled" });
+
+        // Restore stock
+        await Product.updateOne(
+            { _id: item.productId },
+            { $inc: { "variants.0.stock": item.quantity } }
+        );
+
+        // Cancel product
+        item.status = "Cancelled";
+        item.cancellationReason = reason || "Cancelled by Admin";
+
+        // Refund product price
+        const refundAmount = (item.subtotal || 0) - (item.discount || 0);
+
+        if (order.paymentMethod === "Razorpay" || order.paymentMethod === "Wallet") {
+            await refundToWallet(order.userId, refundAmount, "CANCEL");
+        }
+
+        // If all items cancelled → cancel full order + refund remaining
+        const allCancelled = order.orderItems.every(it => it.status === "Cancelled");
+
+        if (allCancelled) {
+            order.status = "Cancelled";
+
+            if (order.paymentStatus !== "Refunded") {
+                await refundToWallet(order.userId, order.totalPrice, "CANCEL");
+                order.paymentStatus = "Refunded";
+            }
+        }
+
+        await order.save();
+        res.json({ success: true, message: "Product cancelled successfully" });
+
+    } catch (err) {
+        console.log(err);
+        res.json({ success: false, message: "Server error" });
+    }
 };
+
 
 // --- NEW FUNCTION: List Return Requests for Admin View ---
 const listReturnRequestsAdmin = async (req, res) => {
@@ -285,7 +356,7 @@ const approveReturnAdmin = async (req, res) => {
         
         // You must implement the actual wallet credit logic here.
 
-        // ** B. Increment Stock (MANDATORY)**
+        //  Increment Stock 
         const prod = await Product.findById(item.productId);
         if (prod && prod.variants && prod.variants.length) {
           prod.variants[0].stock = (prod.variants[0].stock || 0) + request.quantity;
