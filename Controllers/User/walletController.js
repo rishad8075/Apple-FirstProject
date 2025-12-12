@@ -118,11 +118,13 @@ exports.verifyPayment = async (req, res) => {
         }
 
         wallet.balance += amount / 100;
+        let cash = amount /100
 
         wallet.transactions.push({
             amount: amount / 100,
             type: "CREDIT",
             source: "TOPUP",
+            description:`Added to wallet RS : ${cash}`,
             date: new Date()
         });
 
@@ -197,6 +199,7 @@ exports.useWalletForOrder =async (req, res) => {
       amount: grandTotal,
       type: "DEBIT",
       source: "ORDER_PAYMENT",
+      description: "Wallet purchase ",
       date: new Date()
     });
     await wallet.save();
