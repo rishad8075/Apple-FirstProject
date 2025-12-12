@@ -28,6 +28,11 @@ const OrdersSchema = new Schema({
     country: String,
     isDefault: { type: Boolean, default: false }
   },
+  paymentStatus: { 
+  type: String, 
+  enum: ["Pending", "Paid", "Refunded"], 
+  default: "Pending" 
+},
   coupon: { type: String, default: null },
     paymentMethod: { 
     type: String, 
