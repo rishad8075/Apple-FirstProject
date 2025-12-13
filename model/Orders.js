@@ -16,7 +16,13 @@ const OrdersSchema = new Schema({
     tax: { type: Number, default: 0 },
     status: { type: String, enum: ["Ordered", "Pending", "Confirmed", "Shipped", "Out for Delivery", "Delivered", "Cancelled", "Returned","Return Requested"], default: 'Ordered' },
     cancellationReason: { type: String, default: null },
-    returnReason: { type: String, default: null }
+    returnReason: { type: String, default: null },
+        returnRequest: {
+        status: { type: String, enum: ["PENDING", "ACCEPTED", "REJECTED"], default: null },
+        reason: String,
+        requestedAt: Date,
+        processedAt: Date
+    }
   }],
   address: {
     fullName: String,
@@ -33,6 +39,10 @@ const OrdersSchema = new Schema({
   enum: ["Pending", "Paid", "Refunded"], 
   default: "Pending" 
 },
+
+ 
+
+  
   coupon: { type: String, default: null },
     paymentMethod: { 
     type: String, 

@@ -153,7 +153,7 @@ const updateOrderStatusAdmin = async (req, res) => {
             });
         }
 
-        // 🚫 BLOCK CANCEL WHEN SHIPPED / DELIVERED
+        //  BLOCK CANCEL WHEN SHIPPED / DELIVERED
         if (
             status === "Cancelled" &&
             ["Shipped", "Out for Delivery", "Delivered"].includes(order.status)
@@ -165,31 +165,31 @@ const updateOrderStatusAdmin = async (req, res) => {
         }
 
         //
-        // 1️⃣ RETURN APPROVAL (Admin confirms return request)
-        //
-        if (order.status === "Return Requested" && status === "Confirmed") {
+        // // 1️⃣ RETURN APPROVAL (Admin confirms return request)
+        // //
+        // if (order.status === "Return Requested" && status === "Confirmed") {
 
-            for (const item of order.orderItems) {
-                if (item.status === "Return Requested") {
-                    item.status = "Returned";
+        //     for (const item of order.orderItems) {
+        //         if (item.status === "Return Requested") {
+        //             item.status = "Returned";
 
-                    await Product.updateOne(
-                        { _id: item.productId },
-                        { $inc: { "variants.0.stock": item.quantity } }
-                    );
-                }
-            }
+        //             await Product.updateOne(
+        //                 { _id: item.productId },
+        //                 { $inc: { "variants.0.stock": item.quantity } }
+        //             );
+        //         }
+        //     }
 
-            order.status = "Returned";
+        //     order.status = "Returned";
 
-            if (order.paymentMethod !== "COD" && order.paymentStatus !== "Refunded") {
-                await refundToWallet(order.userId, order.totalPrice, "RETURN");
-                order.paymentStatus = "Refunded";
-            }
+        //     if (order.paymentMethod !== "COD" && order.paymentStatus !== "Refunded") {
+        //         await refundToWallet(order.userId, order.totalPrice, "RETURN");
+        //         order.paymentStatus = "Refunded";
+        //     }
 
-            await order.save();
-            return res.json({ success: true, message: "Return approved & refunded" });
-        }
+        //     await order.save();
+        //     return res.json({ success: true, message: "Return approved & refunded" });
+        // }
 
         //
         // 2️⃣ ADMIN CANCEL ENTIRE ORDER
@@ -309,99 +309,113 @@ const cancelProductAdmin = async (req, res) => {
 
 // --- NEW FUNCTION: List Return Requests for Admin View ---
 const listReturnRequestsAdmin = async (req, res) => {
-  try {
-    // Implement pagination/filtering logic here as needed (similar to listOrdersAdmin)
-    const requests = await ReturnRequest.find() // Replace with your ReturnRequest model
-      .sort({ createdAt: -1 })
-      .populate('userId', 'name email')
-      .populate('orderId', 'orderId')
-      .lean();
+    try {
+        const requests = await Orders.find({ "orderItems.status": "Return Requested" })
+            .populate("userId", "name email")
+            .populate("orderItems.productId");
 
-    res.render('Admin/return-requests', { // Renders the new EJS file
-      requests: requests
-      // Pass pagination/filter data here
-    });
-  } catch (err) {
-    console.error('listReturnRequestsAdmin error:', err);
-    return res.status(500).render('page-500');
-  }
-};
+        // Map each item with Return Requested status
+        const formattedRequests = [];
+        requests.forEach(order => {
+            order.orderItems.forEach(item => {
+                if (item.status === "Return Requested") {
+                    formattedRequests.push({
+                        _id: item._id,
+                        orderId: order,
+                        userId: order.userId,
+                        productId: item.productId._id,
+                        productName: item.productId.name,
+                        productImage: item.productId.image,
+                        quantity: item.quantity,
+                        reason: item.returnReason,
+                        status: "PENDING",
+                        createdAt: item.updatedAt || order.updatedAt
+                    });
+                }
+            });
+        });
 
-// --- NEW FUNCTION: Admin Approves Return ---
-const approveReturnAdmin = async (req, res) => {
-  try {
-    const { requestId } = req.body;
-    if (!requestId) return res.json({ success: false, message: 'Request ID required' });
-
-    // 1. Find the return request and validate status
-    const request = await ReturnRequest.findById(requestId); // Replace with your ReturnRequest model
-    if (!request) return res.json({ success: false, message: 'Return Request not found' });
-    if (request.status !== 'PENDING') return res.json({ success: false, message: 'Request already processed' });
-
-    // 2. Update Return Request status
-    request.status = 'ACCEPTED';
-    await request.save();
-
-    // 3. Update Order Item status and initiate Inventory/Wallet operations
-    const order = await Orders.findById(request.orderId);
-    if (order) {
-      const item = order.orderItems.find(i => i.productId.toString() === request.productId.toString());
-      if (item) {
-        item.status = 'Returned';
-        const refundAmount = item.price * request.quantity;
-
-        // ** A. Refund to Wallet (MANDATORY)**
-        // Assuming you have a Wallet model or service:
-        // await Wallet.credit(order.userId, refundAmount, 'Return Approved');
-        
-        // You must implement the actual wallet credit logic here.
-
-        //  Increment Stock 
-        const prod = await Product.findById(item.productId);
-        if (prod && prod.variants && prod.variants.length) {
-          prod.variants[0].stock = (prod.variants[0].stock || 0) + request.quantity;
-          await prod.save();
-        }
-        
-        // Update main order status if all items are processed (Returned/Cancelled/Delivered)
-        const allItemsReturnedOrCancelled = order.orderItems.every(i => i.status === 'Returned' || i.status === 'Cancelled' || i.status === 'Delivered');
-        if(allItemsReturnedOrCancelled && order.orderItems.every(i => i.status !== 'Delivered')){
-             order.status = 'Returned';
-        }
-        await order.save();
-      }
+        res.render("Admin/return-requests", { requests: formattedRequests });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send("Server error");
     }
+};
+const approveReturnAdmin = async (req, res) => {
+    try {
+        const { requestId } = req.body;
 
-    return res.json({ success: true, message: 'Return approved. Stock and Wallet updated.' });
-  } catch (error) {
-    console.error('approveReturnAdmin error:', error);
-    return res.status(500).json({ success: false, message: 'Server error during approval.' });
-  }
+        // Find the order containing this item
+        const order = await Orders.findOne({ "orderItems._id": requestId }).populate("userId");
+
+        if (!order) return res.json({ success: false, message: "Order not found." });
+
+        const item = order.orderItems.id(requestId);
+
+        if (!item || item.status !== "Return Requested") {
+            return res.json({ success: false, message: "Return request not found or already processed." });
+        }
+
+        item.status = "Returned";
+
+        // Update product stock
+        await Product.updateOne(
+            { _id: item.productId },
+            { $inc: { "variants.0.stock": item.quantity } }
+        );
+
+        // Refund to wallet
+        const refundAmount =(order.shippingCharge||0)+
+  (item.subtotal || 0) -
+  (item.discount || 0) +
+  (item.tax || 0);
+        await refundToWallet(order.userId._id, refundAmount, "RETURN");
+
+        // Update order status if all items returned
+        if (order.orderItems.every(i => i.status === "Returned" || i.status === "Cancelled")) {
+            order.status = "Returned";
+        }
+
+        await order.save();
+
+        res.json({ success: true, message: "Return approved & refunded to wallet." });
+    } catch (err) {
+        console.error(err);
+        res.json({ success: false, message: "Server error" });
+    }
 };
 
-// --- NEW FUNCTION: Admin Rejects Return ---
+// Reject return
 const rejectReturnAdmin = async (req, res) => {
-  try {
-    const { requestId } = req.body;
-    if (!requestId) return res.json({ success: false, message: 'Request ID required' });
+    try {
+        const { requestId } = req.body;
 
-    const request = await ReturnRequest.findById(requestId); // Replace with your ReturnRequest model
-    if (!request) return res.json({ success: false, message: 'Return Request not found' });
-    if (request.status !== 'PENDING') return res.json({ success: false, message: 'Request already processed' });
+        const order = await Orders.findOne({ "orderItems._id": requestId });
 
-    // Update Return Request status
-    request.status = 'REJECTED';
-    await request.save();
+        if (!order) return res.json({ success: false, message: "Order not found." });
 
-    // No wallet change or stock increment needed on rejection
+        const item = order.orderItems.id(requestId);
 
-    return res.json({ success: true, message: 'Return request rejected.' });
-  } catch (error) {
-    console.error('rejectReturnAdmin error:', error);
-    return res.status(500).json({ success: false, message: 'Server error during rejection.' });
-  }
+        if (!item || item.status !== "Return Requested") {
+            return res.json({ success: false, message: "Return request not found or already processed." });
+        }
+
+        item.status = "Delivered"; // revert back to Delivered
+        item.returnReason = null;
+
+        // Update order status if no other Return Requested items exist
+        if (!order.orderItems.some(i => i.status === "Return Requested")) {
+            order.status = "Delivered";
+        }
+
+        await order.save();
+
+        res.json({ success: true, message: "Return request rejected." });
+    } catch (err) {
+        console.error(err);
+        res.json({ success: false, message: "Server error" });
+    }
 };
-
 
 
 module.exports = {

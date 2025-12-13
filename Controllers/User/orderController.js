@@ -105,11 +105,8 @@ const cancelEntireOrder = async (req, res) => {
         const refundAmount = order.totalPrice;
 
         // Refund for Razorpay / Wallet payments only
-        if (order.paymentMethod === "Razorpay" || order.paymentMethod === "Wallet") {
-            if (order.paymentStatus !== "Refunded") {
-                await refundToWallet(order.userId, refundAmount, "CANCEL");
-                order.paymentStatus = "Refunded";
-            }
+          if (order.paymentMethod === "Razorpay" || order.paymentMethod === "Wallet") {
+            await refundToWallet(order.userId, refundAmount, "CANCEL");
         }
 
         await order.save();
@@ -147,23 +144,25 @@ const cancelProduct = async (req, res) => {
         item.status = 'Cancelled';
         item.cancellationReason = reason || 'No reason';
 
-        // 🔥 Calculate refund amount
-        const refundAmount =
-            (item.subtotal || 0) - (item.discount || 0);
+        //  Calculate refund amount
+       const refundAmount =
+  (item.subtotal || 0) -
+  (item.discount || 0) +
+  (item.tax || 0);
 
-        // Refund only if payment was online or wallet
+       
         if (order.paymentMethod === "Razorpay" || order.paymentMethod === "Wallet") {
             await refundToWallet(order.userId, refundAmount, "CANCEL");
         }
 
-        // 🔥 If all items cancelled → cancel whole order
+        //  If all items cancelled → cancel whole order
         const allCancelled = order.orderItems.every(it => it.status === "Cancelled");
 
         if (allCancelled) {
             order.status = "Cancelled";
 
-            if (order.paymentStatus !== "Refunded") {
-                await refundToWallet(order.userId, order.totalPrice, "CANCEL");
+            if (order.paymentMethod === "Razorpay" || order.paymentMethod === "Wallet") {
+            await refundToWallet(order.userId, refundAmount, "CANCEL");
                 order.paymentStatus = "Refunded";
             }
         }
