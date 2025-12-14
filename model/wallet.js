@@ -5,7 +5,7 @@ const transactionSchema = new mongoose.Schema({
     type: { type: String, enum: ['CREDIT', 'DEBIT'], required: true }, // Keep as uppercase for consistency
   source: { 
     type: String, 
-    enum: ['CANCEL', 'RETURN', 'PAYMENT', 'ADMIN', 'TOPUP',"ORDER_PAYMENT"], 
+    enum: ['CANCEL', 'RETURN', 'PAYMENT', 'ADMIN', 'TOPUP',"ORDER_PAYMENT", "REFERRAL"], 
     required: true 
 },
     description: { type: String },

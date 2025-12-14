@@ -35,6 +35,18 @@
                     <div id="error3" style="color: red;font-size: medium;"></div>
                     <input type="email" class="form-control my-2" placeholder="Email" name="email" id="email">
                    <div id="error4" style="color: red;font-size: medium;"></div>
+                   <div class="my-2">
+    <input 
+        type="text" 
+        class="form-control" 
+        placeholder="Referral Code (Optional)" 
+        name="referralCode" 
+        id="referralCode"
+    >
+    <small class="text-muted">
+        Have a referral code? Enter it here to support your friend 🎁
+    </small>
+</div>
                     <div class="input-group my-2">
                         <input type="password" class="form-control" placeholder="Password" name="password" id="password">
                         <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('password', this)">
@@ -68,6 +80,8 @@ const phoneNumber = document.getElementById("phoneNumber");
 const email = document.getElementById("email");
 const password = document.getElementById("password");
 const confirmPassword = document.getElementById("confirmPassword");
+const referralCode = document.getElementById("referralCode");
+
 
 const error1 = document.getElementById("error1");
 const error2 = document.getElementById("error2");
