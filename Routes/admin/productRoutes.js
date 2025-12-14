@@ -14,6 +14,9 @@ router.patch("/admin/unblock-product/:id",adminAuth,productController.unblockPro
 router.delete("/admin/delete-product/:id",adminAuth,productController.deleteProduct);
 router.get("/admin/edit-product/:id",adminAuth,productController.editProductGet);
 router.post('/admin/edit-product/:id', adminAuth, multer.any(), productController.editProductPost);
+router.patch("/admin/product/add-offer", adminAuth,productController.addProductOffer);
+router.patch("/admin/product/remove-offer",adminAuth,productController.removeProductOffer);
+
 
 
 

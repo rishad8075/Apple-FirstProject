@@ -16,7 +16,9 @@ const ProductSchema = new Schema({
   category: { type: mongoose.Schema.Types.ObjectId, ref: "Category" },
   variants: [VariantSchema],
   isBlocked: { type: Boolean, default: false },
+ categoryOffer: { type: Number, default: 0 },
   status: { type: String, enum: ["Available", "Out of Stock", "Discontinued"], default: "Available" },
 }, { timestamps: true });
 
 module.exports = mongoose.model("Product", ProductSchema);
+

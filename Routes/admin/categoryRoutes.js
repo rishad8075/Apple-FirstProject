@@ -10,5 +10,8 @@ router.patch("/admin/unlistCategory", adminAuth, CategoryController.unlistCatego
 router.get("/admin/editCategory/:id", adminAuth, CategoryController.getEditCategoryPage);
 router.patch("/admin/editCategory/:id", adminAuth, CategoryController.editCategory);
 router.delete("/admin/deleteCategory", adminAuth, CategoryController.deleteCategory);
+router.patch("/admin/category/add-offer", adminAuth,CategoryController.addCategoryOffer);
+router.patch("/admin/category/remove-offer", adminAuth,CategoryController.removeCategoryOffer);
+
 
 module.exports = router;

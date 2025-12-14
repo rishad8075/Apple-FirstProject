@@ -148,7 +148,7 @@
                     <th class="text-center"></th>
                     <th>Name</th>
                     <th>Description</th>
-                    <th>Offer Price</th>
+                    <th>Offer </th>
                     <th>Offer</th>
                     <th>Status</th>
                     <th>List/Unlist</th>
@@ -165,16 +165,21 @@
                     <td>
                     </td>
                     <td class="text-start">
-                        <% if (category. categoryOffer){%>
-                      <button class="btn btn-info" style="width: 100px">
-                        <a href="#" class="text-white">Add Offer</a>
-                      </button>
-                      <%}else{%>
-                      <button class="btn btn-info"style="width: 100px">
-                        <a href="#" class="text-white">Remove</a>
-                      </button>
-                      <%}%>
-                    </td>
+  <% if (category.categoryOffer > 0) { %>
+    <span class="badge bg-success">
+      <%= category.categoryOffer %>% OFF
+    </span>
+    <button class="btn btn-danger btn-sm mt-1"
+      onclick="removeCategoryOffer('<%= category._id %>')">
+      Remove
+    </button>
+  <% } else { %>
+    <button class="btn btn-info btn-sm"
+      onclick="addCategoryOffer('<%= category._id %>')">
+      Add Offer
+    </button>
+  <% } %>
+</td>
                     <td class="text-start">
                         <% if (category.isListed){%>
                       <span class="badge rounded-pill alert-success" style="width: 60px ; color:green; margin-top: 5px; background-color: rgb(118, 241, 118);">Listed</span>
@@ -242,6 +247,54 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 
 <Script>
+function addCategoryOffer(categoryId) {
+  Swal.fire({
+    title: "Enter category offer (%)",
+    input: "number",
+    inputAttributes: {
+      min: 1,
+      max: 90
+    },
+    showCancelButton: true,
+    confirmButtonText: "Apply"
+  }).then(result => {
+    if (result.isConfirmed) {
+      fetch("/admin/category/add-offer", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          categoryId,
+          offer: result.value
+        })
+      })
+      .then(() => location.reload());
+    }
+  });
+}
+
+function removeCategoryOffer(categoryId) {
+  Swal.fire({
+    title: "Remove category offer?",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonText: "Remove"
+  }).then(result => {
+    if (result.isConfirmed) {
+      fetch("/admin/category/remove-offer", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ categoryId })
+      })
+      .then(() => location.reload());
+    }
+  });
+}
+
+
  
 function confirmAction(id, list) {
     const action = list ? "List" : "Unlist";

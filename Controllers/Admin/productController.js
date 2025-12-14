@@ -111,6 +111,15 @@ const addProductPost = async (req, res) => {
 };
 
 
+function calculateFinalPrice(salePrice, productOffer, categoryOffer) {
+    const finalOffer = Math.max(productOffer || 0, categoryOffer || 0);
+    const finalPrice = salePrice - Math.round((salePrice * finalOffer) / 100);
+
+    return { finalOffer, finalPrice };
+}
+
+
+
 
 const listProducts= async (req, res) => {
     try {
@@ -138,15 +147,39 @@ const listProducts= async (req, res) => {
         
         if (category) {
             // Ensure each product has a displayImage (first image of first variant) for the list view
-            const productsWithImage = productData.map(p => {
-                const prod = p.toObject ? p.toObject() : p;
-                let displayImage = '/images/default-product.jpg';
-                if (prod.variants && prod.variants.length > 0 && prod.variants[0].images && prod.variants[0].images.length > 0) {
-                    displayImage = prod.variants[0].images[0].startsWith('/') ? prod.variants[0].images[0] : '/' + prod.variants[0].images[0];
-                }
-                prod.displayImage = displayImage;
-                return prod;
-            });
+          const productsWithImage = productData.map(p => {
+    const prod = p.toObject();
+
+    // display image
+    let displayImage = '/images/default-product.jpg';
+    if (
+        prod.variants?.length > 0 &&
+        prod.variants[0].images?.length > 0
+    ) {
+        displayImage = prod.variants[0].images[0].startsWith("/")
+            ? prod.variants[0].images[0]
+            : "/" + prod.variants[0].images[0];
+    }
+    prod.displayImage = displayImage;
+
+    // 🟢 OFFER LOGIC STARTS HERE
+    const categoryOffer = prod.category?.categoryOffer || 0;
+
+    prod.variants.forEach(variant => {
+        const { finalOffer, finalPrice } = calculateFinalPrice(
+            variant.salePrice,
+            variant.productOffer,
+            categoryOffer
+        );
+
+        variant.finalOffer = finalOffer;
+        variant.finalPrice = finalPrice;
+    });
+    // 🟢 OFFER LOGIC ENDS HERE
+
+    return prod;
+});
+
 
             res.render("Admin/products", {
                 data: productsWithImage,
@@ -324,12 +357,47 @@ const editProductPost = async (req, res) => {
   }
 };
 
+const addProductOffer = async (req, res) => {
+  try {
+    const { productId, variantId, offer } = req.body;
+
+    if (offer < 1 || offer > 90) {
+      return res.status(400).json({ message: "Invalid offer" });
+    }
+
+    await Product.updateOne(
+      { _id: productId, "variants._id": variantId },
+      { $set: { "variants.$.productOffer": offer } }
+    );
+   
+
+
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ success: false });
+  }
+};
 
 
 
 
 
 
+const removeProductOffer = async (req, res) => {
+  try {
+    const { productId, variantId } = req.body;
+
+    await Product.updateOne(
+      { _id: productId, "variants._id": variantId },
+      { $set: { "variants.$.productOffer": 0 } }
+    );
+    
+
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ success: false });
+  }
+};
 
 
 
@@ -343,4 +411,6 @@ module.exports={
     deleteProduct,
     editProductGet,
     editProductPost,
+    addProductOffer,
+    removeProductOffer
 }
