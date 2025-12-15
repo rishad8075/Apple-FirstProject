@@ -53,12 +53,14 @@ const addToCart = async (req, res) => {
       existingItem.quantity = newQty;
     existingItem.price = priceData.finalPrice;
       existingItem.offer = priceData.appliedOffer;
+      existingItem.OriginalPrice=variant.regularPrice||variant.salePrice
 
     } else {
       cart.items.push({
         productId,
         variantId,
         quantity: Quantity,
+        OriginalPrice:variant.regularPrice||variant.salePrice,
         price: priceData.finalPrice,
         offer: priceData.appliedOffer
       });

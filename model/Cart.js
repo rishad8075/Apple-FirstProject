@@ -6,6 +6,7 @@ const CartItemSchema = new Schema({
   variantId: { type: Schema.Types.ObjectId, required: true }, // each variant has its own _id
   quantity: { type: Number, required: true, min: 1 },
   price: { type: Number, required: true } ,
+  OriginalPrice: { type: Number, required: true } ,
   offer: { type: Number, default: 0 },
 });
 

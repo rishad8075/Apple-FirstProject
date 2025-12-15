@@ -204,11 +204,12 @@ const paymentPage = async (req, res) => {
       );
 
       const price = item.price; // 🔒 LOCKED PRICE
-
+    const offerDiscount = (item.OriginalPrice -price)*item.quantity
       return {
         productId: product._id,
         variantId: variant._id,
         name: product.productName,
+        discount:offerDiscount,
         qty: item.quantity,
         price,
         total: price * item.quantity,
@@ -302,16 +303,19 @@ const placeOrder = async (req, res) => {
       const price = item.price; // 🔒 LOCKED PRICE
       const subtotal = price * item.quantity;
       const tax = (subtotal * 18) / 100;
+      const offerDiscount = (item.OriginalPrice -price)*item.quantity
 
       return {
         productId: product._id,
         variantId: variant._id,
         name: product.productName,
+        discount:offerDiscount,
         image: variant?.images?.[0] || "/images/no-image.png",
         quantity: item.quantity,
         price,
         subtotal,
-        tax
+        tax,
+        
       };
     });
 
@@ -364,8 +368,8 @@ const placeOrder = async (req, res) => {
       paymentStatus:
         paymentMethod === "COD" || paymentMethod === "WALLET" ? "Pending" : "Paid",
       shippingCharge,
-      coupon: appliedCouponCode, // store coupon CODE (not amount)
-      discountAmount: couponDiscount,
+      coupon: couponDiscount, // store coupon CODE (not amount)
+      
       totalPrice
     });
 
@@ -420,15 +424,40 @@ const verifyRazorpayPayment = async (req, res) => {
         const addressDoc = await Address.findById(addressId).lean();
         if (!addressDoc) return res.status(400).json({ success: false, message: "Address not found" });
 
-        // 2️⃣ Calculate order totals
-        const orderItems = orderDetails.orderItems.map(item => ({
-            ...item,
-            tax: (item.subtotal * 18) / 100
-        }));
+         const cart = await Cart.findOne({ userId }).populate("items.productId");
+    if (!cart || cart.items.length === 0) {
+      return res.json({ success: false, message: "Cart empty" });
+    }
 
-        const subtotal = orderItems.reduce((acc, i) => acc + i.subtotal, 0);
-        const tax = orderItems.reduce((acc, i) => acc + i.tax, 0);
-        const shippingCharge = 70;
+        // 2️⃣ Calculate order totals
+          const orderItems = cart.items.map(item => {
+      const product = item.productId;
+      const variant = product.variants.find(
+        v => v._id.toString() === item.variantId.toString()
+      );
+
+      const price = item.price; // 🔒 LOCKED PRICE
+      const subtotal = price * item.quantity;
+      const tax = (subtotal * 18) / 100;
+      const offerDiscount = (item.OriginalPrice -price)*item.quantity
+
+      return {
+        productId: product._id,
+        variantId: variant._id,
+        name: product.productName,
+        discount:offerDiscount,
+        image: variant?.images?.[0] || "/images/no-image.png",
+        quantity: item.quantity,
+        price,
+        subtotal,
+        tax,
+        
+      };
+    });
+
+    const subtotal = orderItems.reduce((sum, i) => sum + i.subtotal, 0);
+    const tax = orderItems.reduce((sum, i) => sum + i.tax, 0);
+    const shippingCharge = 70;
 
         // 3️⃣ Coupon discount
         let couponDiscount = 0;
@@ -450,6 +479,7 @@ const verifyRazorpayPayment = async (req, res) => {
         }
 
         const totalPrice = subtotal + tax + shippingCharge - couponDiscount;
+        
 
         // 4️⃣ Create order
         const order = new Orders({

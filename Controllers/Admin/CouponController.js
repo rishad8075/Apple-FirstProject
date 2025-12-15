@@ -97,22 +97,20 @@ exports.postAddCoupon = async (req, res) => {
     }
 };
 
-exports.getEditPage = async (req,res)=>{
+exports.getEditPage = async (req, res) => {
     try {
-        
-        const {id} = req.params.id;
-        const coupon = await Coupon.findOne({id});
-        if(!coupon){
-           return  res.redirect("/admin/coupon")
+        const couponId = req.params.id; // ✅ get the id string
+        const coupon = await Coupon.findById(couponId); // ✅ fetch by _id
+        if (!coupon) {
+            return res.redirect("/admin/coupons"); // fixed typo from /admin/coupon
         }
 
-        res.status(200).render("Admin/edit-coupon",{coupon})
-
+        res.status(200).render("Admin/edit-coupon", { coupon });
     } catch (error) {
-        console.log(error)
-        res.status(500).render("page-500")
+        console.log(error);
+        res.status(500).render("page-500");
     }
-}
+};
 
 
 exports.editCoupon = async (req, res) => {
@@ -135,7 +133,7 @@ exports.editCoupon = async (req, res) => {
         }
 
         // Find and update coupon by ID
-        const couponId = req.params.id; // or get from route params: req.params.id
+        const couponId = req.params.id; 
         const updatedCoupon = await Coupon.findByIdAndUpdate(
             couponId,
             {

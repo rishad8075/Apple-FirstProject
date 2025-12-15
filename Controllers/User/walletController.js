@@ -161,10 +161,11 @@ exports.useWalletForOrder =async (req, res) => {
     const orderItems = cart.items.map(item => {
       const product = item.productId;
       const variant = product.variants.find(v => v._id.toString() === item.variantId.toString());
-      const price = variant.salePrice || variant.regularPrice;
+      const price = item.price;
       const subtotal = price * item.quantity;
       const tax = (subtotal * 18) / 100;
-      return { productId: product._id, name: product.productName, quantity: item.quantity, price, subtotal, tax, image: variant.images[0] || "/images/no-image.png" };
+      const discount= (item.OriginalPrice-item.price)*item.quantity
+      return { productId: product._id, name: product.productName, quantity: item.quantity,discount:discount, price, subtotal, tax, image: variant.images[0] || "/images/no-image.png" };
     });
 
     const subtotal = orderItems.reduce((acc, i) => acc + i.subtotal, 0);

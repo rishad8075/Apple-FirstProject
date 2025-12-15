@@ -1,0 +1,202 @@
+const Order = require('../../model/Orders');
+const ExcelJS = require("exceljs");
+const PDFDocument = require("pdfkit");
+
+
+const getDateFilter = (type, startDate, endDate) => {
+  const now = new Date();
+  let filter = {};
+
+  switch (type) {
+    case "daily":
+      filter.createdAt = {
+        $gte: new Date(now.setHours(0, 0, 0, 0)),
+        $lte: new Date()
+      };
+      break;
+
+    case "weekly":
+      const weekStart = new Date();
+      weekStart.setDate(weekStart.getDate() - 7);
+      filter.createdAt = { $gte: weekStart };
+      break;
+
+    case "monthly":
+      filter.createdAt = {
+        $gte: new Date(now.getFullYear(), now.getMonth(), 1)
+      };
+      break;
+
+    case "yearly":
+      filter.createdAt = {
+        $gte: new Date(now.getFullYear(), 0, 1)
+      };
+      break;
+
+    case "custom":
+      if (startDate && endDate) {
+        filter.createdAt = {
+          $gte: new Date(startDate),
+          $lte: new Date(endDate)
+        };
+      }
+      break;
+  }
+
+  return filter;
+};
+
+
+exports.getSalesReport = async (req, res) => {
+  try {
+    const { type = "daily", startDate, endDate } = req.query;
+
+    const dateFilter = getDateFilter(type, startDate, endDate);
+
+    const orders = await Order.find({
+      status: "Delivered",
+      paymentStatus: { $ne: "Refunded" },
+      ...dateFilter
+    }).sort({ createdAt: -1 });
+
+    let overallMetrics = {
+      totalSales: 0,
+      orderCount: orders.length,
+      totalDiscount: 0,
+      totalCoupon: 0
+    };
+
+    const sales = orders.map(order => {
+      let grossAmount = 0;
+      let offerDiscount = 0;
+
+      order.orderItems.forEach(item => {
+        grossAmount += item.subtotal;
+        offerDiscount += item.discount || 0;
+      });
+
+      const couponDiscount = Number(order.coupon || 0);
+      const netRevenue =
+        grossAmount - offerDiscount - couponDiscount + order.shippingCharge;
+
+      overallMetrics.totalSales += netRevenue;
+      overallMetrics.totalDiscount += offerDiscount;
+      overallMetrics.totalCoupon += couponDiscount;
+
+      return {
+        _id: order._id,
+        date: order.createdAt,
+        amount: grossAmount,
+        totalDiscount: offerDiscount,
+        totalCoupon: couponDiscount
+      };
+    });
+
+    res.render("Admin/salesReport", {
+      sales,
+      overallMetrics,
+      type,
+      startDate,
+      endDate,
+      query: req.query
+    });
+
+  } catch (err) {
+    console.error("Sales report error:", err);
+    res.status(500).send("Server Error");
+  }
+};
+
+
+exports.downloadExcel = async (req, res) => {
+  const { type, startDate, endDate } = req.query;
+  const dateFilter = getDateFilter(type, startDate, endDate);
+
+  const orders = await Order.find({
+    status: "Delivered",
+    paymentStatus: { $ne: "Refunded" },
+    ...dateFilter
+  });
+
+  const workbook = new ExcelJS.Workbook();
+  const sheet = workbook.addWorksheet("Sales Report");
+
+  sheet.columns = [
+    { header: "Date", key: "date" },
+    { header: "Order ID", key: "orderId" },
+    { header: "Gross Amount", key: "gross" },
+    { header: "Offer Discount", key: "discount" },
+    { header: "Coupon Discount", key: "coupon" },
+    { header: "Net Revenue", key: "net" }
+  ];
+
+  orders.forEach(order => {
+    let gross = 0;
+    let discount = 0;
+
+    order.orderItems.forEach(item => {
+      gross += item.subtotal;
+      discount += item.discount || 0;
+    });
+
+    const coupon = Number(order.coupon || 0);
+    const net = gross - discount - coupon + order.shippingCharge;
+
+    sheet.addRow({
+      date: order.createdAt.toLocaleDateString(),
+      orderId: order.orderId,
+      gross,
+      discount,
+      coupon,
+      net
+    });
+  });
+
+  res.setHeader("Content-Disposition", "attachment; filename=sales-report.xlsx");
+  await workbook.xlsx.write(res);
+  res.end();
+};
+
+
+exports.downloadPDF = async (req, res) => {
+  const { type, startDate, endDate } = req.query;
+  const dateFilter = getDateFilter(type, startDate, endDate);
+
+  const orders = await Order.find({
+    status: "Delivered",
+    paymentStatus: { $ne: "Refunded" },
+    ...dateFilter
+  });
+
+  const doc = new PDFDocument({ margin: 30 });
+  res.setHeader("Content-Disposition", "attachment; filename=sales-report.pdf");
+  doc.pipe(res);
+
+  doc.fontSize(18).text("Sales Report", { align: "center" });
+  doc.moveDown();
+
+  orders.forEach(order => {
+    let gross = 0;
+    let discount = 0;
+
+    order.orderItems.forEach(item => {
+      gross += item.subtotal;
+      discount += item.discount || 0;
+    });
+
+    const coupon = Number(order.coupon || 0);
+    const net = gross - discount - coupon + order.shippingCharge;
+
+    doc
+      .fontSize(10)
+      .text(`Order ID: ${order.orderId}`)
+      .text(`Date: ${order.createdAt.toLocaleDateString()}`)
+      .text(`Gross Amount: ₹${gross}`)
+      .text(`Offer Discount: ₹${discount}`)
+      .text(`Coupon Discount: ₹${coupon}`)
+      .text(`Net Revenue: ₹${net}`)
+      .moveDown();
+  });
+
+  doc.end();
+};
