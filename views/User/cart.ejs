@@ -100,7 +100,7 @@
 
         <% 
             const hasOutOfStockItems = items.some(i => i.stock === 0);
-            const totalDiscount = 0; // Assuming this is calculated on the server but not passed explicitly
+            const totalDiscount = items.offer||0
             const totalDelivery = 0; // Assuming free delivery as per the original design image
             const finalTotal = subtotal - totalDiscount + totalDelivery; 
         %>
@@ -176,10 +176,7 @@
                             <span>Delivery</span>
                             <span><%= totalDelivery === 0 ? 'FREE' : 'Rs.' + totalDelivery.toLocaleString('en-IN') %></span>
                         </div>
-                        <div class="total-row">
-                            <span>Discount</span>
-                            <span>- Rs.<%= totalDiscount.toLocaleString('en-IN') %></span>
-                        </div>
+                      
                         
                         <div class="final-total-row">
                             <span class="final-total-label">TOTAL</span>

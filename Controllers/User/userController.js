@@ -5,6 +5,7 @@ const Product = require("../../model/Product");
 const nodemailer =require("nodemailer");
 const { render } = require("ejs");
 const Wallet = require("../../model/wallet")
+const { calculateFinalPrice } = require('../../utils/priceHelper');
 
 
 
@@ -46,6 +47,7 @@ const loadHome = async (req, res) => {
                 $match: { 'categoryInfo.isListed': true } // Only products from listed categories
             }
         ]);
+       
 
         // Map products to include first variant info and precompute display price
         const displayProducts = products.map(product => {
@@ -54,14 +56,23 @@ const loadHome = async (req, res) => {
                 ? firstVariant.salePrice
                 : firstVariant.regularPrice || 0;
 
+                  const priceData = calculateFinalPrice({
+        salePrice: firstVariant.salePrice,
+        productOffer: firstVariant.productOffer || 0,
+        categoryOffer: product.categoryInfo.categoryOffer || 0
+      });
+
             return {
                 ...product,
                 image: firstVariant.images || [],
                 displayPrice: price,
                 regularPrice: firstVariant.regularPrice || 0,
+                finalPrice:priceData.finalPrice,
+                applyOffer:priceData.appliedOffer,
                 hasDiscount: firstVariant.salePrice && firstVariant.salePrice < firstVariant.regularPrice
             };
         });
+        
 
         return res.render('User/home', { 
             user: userData,
@@ -451,10 +462,16 @@ const loadProductDetail = async (req, res) => {
       .limit(4)
       .lean();
     }
+            const priceData = calculateFinalPrice({
+        salePrice: product.variants[0].salePrice,
+        productOffer: product.variants[0].productOffer || 0,
+        categoryOffer: product.categoryOffer || 0
+      });
 
     // Render template
     const user = await User.findById(req.session.userId).lean();
     res.render("User/productDetails", {
+        priceData,
       user,
       product,
       relatedProducts,

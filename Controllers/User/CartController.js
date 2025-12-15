@@ -4,6 +4,7 @@ const Category = require("../../model/category")
 const Wishlist = require("../../model/wishlist");
 const User = require("../../model/user");
 const mongoose = require("mongoose");
+const { calculateFinalPrice } = require('../../utils/priceHelper');
 
 
 const addToCart = async (req, res) => {
@@ -32,6 +33,11 @@ const addToCart = async (req, res) => {
     if (!cart) {
       cart = new Cart({ userId, items: [] });
     }
+      const priceData = calculateFinalPrice({
+      salePrice: variant.salePrice,
+      productOffer: variant.productOffer,
+      categoryOffer: product.categoryOffer|| 0
+    });
 
     // 3. Check if this product + variant already exists in cart
     const existingItem = cart.items.find(
@@ -45,17 +51,18 @@ const addToCart = async (req, res) => {
         return res.json({ success: false, message: "Cannot exceed stock limit" });
       }
       existingItem.quantity = newQty;
-      existingItem.price = variant.salePrice; // update price if changed
+    existingItem.price = priceData.finalPrice;
+      existingItem.offer = priceData.appliedOffer;
+
     } else {
-      // Add new item
       cart.items.push({
         productId,
         variantId,
-        quantity,
-        price: variant.salePrice
+        quantity: Quantity,
+        price: priceData.finalPrice,
+        offer: priceData.appliedOffer
       });
     }
-
     await cart.save();
 
     return res.json({ success: true, message: "Added to cart", cart });
@@ -90,10 +97,15 @@ const getCart = async (req, res) => {
 
           const variant = product.variants.find(v => v._id.toString() === item.variantId.toString());
           if (!variant) return null;
+            const priceData = calculateFinalPrice({
+      salePrice: variant.salePrice,
+      productOffer: variant.productOffer,
+      categoryOffer: product.categoryOffer|| 0
+    });
 
           const isOutOfStock = variant.stock === 0;
 
-          const itemSubtotal = variant.salePrice * item.quantity;
+          const itemSubtotal = item.price * item.quantity;
           subtotal += itemSubtotal;
 
           return {
@@ -101,10 +113,11 @@ const getCart = async (req, res) => {
             variantId: item.variantId,
             name: product.productName,
             image: variant.images[0] || '/uploads/product-images/default.png',
-            price: variant.salePrice,
+            price: item.price,
             quantity: item.quantity,
             subtotal: itemSubtotal,
             stock: variant.stock,
+            offer: item.offer,
             isOutOfStock
           };
         })

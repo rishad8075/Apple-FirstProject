@@ -156,10 +156,10 @@
 
       <!-- Price -->
       <div class="mb-3">
-        <span class="price text-success">₹<%= variant.salePrice || 0 %></span>
-        <% if(variant.productOffer > 0) { %>
+        <span class="price text-success">₹<%= priceData.finalPrice || 0 %></span>
+        <% if(priceData.appliedOffer > 0) { %>
           <span class="old-price">₹<%= variant.regularPrice %></span>
-          <span class="text-danger ms-2"><%= variant.productOffer %>% OFF</span>
+          <span class="text-danger ms-2"><%= priceData.appliedOffer %>% OFF</span>
         <% } %>
       </div>
 

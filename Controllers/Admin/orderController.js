@@ -423,8 +423,8 @@ module.exports = {
   orderDetailAdmin,
   updateOrderStatusAdmin,
   cancelProductAdmin,
-  listReturnRequestsAdmin, // <--- NEW
-  approveReturnAdmin,      // <--- NEW
+  listReturnRequestsAdmin, 
+  approveReturnAdmin,      
   rejectReturnAdmin
   
   }

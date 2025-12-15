@@ -158,7 +158,7 @@
 
         <p>
             <strong>Grand Total: ₹ 
-                <%= (order.totalPrice + (order.shippingCharge || 0) - (order.coupon ? order.coupon : 0)).toLocaleString('en-IN') %>
+                <%= order.totalPrice .toLocaleString('en-IN') %>
             </strong>
         </p>
     </div>

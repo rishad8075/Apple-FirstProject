@@ -1,5 +1,6 @@
 const Category = require("../../model/category");
 const { trace } = require("../../Routes/adminRoutes");
+const Product = require("../../model/Product")
 
 
 
@@ -164,6 +165,56 @@ const deleteCategory = async (req, res) => {
 
 
 
+const addCategoryOffer = async (req, res) => {
+  try {
+    const { categoryId, offer } = req.body;
+
+    if (offer < 1 || offer > 90) {
+      return res.status(400).json({ message: "Invalid offer" });
+    }
+
+    await Category.findByIdAndUpdate(categoryId, {
+      categoryOffer: offer
+    });
+
+  await Product.updateMany(
+      { category: categoryId },  // filter: all products in this category
+      { categoryOffer: offer }   // update field
+    );
+    
+
+
+
+
+
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ success: false });
+  }
+};
+
+
+
+const removeCategoryOffer = async (req, res) => {
+  try {
+    const { categoryId } = req.body;
+
+    await Category.findByIdAndUpdate(categoryId, {
+      categoryOffer: 0
+    });
+    await Product.updateMany(
+      { category: categoryId },  // filter: all products in this category
+      { categoryOffer: 0 }   // update field
+    );
+
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ success: false });
+  }
+};
+
+
+
 
 
 
@@ -177,5 +228,7 @@ module.exports={
     getEditCategoryPage,
     editCategory,
     deleteCategory,
+    addCategoryOffer,
+    removeCategoryOffer
 
 }

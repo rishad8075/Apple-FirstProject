@@ -203,9 +203,9 @@
             <div class="product-body text-center">
                 <h5 class="product-title"><%= product.productName %></h5>
                 <div class="product-price">
-                    ₹<%= product.displayPrice %>
+                    ₹<%= product.finalPrice %>
                     <% if(product.hasDiscount) { %>
-                        <small class="text-muted text-decoration-line-through ms-2">₹<%= product.regularPrice %></small>
+                        <small class="text-muted text-decoration-line-through ms-2">₹<%= product.salePrice %></small>
                     <% } %>
                 </div>
                 <button class="btn btn-add-to-cart" data-id="<%= product._id %>">
