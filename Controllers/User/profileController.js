@@ -172,14 +172,14 @@ const resetPassword = async (req, res) => {
 const userProfile = async (req, res) => {
     try {
         const userId = req.session.userId;
-        if (!userId) return res.redirect('/login'); // Safety check
+        if (!userId) return res.redirect('/login');
 
-        const userData = await User.findById(userId).lean(); // lean() returns plain JS object
-        if (!userData) return res.redirect('/login'); // If user not found
+        const userData = await User.findById(userId).lean(); 
+        if (!userData) return res.redirect('/login'); 
 
         res.render("User/profileInfo", {
-            user: userData,        // pass user to EJS
-            activeLink: 'profile'  // tells sidebar which menu is active
+            user: userData,        
+            activeLink: 'profile'  
         });
 
     } catch (error) {
@@ -192,7 +192,7 @@ const userProfile = async (req, res) => {
 //editprofile
 const getEditProfile = async (req, res) => {
     try {
-        const userId = req.session.userId; // get logged-in user id from session
+        const userId = req.session.userId; 
        
 
         const user = await User.findById(userId);
@@ -200,7 +200,7 @@ const getEditProfile = async (req, res) => {
             return res.status(404).render('page-404', { errorMessage: "User not found" });
         }
 
-        res.render('User/editProfile', { user }); // pass user data to ejs
+        res.render('User/editProfile', { user }); 
 
     } catch (error) {
         console.error("Error loading edit profile page:", error);
@@ -264,7 +264,7 @@ const changePassword = async (req, res) => {
       return res.status(404).json({ success: false, message: "User not found" });
     }
 
-    // Compare current password using bcrypt
+    
     const isMatch = await userData.comparePassword(currentPassword);
     if (!isMatch) {
       return res.status(400).json({ success: false, message: "Current password is incorrect" });
@@ -303,6 +303,11 @@ const postchangeEmail = async (req, res) => {
     try {
         const { email } = req.body;
 
+         const isExist = await User.findOne({email:email});
+        if(isExist){
+             return res.render("User/changeEmail-valid",{errorMessage:"email already exists"})
+        }
+
        
 
         const otp = generateOtp();
@@ -310,6 +315,7 @@ const postchangeEmail = async (req, res) => {
         req.session.userData = email;
 
         console.log("Generated OTP: " + otp);
+       
 
         const emailSent = await sendVerificationEmail(email, otp);
 

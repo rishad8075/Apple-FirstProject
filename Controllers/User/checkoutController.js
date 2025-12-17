@@ -30,14 +30,14 @@ const getCheckoutPage = async (req, res) => {
     const cart = await Cart.findOne({ userId }).populate("items.productId");
     if (!cart || cart.items.length === 0) return res.redirect("/cart");
 
-    // ✅ PREPARE ITEMS USING CART PRICE ONLY
+    
     const items = cart.items.map(item => {
       const product = item.productId;
-      const variant = product.variants.find(
+      const variant = product.variants.find( 
         v => v._id.toString() === item.variantId.toString()
       );
 
-      const price = item.price; // 🔒 LOCKED PRICE
+      const price = item.price; 
 
       return {
         name: product.productName,
@@ -54,7 +54,7 @@ const getCheckoutPage = async (req, res) => {
     const shipping = 70;
     
 
-    // Coupon logic (this is correct)
+   
     let discountAmount = 0;
     let appliedCoupon = req.session.appliedCoupon || null;
 
@@ -153,7 +153,7 @@ const checkoutAddAddress = async (req, res) => {
         if (existingAddresses.length === 0) {
             defaultFlag = true; 
         } else if (isDefault) {
-            // If user checked "set as default", unset previous default
+           
             await Address.updateMany({ user: userId, isDefault: true }, { $set: { isDefault: false } });
             defaultFlag = true;
         }
@@ -196,14 +196,14 @@ const paymentPage = async (req, res) => {
 
     const user = await User.findById(userId).lean();
 
-    // ✅ USE CART PRICE ONLY
+    
     const items = cart.items.map(item => {
       const product = item.productId;
       const variant = product.variants.find(
         v => v._id.toString() === item.variantId.toString()
       );
 
-      const price = item.price; // 🔒 LOCKED PRICE
+      const price = item.price; 
     const offerDiscount = (item.OriginalPrice -price)*item.quantity
       return {
         productId: product._id,
@@ -221,7 +221,7 @@ const paymentPage = async (req, res) => {
     const tax = (subtotal * 18) / 100;
     const shipping = 70;
 
-    // Coupon logic (this is fine)
+    
     let couponDiscount = 0;
     let appliedCoupon = null;
 
@@ -293,14 +293,14 @@ const placeOrder = async (req, res) => {
       return res.json({ success: false, message: "Cart empty" });
     }
 
-    // ✅ CREATE ORDER ITEMS USING CART PRICE ONLY
+ 
     const orderItems = cart.items.map(item => {
       const product = item.productId;
       const variant = product.variants.find(
         v => v._id.toString() === item.variantId.toString()
       );
 
-      const price = item.price; // 🔒 LOCKED PRICE
+      const price = item.price; 
       const subtotal = price * item.quantity;
       const tax = (subtotal * 18) / 100;
       const offerDiscount = (item.OriginalPrice -price)*item.quantity
@@ -323,7 +323,7 @@ const placeOrder = async (req, res) => {
     const tax = orderItems.reduce((sum, i) => sum + i.tax, 0);
     const shippingCharge = 70;
 
-    // ✅ Coupon handling
+   
     let couponDiscount = 0;
     let appliedCouponCode = null;
 
@@ -368,14 +368,13 @@ const placeOrder = async (req, res) => {
       paymentStatus:
         paymentMethod === "COD" || paymentMethod === "WALLET" ? "Pending" : "Paid",
       shippingCharge,
-      coupon: couponDiscount, // store coupon CODE (not amount)
+      coupon: couponDiscount, 
       
       totalPrice
     });
 
     await order.save();
 
-    // STOCK UPDATE (variant specific)
     for (const item of cart.items) {
       await Product.updateOne(
         { _id: item.productId, "variants._id": item.variantId },
@@ -420,7 +419,7 @@ const verifyRazorpayPayment = async (req, res) => {
         const userId = orderDetails.userId;
         const addressId = orderDetails.addressId;
 
-        // 1️⃣ Fetch address
+        
         const addressDoc = await Address.findById(addressId).lean();
         if (!addressDoc) return res.status(400).json({ success: false, message: "Address not found" });
 
@@ -429,14 +428,14 @@ const verifyRazorpayPayment = async (req, res) => {
       return res.json({ success: false, message: "Cart empty" });
     }
 
-        // 2️⃣ Calculate order totals
+      
           const orderItems = cart.items.map(item => {
       const product = item.productId;
       const variant = product.variants.find(
         v => v._id.toString() === item.variantId.toString()
       );
 
-      const price = item.price; // 🔒 LOCKED PRICE
+      const price = item.price;
       const subtotal = price * item.quantity;
       const tax = (subtotal * 18) / 100;
       const offerDiscount = (item.OriginalPrice -price)*item.quantity
@@ -471,7 +470,7 @@ const verifyRazorpayPayment = async (req, res) => {
                     couponDiscount = coupon.discountValue;
                 }
 
-                // Increment used count
+               
                 coupon.usedCount += 1;
                 coupon.appliedUsers.push({ userId, usedAt: new Date() });
                 await coupon.save();
@@ -481,7 +480,7 @@ const verifyRazorpayPayment = async (req, res) => {
         const totalPrice = subtotal + tax + shippingCharge - couponDiscount;
         
 
-        // 4️⃣ Create order
+        
         const order = new Orders({
             orderId: uuidv4(),
             userId,
@@ -505,7 +504,7 @@ const verifyRazorpayPayment = async (req, res) => {
 
         await order.save();
 
-        // 5️⃣ Update stock & clear cart
+       
         for (const item of order.orderItems) {
             await Product.updateOne(
                 { _id: item.productId },
@@ -539,7 +538,7 @@ const orderSuccessPage = async (req, res) => {
 
 const orderFailurePage = async (req, res) => {
     try {
-        // Grab reason from query params
+       
         const reason = req.query.reason || "Transaction failed";
 
         
@@ -551,7 +550,7 @@ const orderFailurePage = async (req, res) => {
 };
 
 
-// APPLY COUPON
+
 // APPLY COUPON
 const applyCoupon = async (req, res) => {
     try {
@@ -567,7 +566,7 @@ const applyCoupon = async (req, res) => {
         if (!coupon) return res.json({ success: false, message: "Invalid coupon code" });
 
         const now = new Date();
-        if (coupon.startDate > now || coupon.expiryDate < now) {
+        if (coupon.startDate > now || coupon.expiryDate <= now) {
             return res.json({ success: false, message: "Coupon expired or not started yet" });
         }
 
@@ -598,7 +597,7 @@ const applyCoupon = async (req, res) => {
             discountAmount = coupon.discountValue;
         }
 
-        // Store applied coupon in session
+      
         req.session.appliedCoupon = coupon.code;
 
         res.json({

@@ -8,10 +8,10 @@ const getUserCoupons = async (req, res) => {
         if (!userId) return res.redirect('/login');
         const user = await User.findById(userId)
 
-        // Fetch all coupons (you can filter by active/expired if needed)
+        
         const coupons = await Coupon.find().lean();
 
-        // Optional: mark expired coupons
+       
         const today = new Date();
         coupons.forEach(coupon => {
             coupon.isExpired = new Date(coupon.expiryDate) < today;

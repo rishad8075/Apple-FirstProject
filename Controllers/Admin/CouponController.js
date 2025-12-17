@@ -45,27 +45,27 @@ exports.postAddCoupon = async (req, res) => {
 
         code = code.trim().toUpperCase();
 
-        // Validate required fields
+        
         if (!code || !discountType || !discountValue || !maxUses || !startDate || !endDate) {
             return res.json({ success: false, message: "Please fill all required fields." });
         }
 
-        // Check if coupon already exists
+        
         const existing = await Coupon.findOne({ code });
         if (existing) {
             return res.json({ success: false, message: "A coupon with this code already exists." });
         }
 
-        // Validate discount type rules
+       
         if (discountType === "percentage") {
             if (!maxDiscount || maxDiscount <= 0) {
                 return res.json({ success: false, message: "Max Discount Amount is required for percentage coupons." });
             }
         } else if (discountType === "fixed") {
-            maxDiscount = null; // Not applicable
+            maxDiscount = null; 
         }
 
-        // Convert dates
+      
         const start = new Date(startDate);
         const end = new Date(endDate);
 
@@ -73,7 +73,7 @@ exports.postAddCoupon = async (req, res) => {
             return res.json({ success: false, message: "End date must be after start date." });
         }
 
-        // Create new coupon
+        
         const newCoupon = new Coupon({
             code,
             description,
@@ -99,10 +99,10 @@ exports.postAddCoupon = async (req, res) => {
 
 exports.getEditPage = async (req, res) => {
     try {
-        const couponId = req.params.id; // ✅ get the id string
-        const coupon = await Coupon.findById(couponId); // ✅ fetch by _id
+        const couponId = req.params.id; 
+        const coupon = await Coupon.findById(couponId); 
         if (!coupon) {
-            return res.redirect("/admin/coupons"); // fixed typo from /admin/coupon
+            return res.redirect("/admin/coupons"); 
         }
 
         res.status(200).render("Admin/edit-coupon", { coupon });
@@ -127,12 +127,12 @@ exports.editCoupon = async (req, res) => {
             description
         } = req.body;
 
-        // Validate dates
+        
         if (new Date(endDate) < new Date(startDate)) {
             return res.status(400).json({ success: false, message: "End date must be after start date." });
         }
 
-        // Find and update coupon by ID
+       
         const couponId = req.params.id; 
         const updatedCoupon = await Coupon.findByIdAndUpdate(
             couponId,
@@ -147,7 +147,7 @@ exports.editCoupon = async (req, res) => {
                 expiryDate: endDate,
                 description
             },
-            { new: true, runValidators: true } // return updated doc and run validators
+            { new: true, runValidators: true } 
         );
 
         if (!updatedCoupon) {
@@ -167,7 +167,7 @@ exports.editCoupon = async (req, res) => {
 };
 
 
-// DELETE /admin/coupons/:id
+
 exports.deleteCoupon = async (req, res) => {
     try {
         const couponId = req.params.id;

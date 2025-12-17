@@ -143,7 +143,7 @@
                                     <td>
                                         <% const expired = new Date(coupon.expiryDate) < new Date(); %>
                                         <span class="status-badge <%= expired ? 'expired-badge' : 'active-badge' %>">
-                                            <%= expired ? 'Expired' : 'Active' %>
+                                            <%= expired ? ' Expired' : 'Active' %>
                                         </span>
                                     </td>
                                     <td>
