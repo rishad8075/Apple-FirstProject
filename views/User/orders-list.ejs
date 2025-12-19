@@ -134,11 +134,11 @@
                 <div><strong>Order ID:</strong> <%= order.orderId %></div>
 
                 <span class="badge
-                    <% if(firstItem.status === 'Delivered') { %> bg-success
-                    <% } else if(firstItem.status === 'Cancelled' || firstItem.status === 'Returned') { %> bg-danger
-                    <% } else if(firstItem.status === 'Shipped') { %> bg-warning text-dark
+                    <% if(order.status === 'Delivered') { %> bg-success
+                    <% } else if(order.status === 'Cancelled' || order.status === 'Returned') { %> bg-danger
+                    <% } else if(order.status === 'Shipped') { %> bg-warning text-dark
                     <% } else { %> bg-info text-dark <% } %>">
-                    <%= firstItem.status %>
+                    <%= order.status %>
                 </span>
             </div>
 

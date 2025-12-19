@@ -14,7 +14,7 @@ const OrdersSchema = new Schema({
     subtotal: Number,
     discount: { type: Number, default: 0 },
     tax: { type: Number, default: 0 },
-    status: { type: String, enum: ["Ordered", "Pending", "Confirmed", "Shipped", "Out for Delivery", "Delivered", "Cancelled", "Returned","Return Requested"], default: 'Ordered' },
+    status: { type: String, enum: ["Ordered", "Pending", "Confirmed", "Shipped", "Out for Delivery", "Delivered", "Cancelled", "Returned","Return Requested"], default: 'Pending' },
     cancellationReason: { type: String, default: null },
     returnReason: { type: String, default: null },
         returnRequest: {
