@@ -15,7 +15,7 @@
             background-color: #1c1c1c;
             color: #ffffff;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            font-size: 14px;
+          
         }
         .main-content {
             margin-left: 260px;
@@ -141,9 +141,15 @@
                                     <td><%= coupon.maxUses %></td>
                                     <td><%= new Date(coupon.createdAt).toLocaleDateString() %></td>
                                     <td>
-                                        <% const expired = new Date(coupon.expiryDate) < new Date(); %>
+                                      <%
+                                        const expiryDate = new Date(coupon.expiryDate);
+                                        expiryDate.setHours(23, 59, 59);
+
+                                        const expired = expiryDate < new Date();
+                                        %>
+
                                         <span class="status-badge <%= expired ? 'expired-badge' : 'active-badge' %>">
-                                            <%= expired ? ' Expired' : 'Active' %>
+                                        <%= expired ? 'Expired' : 'Active' %>
                                         </span>
                                     </td>
                                     <td>
