@@ -187,8 +187,9 @@ exports.useWalletForOrder =async (req, res) => {
         await coupon.save();
       }
     }
+    const deliveryCharge = 40
 
-    const grandTotal = subtotal + tax + shippingCharge - couponDiscount;
+    const grandTotal = subtotal + tax + shippingCharge + deliveryCharge - couponDiscount;
 
     if (wallet.balance < grandTotal) {
       return res.json({ success: false, message: "Insufficient wallet balance" });
@@ -224,6 +225,7 @@ exports.useWalletForOrder =async (req, res) => {
       paymentStatus: "Paid",
       shippingCharge,
       coupon: couponDiscount,
+      deliveryCharge,
       totalPrice: grandTotal
     });
 

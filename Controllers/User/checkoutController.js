@@ -52,6 +52,7 @@ const getCheckoutPage = async (req, res) => {
     const subtotal = items.reduce((sum, item) => sum + item.total, 0);
     const tax = (subtotal * 18) / 100;
     const shipping = 70;
+    const deliveryCharge = 40
     
 
    
@@ -83,7 +84,7 @@ const getCheckoutPage = async (req, res) => {
       }
     }
 
-    const grandTotal = subtotal + tax + shipping - discountAmount;
+    const grandTotal = subtotal + tax + shipping + deliveryCharge - discountAmount;
 
     res.render("User/checkout", {
       user,
@@ -94,6 +95,7 @@ const getCheckoutPage = async (req, res) => {
       shipping,
       couponDiscount: discountAmount,
       discountAmount,
+      deliveryCharge,
       total: grandTotal,
       appliedCoupon
     });
@@ -244,8 +246,10 @@ const paymentPage = async (req, res) => {
         }
       }
     }
+    const deliveryCharge = 40
 
-    const grandTotal = subtotal + tax + shipping - couponDiscount;
+
+    const grandTotal = subtotal + tax + shipping + deliveryCharge - couponDiscount;
     const selectedAddress = await Address.findById(addressId).lean();
 
     res.render("User/payment", {
@@ -259,6 +263,7 @@ const paymentPage = async (req, res) => {
       shipping,
       couponDiscount,
       appliedCoupon,
+      deliveryCharge,
       total: grandTotal
     });
 
@@ -347,8 +352,9 @@ const placeOrder = async (req, res) => {
         await coupon.save();
       }
     }
-
-    const totalPrice = subtotal + tax + shippingCharge - couponDiscount;
+    const deliveryCharge = 40
+  
+    const totalPrice = subtotal + tax + shippingCharge + deliveryCharge - couponDiscount;
 
     const order = new Orders({
       orderId: uuidv4(),
@@ -476,8 +482,9 @@ const verifyRazorpayPayment = async (req, res) => {
                 await coupon.save();
             }
         }
-
-        const totalPrice = subtotal + tax + shippingCharge - couponDiscount;
+    const deliveryCharge = 40
+       
+        const totalPrice = subtotal + tax + shippingCharge +deliveryCharge - couponDiscount;
         
 
         

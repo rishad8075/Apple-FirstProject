@@ -3,249 +3,309 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>APPLLe - Premium Electronics</title>
- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-  
+    <title>APPLLe | Future of Tech</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
-     <script>
-        window.addEventListener("pageshow", function(event) {
-            if (event.persisted) {
-                window.location.reload();
-            }
-        });
-    </script>
     <style>
         :root {
-            --primary: #0d6efd;
-            --dark: #212529;
-            --light: #f8f9fa;
-            --accent: #ffc107;
+            --brand-dark: #000000;
+            --brand-accent: #0d6efd;
+            --soft-bg: #f5f5f7;
+            --card-shadow: 0 20px 40px rgba(0,0,0,0.06);
         }
-        
+
         body {
-            font-family: 'Segoe UI', system-ui, sans-serif;
+            font-family: 'Inter', sans-serif;
+            background-color: #fff;
+            color: var(--brand-dark);
             overflow-x: hidden;
         }
-        
-        /* Hero Section */
-        .hero {
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            border-radius: 15px;
+
+        /* --- Hero Section --- */
+        .hero-wrap {
+            background: var(--soft-bg);
+            border-radius: 0 0 50px 50px;
+            padding: 80px 0;
+            margin-bottom: 60px;
+            position: relative;
             overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            margin: 2rem 0;
         }
-        
-        .hero-content {
-            padding: 3rem;
-        }
-        
-        .hero-title {
-            font-size: 2.5rem;
-            font-weight: 700;
-            margin-bottom: 1.5rem;
-        }
-        
-        .hero-btn {
-            padding: 12px 30px;
+
+        .hero-badge {
+            background: rgba(13, 110, 253, 0.1);
+            color: var(--brand-accent);
+            padding: 6px 16px;
+            border-radius: 50px;
+            font-size: 0.85rem;
             font-weight: 600;
-            letter-spacing: 0.5px;
-            transition: all 0.3s ease;
-        }
-        
-        /* Product Cards */
-        .product-card {
-            border: none;
-            border-radius: 12px;
-            overflow: hidden;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            display: inline-block;
             margin-bottom: 20px;
         }
-        
-        .product-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+
+        .hero-title {
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            font-weight: 800;
+            line-height: 1.1;
+            letter-spacing: -2px;
+            margin-bottom: 25px;
         }
-        
-        .product-img-container {
-            height: 220px;
-            background: #f8f9fa;
+
+        .hero-img-box {
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-img-box img {
+            filter: drop-shadow(0 30px 50px rgba(0,0,0,0.15));
+            transition: transform 0.5s ease;
+        }
+
+        /* --- Feature Highlights --- */
+        .feature-box {
+            padding: 40px;
+            text-align: center;
+            border-radius: 24px;
+            transition: all 0.3s ease;
+        }
+        .feature-icon {
+            font-size: 2rem;
+            margin-bottom: 20px;
+            color: var(--brand-accent);
+        }
+
+        /* --- Product Cards (The Best Part) --- */
+        .product-card {
+            background: #fff;
+            border: 1px solid #eee;
+            border-radius: 28px;
+            padding: 15px;
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+            position: relative;
+        }
+
+        .product-card:hover {
+            transform: translateY(-12px);
+            box-shadow: var(--card-shadow);
+            border-color: transparent;
+        }
+
+        .img-container {
+            background: var(--soft-bg);
+            border-radius: 20px;
+            height: 280px;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 20px;
-        }
-        
-        .product-img {
-            max-height: 100%;
-            max-width: 100%;
-            object-fit: contain;
-        }
-        
-        .product-body {
-            padding: 1.5rem;
-            background: white;
-        }
-        
-        .product-title {
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-            height: 48px;
             overflow: hidden;
+            position: relative;
         }
-        
-        .product-price {
-            font-weight: 700;
-            color: var(--primary);
-            font-size: 1.2rem;
-            margin: 1rem 0;
+
+        .img-container img {
+            max-width: 80%;
+            transition: transform 0.5s ease;
         }
-        
-        .btn-add-to-cart {
-            width: 100%;
-            padding: 10px;
-            font-weight: 600;
-            background: var(--dark);
+
+        .product-card:hover .img-container img {
+            transform: scale(1.1);
+        }
+
+        .wishlist-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: #fff;
             border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            z-index: 2;
             transition: all 0.3s ease;
         }
-        
-        .btn-add-to-cart:hover {
-            background: var(--primary);
-            transform: translateY(-2px);
+
+        .wishlist-btn:hover {
+            background: #ff4757;
+            color: #fff;
         }
-        
-        /* Section Headings */
-        .section-title {
-            position: relative;
-            display: inline-block;
-            margin-bottom: 2rem;
+
+        .product-info {
+            padding: 20px 10px 10px;
+        }
+
+        .category-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: #888;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+
+        .price-tag {
+            font-size: 1.25rem;
             font-weight: 700;
         }
-        
-        .section-title:after {
-            content: '';
-            position: absolute;
-            width: 50%;
-            height: 4px;
-            background: var(--accent);
-            bottom: -10px;
-            left: 0;
-            border-radius: 2px;
+
+        .btn-buy {
+            background: var(--brand-dark);
+            color: #fff;
+            border-radius: 12px;
+            padding: 12px;
+            font-weight: 600;
+            width: 100%;
+            margin-top: 15px;
+            border: none;
+            transition: 0.3s;
         }
-        
-        /* Responsive Adjustments */
-        @media (max-width: 768px) {
-            .hero-content {
-                text-align: center;
-                padding: 2rem;
-            }
-            
-            .hero-title {
-                font-size: 2rem;
-            }
-            
-            .product-img-container {
-                height: 180px;
-            }
+
+        .btn-buy:hover {
+            background: var(--brand-accent);
+            transform: scale(1.02);
+        }
+
+        /* --- Section Titles --- */
+        .section-header {
+            margin-bottom: 50px;
+        }
+        .section-header h2 {
+            font-weight: 800;
+            font-size: 2.5rem;
         }
     </style>
 </head>
 <body>
+
     <%- include("../partials/header.ejs") %>
-    
-    <!-- Premium Hero Banner -->
-    <section class="hero">
+
+    <section class="hero-wrap">
         <div class="container">
             <div class="row align-items-center">
-                <div class="col-lg-6 hero-content animate__animated animate__fadeInLeft">
-                    <h1 class="hero-title">MacBook Air with M2 Chip</h1>
-                    <p class="lead mb-4">Supercharged by the next-generation M2 chip, the MacBook Air delivers incredible performance and up to 18 hours of battery life.</p>
-                    <div class="d-flex gap-3">
-                        <button class="btn btn-dark hero-btn">
-                            <i class="fas fa-shopping-cart me-2"></i>Shop Now
-                        </button>
-                        <button class="btn btn-outline-dark hero-btn">
-                            <i class="fas fa-info-circle me-2"></i>Learn More
-                        </button>
+                <div class="col-lg-6 mb-5 mb-lg-0">
+                    <span class="hero-badge animate__animated animate__fadeInDown">New Arrival</span>
+                    <h1 class="hero-title animate__animated animate__fadeInUp">Next-gen <br><span class="text-primary">Performance.</span></h1>
+                    <p class="lead text-muted mb-4 animate__animated animate__fadeInUp" style="animation-delay: 0.2s">
+                        Experience the power of the new MacBook Air. Thinner, lighter, and faster than ever before.
+                    </p>
+                    <div class="d-flex gap-3 animate__animated animate__fadeInUp" style="animation-delay: 0.4s">
+                        <a href="/shop" class="btn btn-primary btn-lg px-5 rounded-pill shadow">Shop Collection</a>
+                        <a href="#products" class="btn btn-outline-dark btn-lg px-5 rounded-pill">Explore</a>
                     </div>
                 </div>
-                <div class="col-lg-6 p-0 animate__animated animate__fadeInRight">
-                    <img src="/images/banner Macbook.jpg" class="img-fluid" alt="MacBook Air" style="max-height: 500px; width: 100%; object-fit: cover;">
+                <div class="col-lg-6 hero-img-box animate__animated animate__zoomIn">
+                    <img src="/images/banner Macbook.jpg" alt="MacBook" class="img-fluid rounded-4">
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Dynamic Products Section -->
-    <section class="container my-5 py-4">
-        <div class="text-center mb-5">
-            <h2 class="section-title">Our Products</h2>
-            <p class="text-muted">Discover our premium selection of cutting-edge technology</p>
+    <section class="container mb-5">
+        <div class="row g-4 text-center">
+            <div class="col-md-4">
+                <div class="feature-box">
+                    <i class="fas fa-shipping-fast feature-icon"></i>
+                    <h4>Free Delivery</h4>
+                    <p class="text-muted">On all orders over ₹49,000</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-box" style="background: var(--soft-bg);">
+                    <i class="fas fa-shield-alt feature-icon"></i>
+                    <h4>2 Year Warranty</h4>
+                    <p class="text-muted">Full protection for your tech</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-box">
+                    <i class="fas fa-headset feature-icon"></i>
+                    <h4>Expert Support</h4>
+                    <p class="text-muted">24/7 technical assistance</p>
+                </div>
+            </div>
         </div>
-        
+    </section>
+
+    <section class="container py-5" id="products">
+        <div class="section-header text-center">
+            <h2 class="animate__animated animate__fadeIn">Curated Collection</h2>
+            <p class="text-muted">Hand-picked premium electronics for your lifestyle</p>
+        </div>
+
         <div class="row g-4">
-    <% products.forEach(product => { %>
-    <div class="col-md-6 col-lg-4 col-xl-3 animate__animated animate__fadeInUp">
-        <div class="product-card h-100">
-            <div class="product-img-container">
-                                <a href="/productDetails/<%= product._id %>" style="text-decoration:none; color:inherit;">
+            <% products.forEach(product => { %>
+                <div class="col-sm-6 col-lg-4 col-xl-3">
+                    <div class="product-card">
+                        <button class="wishlist-btn"><i class="far fa-heart"></i></button>
+                        
+                        <a href="/productDetails/<%= product._id %>" class="text-decoration-none">
+                            <div class="img-container">
+                                <% if(product.image && product.image[0]) { %>
+                                    <img src="<%= product.image[0] %>" alt="<%= product.productName %>">
+                                <% } else { %>
+                                    <img src="/images/default-product.jpg" alt="Product">
+                                <% } %>
+                            </div>
+                        </a>
 
-                <% if(product.image && product.image[0]) { %>
-                    <img src="<%= product.image[0] %>" class="product-img" alt="<%= product.productName %>">
-                <% } else { %>
-                    <img src="/images/default-product.jpg" class="product-img" alt="Default product image">
-                <% } %>
-                                </a>
-            </div>
-            <div class="product-body text-center">
-                <h5 class="product-title"><%= product.productName %></h5>
-                <div class="product-price">
-                    ₹<%= product.finalPrice %>
-                    <% if(product.hasDiscount) { %>
-                        <small class="text-muted text-decoration-line-through ms-2">₹<%= product.salePrice %></small>
-                    <% } %>
+                        <div class="product-info text-center">
+                            <span class="category-label"><%= product.categoryName || 'Electronics' %></span>
+                            <h5 class="fw-bold my-2 text-truncate"><%= product.productName %></h5>
+                            
+                            <div class="price-tag mb-3">
+                                ₹<%= product.finalPrice%>
+                                <% if(product.hasDiscount) { %>
+                                    <span class="text-muted text-decoration-line-through fs-6 ms-2">₹<%= product.salePrice %></span>
+                                <% } %>
+                            </div>
+
+                            <button class="btn-buy add-to-cart-btn" data-id="<%= product._id %>">
+                                <i class="fas fa-plus me-2"></i> Add to Cart
+                            </button>
+                        </div>
+                    </div>
                 </div>
-                <button class="btn btn-add-to-cart" data-id="<%= product._id %>">
-                    <i class="fas fa-cart-plus me-2"></i>Add to Cart
-                </button>
-            </div>
+            <% }); %>
         </div>
-    </div>
-    <% }); %>
-</div>
     </section>
-    
-    <%- include("../partials/footer.ejs") %>
-    
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        // Add to cart functionality
-        document.querySelectorAll('.btn-add-to-cart').forEach(button => {
-            button.addEventListener('click', function() {
-                const productId = this.getAttribute('data-id');
-                // Add your cart logic here
-                alert('Added product ' + productId + ' to cart');
-            });
-        });
 
-        // Simple animation trigger
-        document.addEventListener('DOMContentLoaded', function() {
-            const animatedElements = document.querySelectorAll('.animate__animated');
-            
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        entry.target.style.opacity = 1;
-                    }
-                });
-            }, { threshold: 0.1 });
-            
-            animatedElements.forEach(el => {
-                el.style.opacity = 0;
-                observer.observe(el);
+    <%- include("../partials/footer.ejs") %>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        // Cart Logic with better feedback
+        document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const id = this.dataset.id;
+                
+                // Show loading state
+                this.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                
+                setTimeout(() => {
+                    this.innerHTML = '<i class="fas fa-check"></i> Added';
+                    this.classList.replace('btn-buy', 'btn-success');
+                    
+                    Swal.fire({
+                        toast: true,
+                        position: 'top-end',
+                        icon: 'success',
+                        title: 'Added to your cart',
+                        showConfirmButton: false,
+                        timer: 2000
+                    });
+
+                    // Reset button after 2 seconds
+                    setTimeout(() => {
+                        this.innerHTML = '<i class="fas fa-plus me-2"></i> Add to Cart';
+                        this.classList.replace('btn-success', 'btn-buy');
+                    }, 2000);
+                }, 600);
             });
         });
     </script>

@@ -85,6 +85,10 @@
                 <div class="summary-item"><span>Subtotal</span><span class="price-value">₹<%= subtotalVal.toFixed(2) %></span></div>
                 <div class="summary-item"><span>Tax (18%)</span><span class="price-value">₹<%= taxVal.toFixed(2) %></span></div>
                 <div class="summary-item"><span>Shipping</span><span class="price-value">₹<%= shippingVal.toFixed(2) %></span></div>
+                    <div class="d-flex justify-content-between mt-2">
+                <span>Delivery Charge</span>
+                <span>₹ <%= deliveryCharge || 0 %></span>
+            </div>
                 <div class="summary-item total"><span>Grand TOTAL</span><span class="price-value final-total">₹<%= totalVal.toFixed(2) %></span></div>
             </div>
         </div>
