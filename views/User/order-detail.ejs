@@ -125,6 +125,16 @@
                                     Return
                                 </button>
                             <% } %>
+                              <% if(item.status === "Return Requested") { %>
+                               
+                                <button class="btn btn-sm btn-warning returnCancel-product-btn"
+                                    data-orderid="<%= order.orderId %>"
+                                    data-productid="<%= item.productId %>"
+                                    data-quantity = "<% item.quantity %>">
+
+                                    Cancel Return
+                                </button>
+                            <% } %>
 
                             <% if(item.status !== "Delivered" && item.status !== "Cancelled" && item.status !== "Returned"  && item.status !== "Return Requested") { %>
                                 <!-- CANCEL PRODUCT -->
@@ -211,6 +221,43 @@ document.querySelectorAll('.return-order-btn').forEach(btn => {
     });
 });
 
+document.querySelectorAll(".returnCancel-product-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const orderId = btn.dataset.orderid;
+    const productId = btn.dataset.productid;
+
+    Swal.fire({
+      title: "Cancel Return?",
+      showCancelButton: true,
+      confirmButtonColor: "#ffc107",
+      confirmButtonText: "Cancel Return Request",
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          const res = await fetch("/ReturnRequest/Cancel", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ orderId, productId }),
+          });
+
+          const data = await res.json();
+
+          if (data.success) {
+            Swal.fire("Return Cancelled", "", "success");
+        window.location.reload()
+          } else {
+            Swal.fire("Error", data.message, "error");
+          }
+        } catch (error) {
+          Swal.fire("Error", "Something went wrong", "error");
+          console.error(error);
+        }
+      }
+    });
+  });
+});
+
+
 /* ---------------- SPECIFIC PRODUCT RETURN ---------------- */
 document.querySelectorAll('.return-product-btn').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -240,6 +287,8 @@ document.querySelectorAll('.return-product-btn').forEach(btn => {
         });
     });
 });
+
+
 
 /* ---------------- CANCEL ENTIRE ORDER ---------------- */
 document.querySelectorAll('.cancel-order-btn').forEach(btn => {

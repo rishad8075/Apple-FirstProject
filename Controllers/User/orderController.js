@@ -232,6 +232,67 @@ return res.status(200).json({ success: true, message: "Return request submitted 
     }
 };
 
+const returnCancel = async (req, res) => {
+  try {
+    const { orderId, productId } = req.body;
+
+    const order = await Orders.findOne({ orderId });
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: "Order not found"
+      });
+    }
+
+    // Single product return cancel
+    if (productId) {
+      const item = order.orderItems.find(
+        item => item.productId.toString() === productId
+      );
+
+      if (!item) {
+        return res.status(404).json({
+          success: false,
+          message: "Product not found in this order"
+        });
+      }
+
+      
+      if (
+        item.status !== "Return Requested" 
+      ) {
+        return res.status(400).json({
+          success: false,
+          message: "Return request cannot be cancelled"
+        });
+      }
+
+      
+      item.status = "Delivered";
+      if(order.orderItems.length <=1){
+        order.status = "Delivered"
+      }
+    }
+
+    await order.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Return request cancelled successfully"
+    });
+
+  } catch (error) {
+    console.error("Return Cancel Error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server error. Please try again later"
+    });
+  }
+};
+
+
+    
+ 
 // DOWNLOAD INVOICE 
 
 function getStatusStyle(status) {
@@ -428,5 +489,6 @@ module.exports = {
     cancelEntireOrder,
     cancelProduct,
     returnOrder,
-    downloadInvoice
+    downloadInvoice,
+    returnCancel
 };

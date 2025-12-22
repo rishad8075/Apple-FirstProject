@@ -17,5 +17,6 @@ router.post("/return-order", auth, orders.returnOrder);
 
 // Invoice
 router.get("/order/invoice/:orderId", auth, orders.downloadInvoice);
+router.post("/ReturnRequest/Cancel",auth,orders.returnCancel);
 
 module.exports = router;
