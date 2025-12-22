@@ -1,8 +1,10 @@
 const Wishlist = require("../../model/wishlist");
 const Products = require("../../model/Product");
+const User = require("../../model/user")
 
 exports.getWishlist = async (req, res) => {
     try {
+        const userid = req.session.userId;
         const wishlist = await Wishlist.findOne({ userId: req.session.userId })
             .populate("products.productId")
             .lean();
@@ -10,6 +12,7 @@ exports.getWishlist = async (req, res) => {
         if (!wishlist) {
             return res.render("User/wishlist", { wishlistItems: [] });
         }
+        const user = await User.findById(userid)
 
         // Filter out items where productId failed to populate
         const wishlistItems = wishlist.products
@@ -20,7 +23,7 @@ exports.getWishlist = async (req, res) => {
                 Added_at: item.addedAt
             }));
 
-        res.render("User/wishlist", { wishlistItems });
+        res.render("User/wishlist", { wishlistItems,user });
 
     } catch (error) {
         console.error(error);

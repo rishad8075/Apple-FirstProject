@@ -3,159 +3,292 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Exclusive Login</title>
-    <!-- Bootstrap CSS -->
+    <title>Login | Exclusive Pro</title>
+    
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Custom CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
     <style>
+        :root {
+            --bg-deep: #000000;
+            --glass-white: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --apple-gold: #fcc201; 
+            --text-dim: #86868b;
+            --error-red: #ff4d4d;
+        }
+
         body {
-            background-color: #222;
-            color: white;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-deep);
+            color: #ffffff;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
         }
-        .navbar {
-            background-color: black;
-            padding: 15px;
+
+        header {
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--glass-border);
+            padding: 15px 0;
         }
-        .navbar a {
-            color: white;
-        }
-        .search-bar {
-            width: 250px;
-        }
-        .login-container {
+
+        .auth-container {
+            flex: 1;
             display: flex;
             align-items: center;
             justify-content: center;
-            height: 80vh;
-            background-color: #333;
-            padding: 20px;
+            padding: 40px 20px;
         }
-        .login-box {
-            background-color: #444;
-            padding: 30px;
-            border-radius: 10px;
-            text-align: center;
+
+        .login-grid {
+            display: grid;
+            grid-template-columns: 1.1fr 0.9fr;
+            max-width: 1000px;
             width: 100%;
-            max-width: 400px;
+            background: var(--glass-white);
+            border: 1px solid var(--glass-border);
+            border-radius: 40px;
+            overflow: hidden;
+            box-shadow: 0 50px 100px rgba(0,0,0,0.5);
         }
-        .login-box input {
-            background-color: #555;
+
+        .image-side {
+            background: linear-gradient(135deg, #111, #000);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 60px;
+            position: relative;
+        }
+        .image-side img {
+            width: 100%;
+            max-width: 350px;
+            filter: drop-shadow(0 0 30px rgba(255,255,255,0.1));
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .form-side {
+            padding: 60px;
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(10px);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        h2 { font-weight: 700; font-size: 2rem; margin-bottom: 10px; }
+        .subtitle { color: var(--text-dim); margin-bottom: 40px; }
+
+        .input-box {
+            position: relative;
+            margin-bottom: 25px;
+        }
+        .input-box input {
+            width: 100%;
+            background: transparent;
+            border: none;
+            border-bottom: 1.5px solid var(--glass-border);
             color: white;
+            padding: 12px 0;
+            padding-right: 35px; /* Space for the eye icon */
+            font-size: 1rem;
+            outline: none;
+            transition: 0.3s;
         }
-        .login-box input::placeholder {
-            color: #bbb;
+        .input-box input:focus {
+            border-color: var(--apple-gold);
         }
-        .login-box button {
-            background-color: #ffcc00;
-            color: black;
-            font-weight: bold;
+        .input-box label {
+            position: absolute;
+            left: 0;
+            top: 12px;
+            color: var(--text-dim);
+            transition: 0.3s;
+            pointer-events: none;
         }
-        .footer {
-            background-color: black;
-            padding: 20px 0;
-            text-align: center;
+        .input-box input:focus ~ label,
+        .input-box input:not(:placeholder-shown) ~ label {
+            top: -12px;
+            font-size: 0.75rem;
+            color: var(--apple-gold);
         }
-        .footer a {
+
+        /* Password Toggle Styling */
+        .toggle-password {
+            position: absolute;
+            right: 0;
+            top: 12px;
+            color: var(--text-dim);
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .toggle-password:hover {
+            color: var(--apple-gold);
+        }
+
+        /* Error Message Styling */
+        .error-text {
+            color: var(--error-red);
+            font-size: 0.75rem;
+            font-weight: 500;
+            margin-top: 5px;
+            height: 15px; /* Prevents layout jump */
+            display: block;
+        }
+
+        .btn-gold {
+            background: var(--apple-gold);
+            color: #000;
+            font-weight: 700;
+            border: none;
+            padding: 16px;
+            border-radius: 12px;
+            width: 100%;
+            transition: 0.3s;
+            margin-top: 10px;
+        }
+        .btn-gold:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(252, 194, 1, 0.3);
+            background: #ffd000;
+        }
+
+        .btn-google-dark {
+            background: transparent;
+            border: 1px solid var(--glass-border);
             color: white;
+            padding: 14px;
+            border-radius: 12px;
+            width: 100%;
+            margin-top: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: 0.3s;
             text-decoration: none;
         }
-        .footer input {
-            width: 250px;
-            padding: 8px;
+        .btn-google-dark:hover { background: rgba(255,255,255,0.05); }
+
+        .forgot-link {
+            color: var(--apple-gold);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 600;
         }
-        .footer img {
-            width: 100px;
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        @media (max-width: 992px) {
+            .login-grid { grid-template-columns: 1fr; }
+            .image-side { display: none; }
         }
     </style>
 </head>
 <body>
 
     <header>
-        <%- include("../partials/header") %>
-
-</header>
-
-    <!-- Login Section -->
-    <div class="container-fluid login-container">
-        <div class="row">
-            <div class="col-lg-6 text-center">
-                <img src="/images/login page logo.webp" alt="Apple Logo" class="img-fluid" width="300">
+        <div class="container d-flex justify-content-between align-items-center">
+            <img src="/images/login page logo.webp" height="24" style="filter: invert(1);">
+            <nav class="d-none d-md-flex gap-4">
+                <a href="/" class="text-white text-decoration-none small fw-bold">Home</a>
+                <a href="/shop" class="text-white text-decoration-none small fw-bold">Shop</a>
+                <a href="/about" class="text-white text-decoration-none small fw-bold">About</a>
+                <a href="/signup" class="text-white text-decoration-none small fw-bold">signup</a>
+            </nav>
+            <div class="d-flex gap-3 align-items-center">
+                <i class="far fa-heart"></i>
+                <i class="fas fa-shopping-bag"></i>
             </div>
-            <div class="col-lg-6 d-flex justify-content-center align-items-center">
-                <div class="login-box">
-                    <h3>Login</h3>
-                    <% if (typeof errorMessage !== 'undefined' && errorMessage) { %>
-                        <div class="alert alert-danger"><%= errorMessage %></div>
-                    <% } %>
-                    <form action="/login" method="post">
-                    <p>Enter your details below</p>
-                    <div id="error1" style="color: red;font-size: medium;"></div>
-                    <input type="email" class="form-control mb-3" placeholder="Email" name="email" id="email">
-                    <div id="error2" style="color: red;font-size: medium;"></div>
-                    <div class="input-group my-2">
-                    <input type="password" class="form-control mb-3" placeholder="Password" name="password" id="password" >
-                            <button style="height: 40px; background-color: #444;" class="btn btn-outline-secondary" type="button" onclick="togglePassword('password', this)">
-                            👁️
-                        </button>
-                        </div>
-                    <button type="submit" class="btn w-100">Log In</button>
-                    <a href="/auth/google" class="btn btn-light w-100 mt-2">Sign up with Google</a>
-                    <p class="mt-2"><a style="text-decoration: none;" href="/user/forgotPassword" class="text-white">Forgot Password?</a></p>
+        </div>
+    </header>
+
+    <div class="auth-container">
+        <div class="login-grid">
+            <div class="image-side">
+                <img src="/images/login page logo.webp" alt="Apple Pro">
+            </div>
+
+            <div class="form-side">
+                <h2>Log in to Exclusive</h2>
+                <p class="subtitle">Enter your details below</p>
+
+                <form action="/login" method="post" id="loginForm">
+                    <div class="input-box">
+                        <input type="email" id="email" name="email" placeholder=" ">
+                        <label>Email</label>
+                        <span id="error1" class="error-text"></span>
+                    </div>
+
+                    <div class="input-box">
+                        <input type="password" id="password" name="password" placeholder=" ">
+                        <label>Password</label>
+                        <i class="fas fa-eye toggle-password" id="togglePassword"></i>
+                        <span id="error2" class="error-text"></span>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                     
+                        <a href="/user/forgotPassword" class="forgot-link">Forgot Password?</a>
+                    </div>
+
+                    <button type="submit" class="btn-gold">Sign In</button>
+                    
+                    <a href="/auth/google" class="btn-google-dark">
+                        <img src="https://img.icons8.com/color/20/000000/google-logo.png" alt="Google">
+                        Sign in with Google
+                    </a>
                 </form>
-                </div>
             </div>
         </div>
     </div>
 
-    <!-- Footer -->
-    <footer style="justify-content: space-between;" class="footer text-white" >
-    
-    </footer>
+    <script>
+        // Password Visibility Toggle
+        const togglePassword = document.querySelector('#togglePassword');
+        const passwordInput = document.querySelector('#password');
 
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-const email = document.getElementById("email");
-const password = document.getElementById("password");
-const error1 = document.getElementById("error1");
-const error2 = document.getElementById("error2");
+        togglePassword.addEventListener('click', function () {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            this.classList.toggle('fa-eye-slash');
+        });
 
-function togglePassword(fieldId, button) {
-    const field = document.getElementById(fieldId);
-    field.type = field.type === "password" ? "text" : "password";
-    button.textContent = field.type === "password" ? "👁️" : "HIDE";
-}
+        // Form Validation
+        const form = document.getElementById("loginForm");
+        form.addEventListener("submit", function (e) {
+            let isValid = true;
+            const emailInput = document.getElementById("email");
+            const passwordInput = document.getElementById("password");
+            
+            const err1 = document.getElementById("error1");
+            const err2 = document.getElementById("error2");
 
-document.querySelector("form").addEventListener("submit", function (e) {
-    let isValid = true;
+            err1.textContent = "";
+            err2.textContent = "";
 
-    error1.textContent = "";
-    error2.textContent = "";
+            if (!emailInput.value.trim()) {
+                err1.textContent = "Email is required";
+                isValid = false;
+            } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailInput.value)) {
+                err1.textContent = "Please enter a valid email";
+                isValid = false;
+            }
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (passwordInput.value.length < 4) {
+                err2.textContent = "Password must be at least 4 characters";
+                isValid = false;
+            }
 
-    // Email validation
-    if (email.value.trim() === "") {
-        error1.textContent = "Please enter your email.";
-        isValid = false;
-    } else if (!emailRegex.test(email.value.trim())) {
-        error1.textContent = "Enter a valid email address.";
-        isValid = false;
-    }
-
-    // Password validation
-    if (password.value.trim() === "") {
-        error2.textContent = "Please enter your password.";
-        isValid = false;
-    } else if (password.value.trim().length < 4) {
-        error2.textContent = "Password must be at least 4 characters.";
-        isValid = false;
-    }
-
-    if (!isValid) e.preventDefault();
-});
-</script>
-
+            if (!isValid) e.preventDefault();
+        });
+    </script>
 </body>
-
 </html>
