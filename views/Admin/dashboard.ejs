@@ -1,249 +1,265 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin Dashboard | E-Commerce</title>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<style>
-:root {
-  --bg-color:#0f111a;
-  --card-bg:#1a1c26;
-  --sidebar-bg:#141620;
-  --text-main:#fff;
-  --text-muted:#a0a0a0;
-  --accent-blue:#4dabf7;
-  --border-color:#2d303e;
-}
-body {
-  background:var(--bg-color);
-  color:var(--text-main);
-  font-family:Inter,sans-serif;
-  overflow-x:hidden;
-}
-#sidebar {
-  width:250px;height:100vh;
-  background:var(--sidebar-bg);
-  position:fixed;
-  border-right:1px solid var(--border-color);
-  transition:.3s;
-}
-#content {
-  margin-left:250px;
-  padding:30px;
-  transition:.3s;
-}
-.card-custom {
-  background:var(--card-bg);
-  border:1px solid var(--border-color);
-  border-radius:12px;
-  padding:20px;
-}
-.metric-value { font-size:1.8rem;font-weight:700; }
-.metric-label { color:var(--text-muted); }
-.icon-box {
-  width:45px;height:45px;
-  border-radius:10px;
-  display:flex;align-items:center;justify-content:center;
-  background:rgba(77,171,247,.15);
-  color:var(--accent-blue);
-}
-.list-group-item {
-  border-color:var(--border-color);
-}
-@media(max-width:992px){
-  #sidebar{margin-left:-250px}
-  #sidebar.active{margin-left:0}
-  #content{margin-left:0}
-  #content.active{margin-left:250px}
-}
-</style>
-</head>
-<body>
-<%- include("../partials/adminSide-bar.ejs") %>
-<div id="content">
-<!-- Header -->
-<div class="d-flex justify-content-between align-items-center mb-4">
-  <button class="btn btn-dark d-lg-none" id="sidebarCollapse">
-    <i class="fas fa-bars"></i>
-  </button>
-  <h3 class="fw-bold mb-0">Dashboard</h3>
-</div>
-<!-- Metrics -->
-<div class="row g-4 mb-4">
-<div class="col-md-3">
-  <div class="card-custom d-flex justify-content-between">
-    <div>
-      <div class="metric-label">Total Sales</div>
-      <div class="metric-value">₹<%= dashboard.totalSales || 0 %></div>
-    </div>
-    <div class="icon-box"><i class="fas fa-dollar-sign"></i></div>
-  </div>
-</div>
-<div class="col-md-3">
-  <div class="card-custom d-flex justify-content-between">
-    <div>
-      <div class="metric-label">Orders</div>
-      <div class="metric-value"><%= dashboard.totalOrders || 0 %></div>
-    </div>
-    <div class="icon-box"><i class="fas fa-shopping-basket"></i></div>
-  </div>
-</div>
-<div class="col-md-3">
-  <div class="card-custom d-flex justify-content-between">
-    <div>
-      <div class="metric-label">Customers</div>
-      <div class="metric-value"><%= dashboard.totalUsers || 0 %></div>
-    </div>
-    <div class="icon-box"><i class="fas fa-user-friends"></i></div>
-  </div>
-</div>
-<div class="col-md-3">
-  <div class="card-custom d-flex justify-content-between">
-    <div>
-      <div class="metric-label">Revenue</div>
-      <div class="metric-value">₹<%= dashboard.totalRevenue || 0 %></div>
-    </div>
-    <div class="icon-box"><i class="fas fa-wallet"></i></div>
-  </div>
-</div>
-</div>
-<!-- Charts -->
-<div class="row g-4 mb-4">
-<div class="col-lg-8">
-<div class="card-custom">
-<div class="d-flex gap-2 mb-3">
-  <a href="/admin?range=daily" class="btn btn-sm btn-outline-light">Daily</a>
-  <a href="/admin?range=monthly" class="btn btn-sm btn-outline-light">Monthly</a>
-  <a href="/admin?range=yearly" class="btn btn-sm btn-outline-light">Yearly</a>
-</div>
-<h5 class="fw-bold mb-3">Sales Analytics</h5>
-<% if(!salesChart || salesChart.length === 0){ %>
-<p class="text-muted text-center">No sales data available</p>
-<% } else { %>
-<canvas id="salesAnalyticsChart"></canvas>
-<% } %>
-</div>
-</div>
-<div class="col-lg-4">
-<div class="card-custom">
-<h5 class="fw-bold mb-3">Payment Methods</h5>
-<% if(!paymentChart || paymentChart.length === 0){ %>
-<p class="text-muted text-center">No payment data</p>
-<% } else { %>
-<canvas id="trafficSourceChart"></canvas>
-<% } %>
-</div>
-</div>
-</div>
-<!-- Top Selling -->
-<div class="row g-4 mt-4">
-<div class="col-lg-4">
-<div class="card-custom">
-<h5 class="fw-bold mb-3">Top 10 Products</h5>
-<ul class="list-group list-group-flush">
-<% topProducts.forEach(i=>{ %>
-<li class="list-group-item bg-transparent text-white d-flex justify-content-between">
-<span><%= i.product.productName %></span>
-<span class="text-muted"><%= i.soldQty %></span>
-</li>
-<% }) %>
-</ul>
-</div>
-</div>
-<div class="col-lg-4">
-<div class="card-custom">
-<h5 class="fw-bold mb-3">Top 10 Categories</h5>
-<ul class="list-group list-group-flush">
-<% topCategories.forEach(i=>{ %>
-<li class="list-group-item bg-transparent text-white d-flex justify-content-between">
-<span><%= i.category.name %></span>
-<span class="text-muted"><%= i.soldQty %></span>
-</li>
-<% }) %>
-</ul>
-</div>
-</div>
-<div class="col-lg-4">
-<div class="card-custom">
-<h5 class="fw-bold mb-3">Top 10 Brands</h5>
-<ul class="list-group list-group-flush">
-<% topBrands.forEach(i=>{ %>
-<li class="list-group-item bg-transparent text-white d-flex justify-content-between">
-<span><%= i.brand %></span>
-<span class="text-muted"><%= i.soldQty %></span>
-</li>
-<% }) %>
-</ul>
-</div>
-</div>
-</div>
-</div>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
 
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --bg-color: #0b0e14;
+            --card-bg: #1a1d27;
+            --text-main: #ffffff;
+            --text-muted: #8a8f9d;
+            --accent-blue: #3b82f6;
+            --border-color: #262b3b;
+        }
+
+        body { background: var(--bg-color); color: var(--text-main); font-family: 'Inter', sans-serif; }
+        #content { margin-left: 250px; padding: 40px; transition: all 0.3s; }
+        .card-custom { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 24px; height: 100%; }
+        
+        /* Metric Styles */
+        .metric-container { display: flex; justify-content: space-between; align-items: start; }
+        .metric-label { color: var(--text-muted); font-size: 0.85rem; font-weight: 500; margin-bottom: 5px; }
+        .metric-value { font-size: 1.6rem; font-weight: 700; }
+        .metric-icon { width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; background: rgba(59, 130, 246, 0.1); color: var(--accent-blue); }
+
+        /* Chart Range Buttons */
+        .btn-range { background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border-color); color: var(--text-muted); padding: 4px 12px; font-size: 0.75rem; border-radius: 6px; }
+        .btn-range.active { background: var(--accent-blue); color: white; border-color: var(--accent-blue); }
+
+        @media (max-width: 992px) { #content { margin-left: 0; padding: 20px; } }
+    </style>
+</head>
+
+<body>
+
+<%- include("../partials/adminSide-bar.ejs") %>
+
+<div id="content">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="fw-bold m-0">Dashboard Overview</h3>
+        <div class="d-flex align-items-center gap-3">
+            <i class="fa-regular fa-bell text-muted"></i>
+            <img src="https://ui-avatars.com/api/?name=Admin&background=3b82f6&color=fff" class="rounded-circle" width="35">
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="card-custom">
+                <div class="metric-container">
+                    <div>
+                        <div class="metric-label">Total Sales</div>
+                        <div class="metric-value">₹<%= totalSales.toLocaleString() %></div>
+                    </div>
+                    <div class="metric-icon"><i class="fa-solid fa-indian-rupee-sign"></i></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card-custom">
+                <div class="metric-container">
+                    <div>
+                        <div class="metric-label">New Orders</div>
+                        <div class="metric-value"><%= totalOrders %></div>
+                    </div>
+                    <div class="metric-icon" style="color:#8b5cf6; background:rgba(139,92,246,0.1);"><i class="fa-solid fa-shopping-bag"></i></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card-custom">
+                <div class="metric-container">
+                    <div>
+                        <div class="metric-label">Total Customers</div>
+                        <div class="metric-value"><%= totalUsers %></div>
+                    </div>
+                    <div class="metric-icon" style="color:#ec4899; background:rgba(236,72,153,0.1);"><i class="fa-solid fa-user-group"></i></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card-custom">
+                <div class="metric-container">
+                    <div>
+                        <div class="metric-label">Revenue</div>
+                        <div class="metric-value">₹<%= totalSales.toLocaleString() %></div>
+                    </div>
+                    <div class="metric-icon" style="color:#10b981; background:rgba(16,185,129,0.1);"><i class="fa-solid fa-wallet"></i></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-lg-8">
+            <div class="card-custom">
+                <div class="d-flex justify-content-between mb-4">
+                    <h6 class="fw-bold m-0">Sales Analytics</h6>
+                    <div class="d-flex gap-2">
+                        <a href="?range=monthly" class="btn btn-range <%= range === 'monthly' ? 'active' : '' %>">Monthly</a>
+                        <a href="?range=yearly" class="btn btn-range <%= range === 'yearly' ? 'active' : '' %>">Yearly</a>
+                    </div>
+                </div>
+                <div style="height: 300px;"><canvas id="salesChart"></canvas></div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card-custom">
+                <h6 class="fw-bold mb-4">Payment Methods</h6>
+                <div style="height: 300px;"><canvas id="paymentChart"></canvas></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-6">
+            <div class="card-custom">
+                <h6 class="fw-bold mb-3">Best Selling Products</h6>
+                <div class="table-responsive">
+                    <table class="table table-dark table-borderless m-0">
+                        <thead><tr class="text-muted small"><th>Product Name</th><th class="text-end">Sold</th></tr></thead>
+                        <tbody>
+                            <% topProducts.forEach(p => { %>
+                                <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                                    <td class="py-2"><%= p.product.productName %></td>
+                                    <td class="text-end py-2"><span class="badge bg-primary bg-opacity-10 text-primary fw-normal"><%= p.soldQty %></span></td>
+                                </tr>
+                            <% }) %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card-custom">
+                <h6 class="fw-bold mb-3">Top Categories</h6>
+                <div class="table-responsive">
+                    <table class="table table-dark table-borderless m-0">
+                        <thead><tr class="text-muted small"><th>Category</th><th class="text-end">Units Sold</th></tr></thead>
+                        <tbody>
+                            <% topCategories.forEach(c => { %>
+                                <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                                    <td class="py-2"><%= c.categoryDetails.name %></td>
+                                    <td class="text-end py-2"><span class="badge bg-success bg-opacity-10 text-success fw-normal"><%= c.soldQty %></span></td>
+                                </tr>
+                            <% }) %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <script>
-const sidebar=document.getElementById("sidebar");
-const content=document.getElementById("content");
-document.getElementById("sidebarCollapse").onclick=()=>{
-  sidebar.classList.toggle("active");
-  content.classList.toggle("active");
-};
-document.addEventListener("DOMContentLoaded", function () {
-  const salesChartData = <%- JSON.stringify(salesChart || []) %>;
-  const paymentChartData = <%- JSON.stringify(paymentChart || []) %>;
-  console.log("Sales Data:", salesChartData);
-  /* ================= SALES LINE CHART ================= */
-  if (salesChartData.length > 0) {
-    const salesLabels = salesChartData.map(item => item._id);
-    const salesValues = salesChartData.map(item => item.total);
-    const salesCanvas = document.getElementById("salesAnalyticsChart");
-    if (salesCanvas) {
-      new Chart(salesCanvas, {
-        type: "line",
+const salesDataRaw = <%- JSON.stringify(salesChart) %>;
+    const range = "<%= range %>";
+    const chartType = "<%= chartType %>";
+
+    let labels = [];
+    let dataValues = [];
+
+
+    if (range === "monthly") {
+       
+        labels = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        dataValues = new Array(12).fill(0);
+
+        salesDataRaw.forEach(item => {
+            
+            const monthIndex = parseInt(item._id.split('-')[1]) - 1;
+            if (monthIndex >= 0 && monthIndex < 12) {
+                dataValues[monthIndex] = item.total;
+            }
+        });
+    } else {
+      
+        const currentYear = new Date().getFullYear();
+        for (let i = 4; i >= 0; i--) {
+            labels.push((currentYear - i).toString());
+            dataValues.push(0);
+        }
+
+        salesDataRaw.forEach(item => {
+            const index = labels.indexOf(item._id.toString());
+            if (index !== -1) {
+                dataValues[index] = item.total;
+            }
+        });
+    }
+
+   
+    const salesCtx = document.getElementById("salesChart").getContext("2d");
+    const gradient = salesCtx.createLinearGradient(0, 0, 0, 400);
+    gradient.addColorStop(0, 'rgba(59, 130, 246, 0.4)');
+    gradient.addColorStop(1, 'rgba(59, 130, 246, 0)');
+
+    new Chart(salesCtx, {
+        type: chartType, 
         data: {
-          labels: salesLabels,
-          datasets: [{
-            label: "Sales",
-            data: salesValues,
-            borderColor: "#4dabf7",
-            backgroundColor: "rgba(77,171,247,0.2)",
-            tension: 0.4,
-            fill: true
-          }]
+            labels: labels,
+            datasets: [{
+                label: "Sales",
+                data: dataValues,
+                borderColor: '#3b82f6',
+                borderWidth: 3,
+                backgroundColor: chartType === 'line' ? gradient : '#3b82f6',
+                fill: true,
+                tension: 0.4, 
+                pointRadius: chartType === 'line' ? 4 : 0,
+                
+                barPercentage: 0.5, 
+                categoryPercentage: 0.8
+            }]
         },
         options: {
-          responsive: true,
-          plugins: {
-            legend: { display: false }
-          }
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                x: { 
+                    grid: { display: false }, 
+                    ticks: { color: '#8a8f9d' } 
+                },
+                y: { 
+                    beginAtZero: true,
+                    grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                    ticks: { 
+                        color: '#8a8f9d',
+                        callback: value => '₹' + value.toLocaleString()
+                    }
+                }
+            }
         }
-      });
-    }
-  }
-  /* ================= PAYMENT PIE CHART ================= */
-  if (paymentChartData.length > 0) {
-    const paymentLabels = paymentChartData.map(i => i._id);
-    const paymentValues = paymentChartData.map(i => i.count);
-    const paymentCanvas = document.getElementById("trafficSourceChart");
-    if (paymentCanvas) {
-      new Chart(paymentCanvas, {
-        type: "pie",
+    });
+    
+    const paymentDataRaw = <%- JSON.stringify(paymentChart) %>;
+    new Chart(document.getElementById("paymentChart"), {
+        type: 'doughnut',
         data: {
-          labels: paymentLabels,
-          datasets: [{
-            data: paymentValues
-          }]
+            labels: paymentDataRaw.map(item => item._id),
+            datasets: [{
+                data: paymentDataRaw.map(item => item.count),
+                backgroundColor: ['#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b'],
+                borderWidth: 0
+            }]
         },
         options: {
-          responsive: true
+            maintainAspectRatio: false,
+            cutout: '75%',
+            plugins: {
+                legend: { position: 'bottom', labels: { color: '#8a8f9d', usePointStyle: true, padding: 20 } }
+            }
         }
-      });
-    }
-  }
-});
+    });
 </script>
+
 </body>
 </html>

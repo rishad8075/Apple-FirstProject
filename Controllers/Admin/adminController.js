@@ -9,20 +9,44 @@ const { calculateSalesMetrics } = require("../../utils/saleHelper");
 const loadDashboard = async (req, res) => {
   try {
     const range = req.query.range || "monthly";
+
     let groupFormat;
     let limit;
+    let chartType;
+
     if (range === "yearly") {
       groupFormat = "%Y";
       limit = 5;
+      chartType = "bar";
     } else {
       groupFormat = "%Y-%m";
       limit = 12;
+      chartType = "line";
     }
-    // SALES METRICS (use same range)
-    const { totalSales, totalOrders, totalRevenue } =
-      await calculateSalesMetrics(range);
+
+    // TOTAL SALES & ORDERS
+    const salesStats = await Order.aggregate([
+      {
+        $match: {
+          status: "Delivered",
+          paymentStatus: { $ne: "Refunded" }
+        }
+      },
+      {
+        $group: {
+          _id: null,
+          totalSales: { $sum: "$totalPrice" },
+          totalOrders: { $sum: 1 }
+        }
+      }
+    ]);
+
+    const totalSales = salesStats[0]?.totalSales || 0;
+    const totalOrders = salesStats[0]?.totalOrders || 0;
+
     const totalUsers = await User.countDocuments({ isAdmin: false });
-    /* ---------------- TOP PRODUCTS ---------------- */
+
+    // TOP PRODUCTS
     const topProducts = await Order.aggregate([
       { $match: { status: "Delivered" } },
       { $unwind: "$orderItems" },
@@ -44,95 +68,63 @@ const loadDashboard = async (req, res) => {
       },
       { $unwind: "$product" }
     ]);
-    /* ---------------- TOP CATEGORIES ---------------- */
+
+    // TOP CATEGORIES
     const topCategories = await Order.aggregate([
-      { $match: { status: "Delivered" } },
-      { $unwind: "$orderItems" },
-      {
-        $lookup: {
-          from: "products",
-          localField: "orderItems.productId",
-          foreignField: "_id",
-          as: "product"
-        }
-      },
-      { $unwind: "$product" },
-      {
-        $group: {
-          _id: "$product.category",
-          soldQty: { $sum: "$orderItems.quantity" }
-        }
-      },
-      { $sort: { soldQty: -1 } },
-      { $limit: 10 },
-      {
-        $lookup: {
-          from: "categories",
-          localField: "_id",
-          foreignField: "_id",
-          as: "category"
-        }
-      },
-      { $unwind: "$category" }
-    ]);
-    /* ---------------- TOP BRANDS ---------------- */
-    const topBrands = await Order.aggregate([
-      { $match: { status: "Delivered" } },
-      { $unwind: "$orderItems" },
-      {
-        $lookup: {
-          from: "products",
-          localField: "orderItems.productId",
-          foreignField: "_id",
-          as: "product"
-        }
-      },
-      { $unwind: "$product" },
-      {
-        $group: {
-          _id: "$product.brand",
-          soldQty: { $sum: "$orderItems.quantity" }
-        }
-      },
-      { $sort: { soldQty: -1 } },
-      { $limit: 10 }
-    ]);
-    /* ---------------- SALES CHART ---------------- */
-const salesChart = await Order.aggregate([
+  { $match: { status: "Delivered" } },
+  { $unwind: "$orderItems" },
   {
-    $match: {
-      status: "Delivered",
-      paymentStatus: { $ne: "Refunded" }
+    $lookup: {
+      from: "products",
+      localField: "orderItems.productId",
+      foreignField: "_id",
+      as: "product"
     }
   },
+  { $unwind: "$product" },
   {
     $group: {
-      _id: {
-        $dateToString: {
-          format: groupFormat,
-          date: "$createdAt",
-          timezone: "Asia/Kolkata"
-        }
-      },
-     total: {
-  $sum: {
-    $sum: {
-      $map: {
-        input: "$orderItems",
-        as: "item",
-        in: {
-          $multiply: ["$$item.price", "$$item.quantity"]
-        }
-      }
-    }
-  }
-}
-
+      _id: "$product.category", // This is usually an ObjectId
+      soldQty: { $sum: "$orderItems.quantity" }
     }
   },
-  { $sort: { _id: 1 } }   // IMPORTANT: ascending only
+  {
+    $lookup: {
+      from: "categories", // Ensure this matches your collection name
+      localField: "_id",
+      foreignField: "_id",
+      as: "categoryDetails"
+    }
+  },
+  { $unwind: "$categoryDetails" },
+  { $sort: { soldQty: -1 } },
+  { $limit: 10 }
 ]);
-    /* ---------------- PAYMENT METHOD PIE ---------------- */
+    // SALES CHART
+    const salesChart = await Order.aggregate([
+      {
+        $match: {
+          status: "Delivered",
+          paymentStatus: { $ne: "Refunded" }
+        }
+      },
+      {
+        $group: {
+          _id: {
+            $dateToString: {
+              format: groupFormat,
+              date: "$createdAt"
+            }
+          },
+          total: { $sum: "$totalPrice" }
+        }
+      },
+      { $sort: { _id: -1 } },
+      { $limit: limit },
+      { $sort: { _id: 1 } }
+    ]);
+
+    // PAYMENT PIE CHART
     const paymentChart = await Order.aggregate([
       { $match: { status: "Delivered" } },
       {
@@ -142,22 +134,21 @@ const salesChart = await Order.aggregate([
         }
       }
     ]);
+
     res.render("Admin/dashboard", {
-      dashboard: {
-        totalSales,
-        totalOrders,
-        totalUsers,
-        totalRevenue
-      },
+      totalSales,
+      totalOrders,
+      totalUsers,
       topProducts,
       topCategories,
-      topBrands,
       salesChart,
       paymentChart,
-      range
+      range,
+      chartType
     });
+
   } catch (error) {
-    console.error("Dashboard Error:", error);
+    console.error(error);
     res.status(500).render("page-500");
   }
 };
