@@ -6,8 +6,8 @@ const checkBlock = require("../../middleware/checkBlock");
 router.use(checkBlock);
 
 // Import small route modules
-router.use(require("./mainRoutes"));
 router.use(require("./authRoutes"));
+router.use(require("./mainRoutes"));
 router.use(require("./profileRoutes"));
 router.use(require("./addressRoutes"));
 router.use(require("./cartRoutes"));
