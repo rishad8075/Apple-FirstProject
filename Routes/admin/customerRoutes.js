@@ -3,9 +3,10 @@ const router = express.Router();
 const CustomerController = require("../../Controllers/Admin/customerController");
 const adminAuth = require("../../middleware/adminAuth");
 
-// Customer Management
-router.get("/admin/users", adminAuth, CustomerController.customerInfo);
-router.post('/admin/users/:id/block', adminAuth, CustomerController.BlockUser);
-router.post('/admin/users/:id/unblock', adminAuth, CustomerController.UnblockUser);
+router.use(adminAuth)
+
+router.get("/admin/users", CustomerController.customerInfo);
+router.post('/admin/users/:id/block', CustomerController.BlockUser);
+router.post('/admin/users/:id/unblock', CustomerController.UnblockUser);
 
 module.exports = router;

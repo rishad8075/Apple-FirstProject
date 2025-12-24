@@ -5,7 +5,7 @@ const checkBlock = require("../../middleware/checkBlock");
 // Blocked user check
 router.use(checkBlock);
 
-// Import small route modules
+
 router.use(require("./authRoutes"));
 router.use(require("./mainRoutes"));
 router.use(require("./profileRoutes"));

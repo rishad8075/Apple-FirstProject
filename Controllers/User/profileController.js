@@ -290,8 +290,10 @@ const changePassword = async (req, res) => {
 
 const getchangeEmail_valid = async (req,res)=>{
     try {
-
-        res.render("User/changeEmail-valid");
+        const userid = req.session.userId
+        const user = await User.findById(userid)
+       
+        res.render("User/changeEmail-valid",{user});
         
     } catch (error) {
         console.log(error)
