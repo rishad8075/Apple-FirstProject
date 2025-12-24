@@ -199,10 +199,10 @@ if (productId) {
 
     // Update order status if any item has Return Requested
     if (order.orderItems.some(i => i.status === "Return Requested")) {
-        order.status = "Return Requested";
+        
     }
 } else {
-    // Full Order Return
+    
     let returnedCount = 0;
     order.orderItems.forEach(item => {
         if (item.status === "Delivered") {
@@ -215,7 +215,6 @@ if (productId) {
     if (returnedCount === 0) 
         return res.status(400).json({ success: false, message: "No delivered items available for return." });
 
-    // Update order status if any item has Return Requested
     if (order.orderItems.some(i => i.status === "Return Requested")) {
         order.status = "Return Requested";
     }
@@ -298,23 +297,22 @@ const returnCancel = async (req, res) => {
 function getStatusStyle(status) {
   switch ((status || "").toString()) {
     case "Delivered":
-      return { label: "Delivered", color: "#2ecc71" };      // green
+      return { label: "Delivered", color: "#2ecc71" };     
     case "Cancelled":
-      return { label: "Cancelled", color: "#e74c3c" };      // red
+      return { label: "Cancelled", color: "#e74c3c" };    
     case "Return Requested":
-      return { label: "Return Requested", color: "#e67e22" }; // orange
+      return { label: "Return Requested", color: "#e67e22" }; 
     case "Returned":
-      return { label: "Returned", color: "#3498db" };       // blue
+      return { label: "Returned", color: "#3498db" };    
     case "Shipped":
-      return { label: "Shipped", color: "#f1c40f" };        // yellow
-    case "Pending":
-      return { label: "Pending", color: "#95a5a6" };        // gray
+      return { label: "Shipped", color: "#f1c40f" };       
+      return { label: "Pending", color: "#95a5a6" };      
     default:
       return { label: status || "N/A", color: "#95a5a6" };
   }
 }
 
-// DRAW A BADGE (rounded rectangle with label)
+
 function drawBadge(doc, x, y, label, color) {
   const paddingX = 6;
   const paddingY = 3;
@@ -327,11 +325,11 @@ function drawBadge(doc, x, y, label, color) {
   doc.restore();
 }
 
-// Utility: add a page if needed
+
 function ensureY(doc, y, marginBottom = 72) {
   if (y > doc.page.height - marginBottom) {
     doc.addPage();
-    return doc.y; // new page y
+    return doc.y; 
   }
   return y;
 }
@@ -348,15 +346,13 @@ const downloadInvoice =async (req, res) => {
 
     const doc = new PDFDocument({ margin: 40 });
 
-    // Headers for PDF download
+
     res.setHeader("Content-Disposition", `attachment; filename=Invoice-${orderId}.pdf`);
     res.setHeader("Content-Type", "application/pdf");
 
     doc.pipe(res);
 
-    // ------------------------------
-    // HEADER – APPLE STORE
-    // ------------------------------
+
     doc
       .fontSize(26)
       .font("Helvetica-Bold")

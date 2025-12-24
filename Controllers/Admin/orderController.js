@@ -307,14 +307,14 @@ const cancelProductAdmin = async (req, res) => {
 };
 
 
-// --- NEW FUNCTION: List Return Requests for Admin View ---
+
 const listReturnRequestsAdmin = async (req, res) => {
     try {
         const requests = await Orders.find({ "orderItems.status": "Return Requested" })
             .populate("userId", "name email")
             .populate("orderItems.productId");
 
-        // Map each item with Return Requested status
+      
         const formattedRequests = [];
         requests.forEach(order => {
             order.orderItems.forEach(item => {
@@ -325,7 +325,7 @@ const listReturnRequestsAdmin = async (req, res) => {
                         userId: order.userId,
                         productId: item.productId._id,
                         productName: item.productId.name,
-                        productImage: item.productId.image,
+                        productImage: item.image,
                         quantity: item.quantity,
                         reason: item.returnReason,
                         status: "PENDING",

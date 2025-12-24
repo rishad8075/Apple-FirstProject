@@ -1,120 +1,210 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
     <style>
-         body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #121212;
-      color: #fff;
-    }
-    .admin-container {
-    background-color: transparent;
-    min-height: 100vh;
-    padding: 30px;
-}
+        :root {
+            --sidebar-width: 260px;
+            --primary-blue: #3d8bfd;
+            --bg-dark-light: #1c1c1c;
+            --nav-hover: rgba(255, 255, 255, 0.05);
+        }
 
-/* Admin Header */
-.admin-header {
-    background-color: #121214;
-    border: 1px solid #ffffff33; /* white border */
-    border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-    padding: 15px 20px;
-    margin-left: 250px;
-    margin-bottom: 20px;
-}
+        /* Responsive Sidebar Logic */
+        .sidebar {
+            width: var(--sidebar-width);
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            background: var(--bg-dark-light);
+            border-right: 1px solid #333;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
 
-/* Admin Profile Image */
-.admin-img {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    border: 2px solid #ffffff55;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.5);
-    object-fit: cover;
-}
+        /* Brand / Logo Area */
+        .sidebar-brand {
+            padding: 25px;
+            text-align: center;
+            border-bottom: 1px solid #333;
+            margin-bottom: 15px;
+        }
 
-/* Admin Card */
-.admin-card {
-    margin-left: 250px;
-    background: #181818;
-    border: 1px solid #ffffff22; 
-    border-radius: 14px;
-    padding: 28px;
-    box-shadow: 0 0 25px rgba(0,0,0,0.45);
-}
+        .sidebar-brand h4 {
+            margin: 0;
+            font-weight: 700;
+            letter-spacing: 1px;
+            color: var(--primary-blue);
+            text-transform: uppercase;
+        }
 
-    /* ===== SIDEBAR ===== */
-    .sidebar {
-      width: 240px;
-      position: fixed;
-      top: 0;
-      left: 0;
-      height: 100vh;
-      background: #1c1c1c;
-      padding-top: 20px;
-      display: flex;
-      flex-direction: column;
-    }
+        /* Navigation Links */
+        .nav-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            flex-grow: 1;
+            overflow-y: auto;
+        }
 
-    .sidebar h4 {
-      margin-bottom: 20px;
-      font-weight: bold;
-      color: #fff;
-    }
+        .nav-item {
+            margin: 4px 15px;
+        }
 
-    .sidebar a {
-      color: white;
-      text-decoration: none;
-      padding: 10px 20px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      border-radius: 5px;
-      margin: 2px 10px;
-      transition: background 0.2s;
-    }
+        .sidebar a {
+            color: #b0b0b0;
+            text-decoration: none;
+            padding: 12px 18px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+        }
 
-    .sidebar a:hover {
-      background: #333;
-    }
+        .sidebar a i {
+            width: 20px;
+            text-align: center;
+            font-size: 1.1rem;
+        }
 
-    .sidebar a.text-danger:hover {
-      background: #aa2222;
-    }
+        .sidebar a:hover {
+            background: var(--nav-hover);
+            color: #fff;
+        }
 
+        /* Active State */
+        .sidebar a.active {
+            background: var(--primary-blue);
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(61, 139, 253, 0.3);
+        }
 
+        .sidebar a.text-danger:hover {
+            background: rgba(220, 53, 69, 0.1);
+            color: #ff6b6b;
+        }
 
+        /* Mobile Toggle Button */
+        .mobile-toggle {
+            display: none;
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            background: var(--primary-blue);
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+            z-index: 1100;
+            cursor: pointer;
+        }
 
+        /* RESPONSIVE BREAKPOINTS */
+        @media (max-width: 992px) {
+            .sidebar {
+                left: calc(-1 * var(--sidebar-width));
+            }
+            
+            .sidebar.open {
+                left: 0;
+            }
+
+            .mobile-toggle {
+                display: block;
+            }
+
+            /* Adjust main content for mobile */
+            .content-main {
+                margin-left: 0 !important;
+                padding-top: 70px !important;
+            }
+        }
     </style>
 </head>
 <body>
-      <div class="sidebar">
-    <h4 class="text-center">Admin</h4>
-    <a href="/admin"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
-    <a href="/admin/users"><i class="fas fa-users"></i> Users</a>
-    <a href="/admin/orders"><i class="fas fa-users"></i> Orders</a>
-    <li class="nav-item">
-    <a class="nav-link text-white" href="/admin/returns">
-        <i class="fas fa-undo-alt"></i> Return Requests </a>
-</li>
-  <a class="nav-link text-white" href="/admin/coupons">
-        <i class="fas fa-undo-alt"></i>  Coupon </a> 
-</li>
 
-    <a class="nav-link text-white" href="/admin/sales/report">
-        <i class="fas fa-undo-alt"></i> salesReport </a>
+    <button class="mobile-toggle" onclick="toggleSidebar()">
+        <i class="fas fa-bars"></i>
+    </button>
 
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-brand">
+            <h4>Admin Panel</h4>
+        </div>
+        
+        <ul class="nav-list">
+            <li class="nav-item">
+                <a href="/admin" class="nav-link"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+            </li>
+            <li class="nav-item">
+                <a href="/admin/users" class="nav-link"><i class="fas fa-users"></i> Users</a>
+            </li>
+            <li class="nav-item">
+                <a href="/admin/orders" class="nav-link"><i class="fas fa-shopping-cart"></i> Orders</a>
+            </li>
+            <li class="nav-item">
+                <a href="/admin/returns" class="nav-link"><i class="fas fa-undo-alt"></i> Return Requests</a>
+            </li>
+            <li class="nav-item">
+                <a href="/admin/coupons" class="nav-link"><i class="fas fa-ticket-alt"></i> Coupons</a>
+            </li>
+            <li class="nav-item">
+                <a href="/admin/sales/report" class="nav-link"><i class="fas fa-chart-line"></i> Sales Report</a>
+            </li>
+            <li class="nav-item">
+                <a href="/admin/products" class="nav-link"><i class="fas fa-box"></i> Products</a>
+            </li>
+            <li class="nav-item">
+                <a href="/admin/addProducts" class="nav-link"><i class="fas fa-plus-square"></i> Add Product</a>
+            </li>
+            <li class="nav-item">
+                <a href="/admin/category" class="nav-link"><i class="fas fa-tags"></i> Categories</a>
+            </li>
+        </ul>
 
-    <a href="/admin/products"><i class="fas fa-box"></i> Products</a>
-    <a href="/admin/addProducts"><i class="fas fa-plus"></i> Add Product</a>
-    <a href="/admin/category"><i class="fas fa-tags"></i> Categories</a>
-    <a href="/admin/logout" class="text-danger"><i class="fas fa-sign-out-alt"></i> Logout</a>
-  </div>
+        <div class="mt-auto mb-3">
+            <li class="nav-item" style="list-style: none;">
+                <a href="/admin/logout" class="text-danger"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            </li>
+        </div>
+    </div>
+
+    <script>
+        // 1. Logic for Mobile Sidebar Toggle
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+        }
+
+        // 2. Logic to automatically set 'active' class based on URL
+        document.addEventListener("DOMContentLoaded", function() {
+            const currentPath = window.location.pathname;
+            const navLinks = document.querySelectorAll('.sidebar a');
+            
+            navLinks.forEach(link => {
+                if (link.getAttribute('href') === currentPath) {
+                    link.classList.add('active');
+                }
+            });
+        });
+
+        // Close sidebar when clicking outside on mobile
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const toggle = document.querySelector('.mobile-toggle');
+            if (window.innerWidth <= 992 && 
+                !sidebar.contains(event.target) && 
+                !toggle.contains(event.target) && 
+                sidebar.classList.contains('open')) {
+                sidebar.classList.remove('open');
+            }
+        });
+    </script>
 </body>
 </html>
