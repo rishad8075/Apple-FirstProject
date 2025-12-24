@@ -12,20 +12,20 @@ passport.use(
         },
         async (accessToken, refreshToken, profile, done) => {
             try {
-                // Check if user already exists
+                
                 let user = await User.findOne({ googleId: profile.id });
 
                 if (user) {
                     return done(null, user);
                 }
 
-                // If user doesn't exist → create new account
+                
                 user = new User({
                     name: profile.displayName,
                     email: profile.emails[0].value,
                     avatar: profile.photos?.[0]?.value,
                     googleId: profile.id,
-                    isVerified: true, // Google users are always verified
+                    isVerified: true, 
                 });
 
                 await user.save();

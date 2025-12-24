@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const CategoryController = require("../../Controllers/Admin/categoryController");
 const adminAuth = require("../../middleware/adminAuth");
-router.use(adminAuth)
+router.use(adminAuth);
 router.get("/admin/category", CategoryController.categoryInfo);
 router.post("/admin/addCategory", CategoryController.addCategory);
 router.patch("/admin/listCategory", CategoryController.listCategory);
