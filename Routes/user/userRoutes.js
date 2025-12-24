@@ -2,8 +2,8 @@ const express = require("express");
 const router = express.Router();
 const checkBlock = require("../../middleware/checkBlock");
 
-// Blocked user check
-router.use(checkBlock);
+
+
 
 
 router.use(require("./authRoutes"));

@@ -1,8 +1,10 @@
 const router = require("express").Router();
 const auth = require("../../middleware/UserAuth");
 const checkout = require("../../Controllers/User/checkoutController");
+const checkBlock = require("../../middleware/checkBlock");
 
-router.get("/checkout", auth, checkout.getCheckoutPage);
+
+router.get("/checkout", auth,checkBlock, checkout.getCheckoutPage);
 router.get("/checkout/AddAddress", auth, checkout.checkoutAdd_Address);
 router.post("/checkout/AddAddress", auth, checkout.checkoutAddAddress);
 

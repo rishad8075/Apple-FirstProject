@@ -2,11 +2,12 @@ const router = require("express").Router();
 const auth = require("../../middleware/UserAuth");
 const orders = require("../../Controllers/User/orderController");
 
-// List all orders
-router.get("/orders", auth, orders.listOrders);
+const checkBlock = require("../../middleware/checkBlock");
 
-// Order detail
-router.get("/orders/detail/:orderId", auth, orders.orderDetail);
+router.get("/orders",checkBlock, auth, orders.listOrders);
+
+
+router.get("/orders/detail/:orderId",checkBlock, auth, orders.orderDetail);
 
 // Cancel order
 router.post("/orders/cancel-entire", auth, orders.cancelEntireOrder);

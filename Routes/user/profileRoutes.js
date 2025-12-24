@@ -10,9 +10,10 @@ router.post("/verify-passForgot-otp", profile.verifyPassForgotOtp);
 router.get("/reset-password", profile.getResetPassword);
 router.post("/reset-password", profile.resetPassword);
 router.post("/resend-forgot-otp", profile.resend_ForgotPass_Otp);
+const checkBlock = require("../../middleware/checkBlock");
 
 // Profile
-router.get("/user/profile", auth, profile.userProfile);
+router.get("/user/profile",checkBlock, auth, profile.userProfile);
 router.get("/user/edit-profile", auth, profile.getEditProfile);
 
 router.post(

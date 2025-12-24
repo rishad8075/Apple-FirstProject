@@ -281,9 +281,10 @@ const resendOtp = async (req, res) => {
 
 const Loadlogin = async (req,res)=>{
     res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, private");
+     const message = req.query.message || null;
 
     if (!req.session.userId) {
-        return res.render("User/login");
+        return res.render("User/login",{errorMessage:message});
     }
     return res.redirect("/");
 };
