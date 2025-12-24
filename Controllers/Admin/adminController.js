@@ -24,7 +24,7 @@ const loadDashboard = async (req, res) => {
       chartType = "line";
     }
 
-    // TOTAL SALES & ORDERS
+   
     const salesStats = await Order.aggregate([
       {
         $match: {
@@ -46,7 +46,7 @@ const loadDashboard = async (req, res) => {
 
     const totalUsers = await User.countDocuments({ isAdmin: false });
 
-    // TOP PRODUCTS
+    
     const topProducts = await Order.aggregate([
       { $match: { status: "Delivered" } },
       { $unwind: "$orderItems" },
@@ -69,7 +69,7 @@ const loadDashboard = async (req, res) => {
       { $unwind: "$product" }
     ]);
 
-    // TOP CATEGORIES
+
     const topCategories = await Order.aggregate([
   { $match: { status: "Delivered" } },
   { $unwind: "$orderItems" },
@@ -84,13 +84,13 @@ const loadDashboard = async (req, res) => {
   { $unwind: "$product" },
   {
     $group: {
-      _id: "$product.category", // This is usually an ObjectId
+      _id: "$product.category", 
       soldQty: { $sum: "$orderItems.quantity" }
     }
   },
   {
     $lookup: {
-      from: "categories", // Ensure this matches your collection name
+      from: "categories", 
       localField: "_id",
       foreignField: "_id",
       as: "categoryDetails"
@@ -100,7 +100,7 @@ const loadDashboard = async (req, res) => {
   { $sort: { soldQty: -1 } },
   { $limit: 10 }
 ]);
-    // SALES CHART
+   
     const salesChart = await Order.aggregate([
       {
         $match: {
@@ -124,7 +124,7 @@ const loadDashboard = async (req, res) => {
       { $sort: { _id: 1 } }
     ]);
 
-    // PAYMENT PIE CHART
+   
     const paymentChart = await Order.aggregate([
       { $match: { status: "Delivered" } },
       {

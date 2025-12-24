@@ -52,10 +52,10 @@ const addProductPost = async (req, res) => {
       const images = [];
 
       for (const file of files) {
-        // Upload buffer to Cloudinary
+        
         const result = await uploadToCloudinary(file.buffer, "products");
 
-        images.push(result.secure_url); // URL only
+        images.push(result.secure_url); 
       }
 
       variants.push({
