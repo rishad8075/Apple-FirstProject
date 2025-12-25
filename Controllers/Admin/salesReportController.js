@@ -33,15 +33,38 @@ const getDateFilter = (type, startDate, endDate) => {
       };
       break;
 
-    case "custom":
-      if (startDate && endDate) {
-        filter.createdAt = {
-          $gte: new Date(startDate),
-          $lte: new Date(endDate)
-        };
-      }
-      break;
+  case "custom": {
+
+  if (!startDate || !endDate) {
+    throw new Error("Please select both start and end dates");
   }
+
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  const today = new Date();
+
+  // normalize time
+  start.setHours(0, 0, 0, 0);
+  end.setHours(23, 59, 59, 999);
+  today.setHours(23, 59, 59, 999);
+
+  if (start > end) {
+    throw new Error("Start date cannot be after end date");
+  }
+
+  if (start > today || end > today) {
+    throw new Error("Future dates are not allowed");
+  }
+
+  filter.createdAt = {
+    $gte: start,
+    $lte: end
+  };
+
+  break;
+}
+}
+
 
   return filter;
 };
@@ -51,7 +74,27 @@ exports.getSalesReport = async (req, res) => {
   try {
     const { type = "daily", startDate, endDate } = req.query;
 
-    const dateFilter = getDateFilter(type, startDate, endDate);
+    let dateFilter;
+
+  
+    try {
+      dateFilter = getDateFilter(type, startDate, endDate);
+    } catch (err) {
+      return res.render("Admin/salesReport", {
+        sales: [],
+        overallMetrics: {
+          totalSales: 0,
+          orderCount: 0,
+          totalDiscount: 0,
+          totalCoupon: 0
+        },
+        type,
+        startDate,
+        endDate,
+        errorMessage: err.message,
+        query: req.query
+      });
+    }
 
     const orders = await Order.find({
       status: "Delivered",
@@ -101,11 +144,12 @@ exports.getSalesReport = async (req, res) => {
       query: req.query
     });
 
-  } catch (err) {
-    console.error("Sales report error:", err);
-    res.status(500).send("Server Error");
+  } catch (error) {
+    console.error("Sales report error:", error);
+    res.status(500).render("adminpage-500");
   }
 };
+
 
 
 exports.downloadExcel = async (req, res) => {

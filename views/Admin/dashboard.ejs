@@ -102,6 +102,7 @@
                 <div class="d-flex justify-content-between mb-4">
                     <h6 class="fw-bold m-0">Sales Analytics</h6>
                     <div class="d-flex gap-2">
+                          <a href="?range=weekly" class="btn btn-range <%= range === 'weekly' ? 'active' : '' %>">Weekly</a>
                         <a href="?range=monthly" class="btn btn-range <%= range === 'monthly' ? 'active' : '' %>">Monthly</a>
                         <a href="?range=yearly" class="btn btn-range <%= range === 'yearly' ? 'active' : '' %>">Yearly</a>
                     </div>
@@ -166,9 +167,34 @@ const salesDataRaw = <%- JSON.stringify(salesChart) %>;
 
     let labels = [];
     let dataValues = [];
+if (range === "weekly") {
 
+    labels = [];
+    dataValues = [];
 
-    if (range === "monthly") {
+    // Generate last 7 days labels
+    for (let i = 6; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        labels.push(d.toLocaleDateString("en-IN", {
+            weekday: "short"
+        }));
+        dataValues.push(0);
+    }
+
+    salesDataRaw.forEach(item => {
+        const itemDate = new Date(item._id);
+        const dayName = itemDate.toLocaleDateString("en-IN", {
+            weekday: "short"
+        });
+
+        const index = labels.indexOf(dayName);
+        if (index !== -1) {
+            dataValues[index] = item.total;
+        }
+    });
+
+}else if (range === "monthly") {
        
         labels = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
         dataValues = new Array(12).fill(0);

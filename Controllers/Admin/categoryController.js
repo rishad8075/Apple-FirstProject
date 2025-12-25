@@ -36,7 +36,7 @@ const categoryInfo = async (req, res) => {
         });
     } catch (err) {
         console.log(err);
-        res.render("page-500");
+        res.render("adminpage-500");
     }
 }
 
@@ -88,7 +88,7 @@ const unlistCategory = async (req,res)=>{
     return res.json({ message: "Category unlisted successfully" });
     } catch (error) {
         console.error(error)
-        res.status(500).send("server error")
+        res.status(500).render("adminpage-500");
     }
 }
 

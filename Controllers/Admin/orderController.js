@@ -94,7 +94,7 @@ const listOrdersAdmin = async (req, res) => {
     });
   } catch (err) {
     console.error('Admin listOrders error:', err);
-    return res.status(500).render('page-500');
+    return res.status(500).render("adminpage-500");
   }
 };
 
@@ -119,7 +119,7 @@ const orderDetailAdmin = async (req, res) => {
     res.render('Admin/order-detail', { order, user });
   } catch (err) {
     console.error('orderDetailAdmin error:', err);
-    return res.status(500).render('page-500');
+    return res.status(500).render("adminpage-500");
   }
 };
 
@@ -338,7 +338,7 @@ const listReturnRequestsAdmin = async (req, res) => {
         res.render("Admin/return-requests", { requests: formattedRequests });
     } catch (err) {
         console.error(err);
-        res.status(500).send("Server error");
+        res.status(500).render("adminpage-500");
     }
 };
 const approveReturnAdmin = async (req, res) => {

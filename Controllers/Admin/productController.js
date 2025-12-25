@@ -18,7 +18,7 @@ const addProducts = async(req,res)=>{
         })
     } catch (error) {
         console.error(error)
-        res.status(500).send('server error');
+        res.status(500).render("adminpage-500");
     }
 }
 
@@ -184,7 +184,7 @@ const listProducts= async (req, res) => {
         }
     } catch (error) {
         console.error("Error fetching products:", error);
-        res.status(500).send("Internal server issue. Please try again");
+        res.status(500).render("adminpage-500");
     }
 }
 
@@ -255,7 +255,7 @@ const editProductGet = async (req, res) => {
     });
   } catch (err) {
     console.error('Edit product page error', err);
-    res.status(500).send('Server error');
+    res.status(500).render("adminpage-500");
   }
 };
 

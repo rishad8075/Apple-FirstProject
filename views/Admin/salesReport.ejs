@@ -224,6 +224,7 @@
         </div>
     </div>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
     function toggleDateRange() {
@@ -233,6 +234,15 @@
     }
     document.addEventListener('DOMContentLoaded', toggleDateRange);
 </script>
-
+<% if (typeof errorMessage !== "undefined") { %>
+<script>
+  Swal.fire({
+    icon: 'error',
+    title: 'Invalid Date',
+    text: '<%= errorMessage %>',
+    confirmButtonColor: '#3b82f6'
+  });
+</script>
+<% } %>
 </body>
 </html>

@@ -10,19 +10,33 @@ const loadDashboard = async (req, res) => {
   try {
     const range = req.query.range || "monthly";
 
-    let groupFormat;
-    let limit;
-    let chartType;
+  let groupFormat;
+let limit;
+let chartType;
+let dateMatch = {};
 
-    if (range === "yearly") {
-      groupFormat = "%Y";
-      limit = 5;
-      chartType = "bar";
-    } else {
-      groupFormat = "%Y-%m";
-      limit = 12;
-      chartType = "line";
-    }
+if (range === "weekly") {
+  groupFormat = "%Y-%m-%d";   // group per day
+  limit = 7;
+  chartType = "line";
+
+  const weekStart = new Date();
+  weekStart.setDate(weekStart.getDate() - 6);
+  weekStart.setHours(0, 0, 0, 0);
+
+  dateMatch.createdAt = { $gte: weekStart };
+
+} else if (range === "yearly") {
+  groupFormat = "%Y";
+  limit = 5;
+  chartType = "bar";
+
+} else {
+
+  groupFormat = "%Y-%m";
+  limit = 12;
+  chartType = "line";
+}
 
    
     const salesStats = await Order.aggregate([
@@ -101,28 +115,29 @@ const loadDashboard = async (req, res) => {
   { $limit: 10 }
 ]);
    
-    const salesChart = await Order.aggregate([
-      {
-        $match: {
-          status: "Delivered",
-          paymentStatus: { $ne: "Refunded" }
+   const salesChart = await Order.aggregate([
+  {
+    $match: {
+      status: "Delivered",
+      paymentStatus: { $ne: "Refunded" },
+      ...dateMatch
+    }
+  },
+  {
+    $group: {
+      _id: {
+        $dateToString: {
+          format: groupFormat,
+          date: "$createdAt"
         }
       },
-      {
-        $group: {
-          _id: {
-            $dateToString: {
-              format: groupFormat,
-              date: "$createdAt"
-            }
-          },
-          total: { $sum: "$totalPrice" }
-        }
-      },
-      { $sort: { _id: -1 } },
-      { $limit: limit },
-      { $sort: { _id: 1 } }
-    ]);
+      total: { $sum: "$totalPrice" }
+    }
+  },
+  { $sort: { _id: -1 } },
+  { $limit: limit },
+  { $sort: { _id: 1 } }
+]);
 
    
     const paymentChart = await Order.aggregate([
@@ -149,7 +164,7 @@ const loadDashboard = async (req, res) => {
 
   } catch (error) {
     console.error(error);
-    res.status(500).render("page-500");
+    res.status(500).render("adminpage-500");
   }
 };
 
@@ -171,7 +186,7 @@ const Adminlogin =  async (req, res) => {
             return res.status(401).render('Admin/login',{errorMessage:"invalid password"});
         }
     } catch (err) {
-        return res.status(500).send('Something went wrong. Please restart and try again.');
+        return res.status(500).render("adminpage-500");
     }
 }
 

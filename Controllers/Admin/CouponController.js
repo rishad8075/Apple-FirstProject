@@ -12,7 +12,7 @@ exports.getCoupon = async(req,res)=>{
         
     } catch (error) {
         console.log(error)
-        res.status(500).render("page-500")
+        res.status(500).render("adminpage-500");
     }
 }
 
@@ -23,7 +23,7 @@ exports.addCoupon = async (req,res)=>{
 
     } catch (error) {
         console.log(error);
-        res.status(500).render("page-500")
+        res.status(500).render("adminpage-500");
     }
 }
 
@@ -108,7 +108,7 @@ exports.getEditPage = async (req, res) => {
         res.status(200).render("Admin/edit-coupon", { coupon });
     } catch (error) {
         console.log(error);
-        res.status(500).render("page-500");
+        res.status(500).render("adminpage-500");
     }
 };
 

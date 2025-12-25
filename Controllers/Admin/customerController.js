@@ -28,7 +28,7 @@ const customerInfo =  async (req, res) => {
     }
     return res.redirect('/admin/logout')
     } catch (error) {
-        res.status(500).send('Error fetching users');
+        res.status(500).render("adminpage-500");
     }
 
 };
