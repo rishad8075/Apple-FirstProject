@@ -13,7 +13,7 @@ const addToCart = async (req, res) => {
     const { productId, variantId, quantity } = req.body;
     const Quantity = Number(quantity);
 
-    // 1. Find product and variant
+
     const product = await Product.findById(productId);
     if (!product) {
       return res.json({ success: false, message: "Product not found" });
@@ -28,7 +28,7 @@ const addToCart = async (req, res) => {
       return res.json({ success: false, message: "Insufficient stock" });
     }
 
-    // 2. Find or create cart
+  
     let cart = await Cart.findOne({ userId });
     if (!cart) {
       cart = new Cart({ userId, items: [] });
@@ -39,13 +39,13 @@ const addToCart = async (req, res) => {
       categoryOffer: product.categoryOffer|| 0
     });
 
-    // 3. Check if this product + variant already exists in cart
+    
     const existingItem = cart.items.find(
       item => item.productId.equals(productId) && item.variantId.equals(variantId)
     );
 
     if (existingItem) {
-      // Increase quantity but validate stock
+    
       const newQty = existingItem.quantity + Quantity;
       if (newQty > variant.stock) {
         return res.json({ success: false, message: "Cannot exceed stock limit" });
@@ -88,14 +88,14 @@ const getCart = async (req, res) => {
       const itemsWithDetails = await Promise.all(
         cart.items.map(async item => {
           const product = await Product.findById(item.productId).lean();
-          if (!product) return null; // product deleted
+          if (!product) return null; 
 
-          // Skip blocked products
+         
           if (product.isBlocked) return null;
 
-          // Fetch the category of the product
+        
           const category = await Category.findById(product.category).lean();
-          if (!category || !category.isListed) return null; // skip if category is unlisted
+          if (!category || !category.isListed) return null; 
 
           const variant = product.variants.find(v => v._id.toString() === item.variantId.toString());
           if (!variant) return null;
@@ -159,7 +159,7 @@ const updateQuantity = async (req, res) => {
     const variant = product.variants.id(item.variantId);
     if (!variant) return res.json({ success: false, message: "Variant not found" });
 
-    // --- Stock check ---
+ 
     if (quantity > variant.stock) {
       return res.json({ 
         success: false, 
@@ -168,7 +168,7 @@ const updateQuantity = async (req, res) => {
       });
     }
 
-    // --- Max per user check ---
+
     const MAX_LIMIT = variant.maxQtyPerUser || 5;
     if (quantity > MAX_LIMIT) {
       return res.json({
@@ -178,18 +178,18 @@ const updateQuantity = async (req, res) => {
       });
     }
 
-    // --- Update quantity ---
+    
     item.quantity = quantity;
     await cart.save();
 
-    // --- Calculate totals ---
+    //  Calculate totals 
     const itemSubtotal = item.price * item.quantity;
     const cartSubtotal = cart.items.reduce((sum, i) => sum + i.price * i.quantity, 0);
 
     return res.json({
       success: true,
       item: { ...item._doc, subtotal: itemSubtotal },
-      cart: { subtotal: cartSubtotal, total: cartSubtotal } // adjust if discount/delivery
+      cart: { subtotal: cartSubtotal, total: cartSubtotal } 
     });
 
   } catch (err) {
@@ -237,16 +237,17 @@ const addToCartFromWishlist = async (req, res) => {
             return res.json({ success: false, message: "Product not found" });
         }
 
-        // ✔️ MUST HAVE VARIANT ID
+       
         if (!product.variants || product.variants.length === 0) {
             return res.json({ success: false, message: "Product has no variants" });
         }
 
-        const defaultVariant = product.variants[0]; // FIRST VARIANT
+        const defaultVariant = product.variants[0]; 
         const variantId = defaultVariant._id;
         const price = defaultVariant.salePrice;
+        const originalPrice = defaultVariant.salePrice || defaultVariant.regularPrice ;
 
-        // 1️⃣ FIND OR CREATE CART
+        
         let cart = await Cart.findOne({ userId });
 
         if (!cart) {
@@ -256,7 +257,8 @@ const addToCartFromWishlist = async (req, res) => {
                     productId,
                     variantId,
                     quantity,
-                    price
+                    price,
+                    OriginalPrice: originalPrice
                 }]
             });
         } else {
@@ -273,7 +275,8 @@ const addToCartFromWishlist = async (req, res) => {
                     productId,
                     variantId,
                     quantity,
-                    price
+                    price,
+                    OriginalPrice: originalPrice
                 });
             }
         }

@@ -36,13 +36,20 @@ exports.toggleWishlist = async (req, res) => {
     try {
         const userId = req.session.userId;
         const productId = req.body.productId;
+         
+        if (!userId) {
+            return res.status(401).json({ 
+                success: false, 
+                message: 'Please login to add items to your wishlist' 
+            });
+        }
 
         // Find wishlist for user
         let wishlist = await Wishlist.findOne({ userId });
 
         // If no wishlist exists, create one
         if (!wishlist) {
-            wishlist = new Wishlist({ userId, products: [] });
+            wishlist = new Wishlist({ userId:userId, products: [] });
         }
 
         // Check if product already exists
