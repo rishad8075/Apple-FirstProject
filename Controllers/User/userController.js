@@ -487,7 +487,27 @@ const loadProductDetail = async (req, res) => {
 
 
 
+const loadContactPage = async (req,res)=>{
+    try {
+        const userId = req.session.userId;
+        const user = await User.findById(userId);
+        res.status(200).render("User/contact",{user})
+    } catch (error) {
+        console.log(error)
+        res.status(500).render("page-500")
+    }
+}
 
+const loadAboutPage =   async (req,res)=>{
+    try {
+        const userId = req.session.userId;
+        const user = await User.findById(userId);
+        res.status(200).render("User/about",{user})
+    } catch (error) {
+        console.log(error)
+        res.status(500).render("page-500")
+    }
+}
 
 
 
@@ -517,4 +537,6 @@ module.exports = {
  loadShopPage,
 loadProductDetail,
   Logout,
+  loadContactPage,
+  loadAboutPage,
 };
