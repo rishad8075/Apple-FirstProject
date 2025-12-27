@@ -190,23 +190,33 @@ document.getElementById('paymentForm').addEventListener('submit', async function
         },
 
         // ✔ USER CLOSED PAYMENT WINDOW
-        modal: {
-            ondismiss: function () {
-                Swal.close();
-                Swal.fire('Payment Cancelled', 'You closed the payment window.', 'info')
-                    .then(() => window.location.href = "/order-failure?reason=user_cancelled");
-            }
-        }
+       modal: {
+    ondismiss: async function () {
+        Swal.close();
+
+        // 🔴 CREATE FAILED ORDER
+        await createFailedOrder("user_cancelled");
+
+        Swal.fire('Payment Cancelled', 'You closed the payment window.', 'info')
+            .then(() => window.location.href = "/orders");
+    }
+}
+
     };
 
     const rzp = new Razorpay(options);
 
     // ✔ PAYMENT FAILED (VERY IMPORTANT)
-    rzp.on("payment.failed", function(response) {
-        Swal.close();
-        Swal.fire('Payment Failed ❌', 'Your transaction could not be completed.', 'error')
-            .then(() => window.location.href = "/order-failure?reason=payment_failed");
-    });
+   rzp.on("payment.failed", async function(response) {
+    Swal.close();
+
+    // 🔴 CREATE FAILED ORDER
+    await createFailedOrder("payment_failed");
+
+    Swal.fire('Payment Failed ❌', 'Your transaction could not be completed.', 'error')
+        .then(() => window.location.href = "/orders");
+});
+
 
     rzp.open();
 
@@ -259,6 +269,23 @@ document.getElementById('paymentForm').addEventListener('submit', async function
         console.error(err);
     }
 });
+
+
+async function createFailedOrder(reason) {
+    try {
+        await fetch('/api/payment/razorpay/failure', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                reason,
+                orderDetails: getOrderPayload("Razorpay")
+            })
+        });
+    } catch (err) {
+        console.error("Failed order API error", err);
+    }
+}
+
 </script>
 
 </body>
