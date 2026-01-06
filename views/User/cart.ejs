@@ -3,356 +3,355 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Your Shopping Cart</title>
+    <title>Your Shopping Cart | YourBrand</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
+    
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background-color: #f7f7f7; }
-        .container { max-width: 1200px; padding: 0 15px; }
-        h2 { font-weight: 600; font-size: 2.2em; margin-bottom: 30px; }
-        
-        /* Main Grid Layout */
-        .cart-layout { display: flex; gap: 30px; }
-        .cart-items-column { flex: 2; }
-        .cart-summary-column { flex: 1; min-width: 350px; }
+        :root {
+            --accent: #0071e3;
+            --bg-soft: #fbfbfd;
+            --text-dark: #1d1d1f;
+            --text-muted: #444; /* High contrast gray */
+            --danger: #ff3b30;
+        }
 
-        /* Item Row Styling */
-        .cart-item-row { 
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background-color: var(--bg-soft); 
+            color: var(--text-dark);
+            min-height: 100vh;
+        }
+
+        h2 { font-weight: 700; font-size: 2.2rem; letter-spacing: -0.5px; }
+
+        .breadcrumb-item a { color: var(--accent); text-decoration: none; font-weight: 500; }
+        
+        /* Main Layout Grid */
+        .cart-wrapper { 
             display: flex; 
-            align-items: center; 
-            padding: 20px 0; 
-            border-bottom: 1px solid #eee; 
-            position: relative;
-            transition: opacity 0.3s;
+            gap: 40px; 
+            margin-bottom: 80px; 
+            align-items: flex-start; /* Prevents stretching */
         }
-        .product-thumbnail { width: 100px; height: 100px; object-fit: contain; margin-right: 20px; }
-        
-        .item-details { flex-grow: 1; }
-        .item-details h4 { margin: 0 0 5px 0; font-size: 1.2em; font-weight: 600; }
-        .item-details p { margin: 0; font-size: 1em; color: #333; }
-        
-        /* Item Controls (Price, Quantity, Delete) */
-        .item-controls { display: flex; align-items: center; min-width: 350px; justify-content: flex-end; }
-        .item-controls .price { font-weight: 500; font-size: 1.1em; margin-right: 50px; }
 
-        .quantity-controls { display: flex; align-items: center; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; margin-right: 20px; }
-        .qty-btn { background: none; border: none; padding: 8px 12px; cursor: pointer; font-size: 1.1em; color: #333; }
-        .qty-btn:hover:not(:disabled) { background-color: #f0f0f0; }
-        .qty-input { width: 40px; text-align: center; border: none; font-weight: bold; padding: 8px 0; }
-        
-        .remove-icon { background: none; border: none; color: #999; font-size: 1.2em; cursor: pointer; margin-left: 20px; }
-        .remove-icon:hover { color: #ff3b30; }
+        .cart-items-section { flex: 2; }
 
-        /* Out-of-Stock Styling */
-        .out-of-stock-row { opacity: 0.4;  }
-        .out-of-stock-row .stock-warning { font-size: 0.9em; color: #ff3b30; font-weight: 500; margin-top: 5px; pointer-events: auto; }
-        .qty-btn:disabled, .qty-input:disabled { background-color: #f7f7f7; cursor: not-allowed; }
+        /* Summary Sidebar Fixes */
+        .cart-summary-section { 
+            flex: 1; 
+            position: sticky; 
+            top: 100px; 
+            min-width: 350px; /* Ensures text is always visible and not squashed */
+            z-index: 10;
+        }
 
-        /* Cart Summary Styling */
-        .order-summary, .coupon-box { border: 1px solid #eee; padding: 20px; border-radius: 8px; margin-bottom: 20px; background: #fff; }
-        .order-summary h4 { font-weight: 600; font-size: 1.3em; margin-bottom: 15px; }
-        .total-row { display: flex; justify-content: space-between; padding: 5px 0; font-size: 1em; }
-        .final-total-row { font-size: 1.3em; font-weight: bold; margin-top: 15px; padding-top: 10px; border-top: 1px dashed #eee; }
-        .final-total-value { color: #000; }
+        /* Cart Item Card */
+        .cart-item-card {
+            background: #fff;
+            border-radius: 20px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+            display: flex;
+            align-items: center;
+            border: 1px solid #f0f0f2;
+        }
 
-        /* Coupon and Checkout Buttons */
-        .coupon-box { display: flex; padding: 0; border: none; flex-direction: column; }
-        .coupon-input { padding: 10px; border: 1px solid #ccc; border-radius: 4px; margin-bottom: 10px; }
-        .apply-coupon-btn { background-color: #555; color: #fff; border: none; padding: 10px 15px; cursor: pointer; border-radius: 4px; font-weight: 500; }
-        .apply-coupon-btn:hover { background-color: #333; }
+        .product-img-wrapper {
+            width: 110px;
+            height: 110px;
+            background: #f5f5f7;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 25px;
+            flex-shrink: 0;
+        }
 
-        .checkout-btn-area { margin-top: 20px; }
-        .checkout-btn-area .btn-success { 
-            background-color: #ffc107; /* Yellow background like the image */
-            border-color: #ffc107; 
-            color: #000;
+        .product-thumbnail { width: 85%; height: 85%; object-fit: contain; }
+
+        .item-info { flex-grow: 1; }
+        .item-info h4 { font-size: 1.2rem; font-weight: 600; margin-bottom: 6px; color: var(--text-dark); }
+        .item-price { font-weight: 600; font-size: 1.1rem; color: var(--text-dark); }
+
+        /* Quantity Controls */
+        .qty-group {
+            display: flex;
+            align-items: center;
+            background: #f2f2f7;
+            border-radius: 12px;
+            padding: 5px;
+            margin-right: 20px;
+        }
+
+        .qty-btn {
+            width: 34px;
+            height: 34px;
+            border: none;
+            background: #fff;
+            border-radius: 10px;
             font-weight: bold;
-            padding: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            transition: 0.2s;
         }
-        .checkout-btn-area .btn-success:hover { 
-            background-color: #e0a800; 
-            border-color: #e0a800;
-        }
-        .checkout-btn-area .disabled-checkout-warning {
-            color: #dc3545;
+        .qty-btn:hover:not(:disabled) { background: var(--accent); color: white; }
+
+        .qty-input {
+            width: 45px;
             text-align: center;
-            font-size: 0.9em;
-            margin-top: 10px;
+            border: none;
+            background: transparent;
+            font-weight: 700;
+            font-size: 1rem;
         }
 
+        .action-btns { display: flex; align-items: center; }
+        .remove-btn { 
+            color: #d2d2d7; 
+            border: 1px solid #eee; 
+            background: #fff; 
+            width: 40px; 
+            height: 40px; 
+            border-radius: 10px;
+            transition: 0.2s;
+        }
+        .remove-btn:hover { color: var(--danger); border-color: var(--danger); background: #fff1f0; }
+
+        /* Summary Card Visibility */
+        .summary-card {
+            background: #ffffff;
+            border-radius: 24px;
+            padding: 35px;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.08);
+            border: 1px solid #efeff4;
+        }
+
+        .summary-card h5 { 
+            font-weight: 700; 
+            margin-bottom: 25px; 
+            font-size: 1.4rem;
+            color: var(--text-dark);
+        }
+
+        .summary-row { 
+            display: flex; 
+            justify-content: space-between; 
+            margin-bottom: 20px; 
+            color: var(--text-muted); 
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        .summary-total { 
+            border-top: 2px solid #f2f2f7; 
+            padding-top: 20px; 
+            margin-top: 10px; 
+            font-weight: 700; 
+            font-size: 1.6rem; 
+            color: var(--text-dark);
+        }
+
+        .checkout-btn {
+            background: #000;
+            color: #fff;
+            border: none;
+            border-radius: 16px;
+            padding: 20px;
+            font-weight: 600;
+            width: 100%;
+            transition: 0.3s;
+            font-size: 1.1rem;
+            margin-top: 25px;
+        }
+        .checkout-btn:hover:not(:disabled) { background: var(--accent); transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0, 113, 227, 0.3); }
+        .checkout-btn:disabled { background: #d2d2d7; color: #86868b; cursor: not-allowed; }
+
+        /* Responsive Breakpoints */
+        @media (max-width: 991px) {
+            .cart-wrapper { flex-direction: column; }
+            .cart-summary-section { position: relative; top: 0; width: 100%; min-width: 100%; }
+        }
+
+        @media (max-width: 576px) {
+            .cart-item-card { flex-direction: column; text-align: center; padding: 30px 20px; }
+            .product-img-wrapper { margin: 0 0 20px 0; width: 140px; height: 140px; }
+            .action-btns { margin-top: 20px; justify-content: center; width: 100%; }
+            .qty-group { margin-right: 10px; }
+        }
     </style>
 </head>
 <body>
-    <%- include('../partials/header.ejs') %>
+
+    <header><%- include('../partials/header.ejs') %></header>
 
     <div class="container mt-5">
-        <nav aria-label="breadcrumb" class="mt-3">
+        <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/">Home</a></li>
                 <li class="breadcrumb-item"><a href="/shop">Shop</a></li>
-                <li class="breadcrumb-item active" aria-current="page">Shopping Cart</li>
+                <li class="breadcrumb-item active">Cart</li>
             </ol>
         </nav>
 
-        <h2>Shopping Cart</h2>
+        <h2 class="mb-5">Your Bag</h2>
 
         <% 
             const hasOutOfStockItems = items.some(i => i.stock === 0);
-            const totalDiscount = items.offer||0
-            const totalDelivery = 0; // Assuming free delivery as per the original design image
-            const finalTotal = subtotal - totalDiscount + totalDelivery; 
+            const totalDelivery = 0; 
+            const finalTotal = subtotal + totalDelivery; 
         %>
 
         <% if (items.length === 0) { %>
-            <div class="alert alert-info">Your cart is empty.</div>
+            <div class="text-center py-5 bg-white rounded-5 shadow-sm">
+                <i class="fa-solid fa-cart-shopping fa-4x mb-4 text-light"></i>
+                <h3 class="fw-bold">Your bag is empty.</h3>
+                <p class="text-muted">Explore our collection and find something you love.</p>
+                <a href="/shop" class="btn btn-primary mt-3 px-5 py-3 rounded-pill fw-bold">Continue Shopping</a>
+            </div>
         <% } else { %>
-            <div class="cart-layout">
-
-
+            <div class="cart-wrapper">
                 
-                <div class="cart-items-column">
-
-                    
+                <div class="cart-items-section">
                     <% items.forEach(item => { %>
                         <% const isOutOfStock = item.stock === 0; %>
-
-                        
-                        <div class="cart-item-row <%= isOutOfStock ? 'out-of-stock-row' : '' %>" id="row-<%= item.productId %>" data-stock="<%= item.stock %>">
+                        <div class="cart-item-card <%= isOutOfStock ? 'opacity-50 grayscale' : '' %>" id="row-<%= item.productId %>" data-stock="<%= item.stock %>">
                             
-                            <a href="/productDetails/<%= item.productId %>" style="text-decoration:none; color:inherit;">
-                            <img src="<%= item.image %>" alt="<%= item.name %>" class="product-thumbnail">
+                            <div class="product-img-wrapper">
+                                <a href="/productDetails/<%= item.productId %>">
+                                    <img src="<%= item.image %>" alt="<%= item.name %>" class="product-thumbnail">
+                                </a>
+                            </div>
 
-                            </a>
-                            
-                            
-                            <div class="item-details">
-
+                            <div class="item-info">
                                 <h4><%= item.name %></h4>
-                                <p>Rs.<%= item.price.toLocaleString('en-IN') %></p>
+                                <span class="item-price">Rs.<%= item.price.toLocaleString('en-IN') %></span>
                                 <% if (isOutOfStock) { %>
-                                    <p class="stock-warning">⚠️ Out of Stock! Please remove to proceed.</p>
+                                    <div class="mt-2 text-danger fw-bold small"><i class="fas fa-info-circle me-1"></i> Out of Stock</div>
                                 <% } %>
                             </div>
-                            
-                            
-                            <div class="item-controls">
-                                <div class="quantity-controls">
+
+                            <div class="action-btns">
+                                <div class="qty-group">
                                     <button type="button" class="qty-btn minus-btn" data-id="<%= item.productId %>" 
-                                            <%= isOutOfStock || item.quantity <= 1 ? 'disabled' : '' %> aria-label="Decrease quantity">-</button>
+                                            <%= isOutOfStock || item.quantity <= 1 ? 'disabled' : '' %>>-</button>
                                     
-                                    <input type="text" value="<%= item.quantity %>" min="1" readonly 
-                                           class="qty-input" id="qty-<%= item.productId %>" data-id="<%= item.productId %>" 
-                                           <%= isOutOfStock ? 'disabled' : '' %>>
-                                           
+                                    <input type="text" value="<%= item.quantity %>" readonly class="qty-input" id="qty-<%= item.productId %>">
+                                    
                                     <button type="button" class="qty-btn plus-btn" data-id="<%= item.productId %>" 
-                                            <%= isOutOfStock || item.quantity >= item.stock ? 'disabled' : '' %> aria-label="Increase quantity">+</button>
+                                            <%= isOutOfStock || item.quantity >= item.stock ? 'disabled' : '' %>>+</button>
                                 </div>
-                                
-                                <button type="button" class="remove-icon remove-item" data-id="<%= item.productId %>" aria-label="Remove item">
+
+                                <button type="button" class="remove-btn remove-item" data-id="<%= item.productId %>">
                                     <i class="fas fa-trash-alt"></i>
                                 </button>
                             </div>
                         </div>
                     <% }) %>
-
                 </div>
 
-                <div class="cart-summary-column">
-
-                    <!-- <div class="coupon-box">
-                        <input type="text" placeholder="Enter Coupon Code" class="coupon-input">
-                        <button class="apply-coupon-btn">Apply Coupon</button>
-                    </div> -->
-
-                    <div class="order-summary">
-                        <h4>CART TOTALS</h4>
-                        <div class="total-row">
-                            <span>Subtotal</span>
-                            <span id="cart-subtotal">Rs.<%= subtotal.toLocaleString('en-IN') %></span>
-                        </div>
-                        <div class="total-row">
-                            <span>Delivery</span>
-                            <span><%= totalDelivery === 0 ? 'FREE' : 'Rs.' + totalDelivery.toLocaleString('en-IN') %></span>
-                        </div>
-                      
+                <div class="cart-summary-section">
+                    <div class="summary-card">
+                        <h5 class="fw-bold">Order Summary</h5>
                         
-                        <div class="final-total-row">
-                            <span class="final-total-label">TOTAL</span>
-                            <span class="final-total-value" id="cart-total">Rs.<%= finalTotal.toLocaleString('en-IN') %></span>
+                        <div class="summary-row">
+                            <span style="color:rgb(0, 0, 0);">Subtotal</span>
+                            <span id="cart-subtotal" style="color: #000; font-weight: 600;">Rs.<%= subtotal.toLocaleString('en-IN') %></span>
                         </div>
-                    </div>
+                        
+                        <div class="summary-row">
+                            <span style="color:rgb(0, 0, 0);" >Shipping</span>
+                            <span class="text-success fw-bold">FREE</span>
+                        </div>
+                        
+                        <div class="summary-total summary-row">
+                            <span>Total</span>
+                            <span id="cart-total" style="color: var(--accent);">Rs.<%= finalTotal.toLocaleString('en-IN') %></span>
+                        </div>
 
-                    <div class="checkout-btn-area">
-                        <button id="checkoutBtn" class="btn btn-success btn-lg w-100" 
-                                <%= hasOutOfStockItems ? 'disabled' : '' %>>
+                        <button id="checkoutBtn" class="checkout-btn" <%= hasOutOfStockItems ? 'disabled' : '' %>>
                             Proceed to Checkout
                         </button>
+                        
                         <% if (hasOutOfStockItems) { %>
-                            <p class="disabled-checkout-warning">Cannot checkout with out-of-stock items.</p>
+                            <div class="alert alert-danger mt-4 py-2 text-center" style="font-size: 0.85rem; border-radius: 12px; border: none; background: #fff1f0; color: #ff3b30;">
+                                <i class="fas fa-exclamation-triangle me-1"></i> Please remove out-of-stock items.
+                            </div>
                         <% } %>
                     </div>
                 </div>
+
             </div>
         <% } %>
     </div>
-      <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
-        // --- Centralized Update Function (for AJAX success) ---
-  function updateCartUI(productId, data) {
-  const itemRow = document.getElementById('row-' + productId);
-  if (!itemRow) return;
-
-  const qtyInput = document.getElementById('qty-' + productId);
-  qtyInput.value = data.item.quantity;
-
-  // Update item subtotal
-  const priceElem = itemRow.querySelector('.item-controls .price');
-  if (priceElem && data.item.subtotal !== undefined) {
-    priceElem.innerText = 'Rs.' + data.item.subtotal.toLocaleString('en-IN');
-  }
-
-  // Update buttons
-  const plusBtn = itemRow.querySelector('.plus-btn');
-  const minusBtn = itemRow.querySelector('.minus-btn');
-
-  const stock = Number(itemRow.dataset.stock);
-  const maxLimit = Number(itemRow.dataset.max) || 5;
-  const quantity = data.item.quantity;
-
-  plusBtn.disabled = (quantity >= Math.min(stock, maxLimit));
-  minusBtn.disabled = (quantity <= 1);
-
-  // Update cart totals
-  document.getElementById('cart-subtotal').innerText = 'Rs.' + data.cart.subtotal.toLocaleString('en-IN');
-  document.getElementById('cart-total').innerText = 'Rs.' + data.cart.total.toLocaleString('en-IN');
-}
-
-// --- Handle + / - buttons ---
-document.querySelectorAll('.qty-btn').forEach(btn => {
-  btn.addEventListener('click', async function () {
-    const productId = this.dataset.id;
-    const itemRow = document.getElementById('row-' + productId);
-    const qtyInput = itemRow.querySelector('.qty-input');
-    const isPlus = this.classList.contains('plus-btn');
-
-    let newQuantity = parseInt(qtyInput.value);
-    if (isNaN(newQuantity)) newQuantity = 1;
-
-    newQuantity = isPlus ? newQuantity + 1 : newQuantity - 1;
-    if (newQuantity < 1) newQuantity = 1;
-
-    // Disable row buttons
-    itemRow.querySelectorAll('.qty-btn').forEach(b => b.disabled = true);
-
-    try {
-      const res = await fetch('/cart/update-quantity', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ productId, quantity: newQuantity })
-      });
-
-      let data;
-      try {
-        data = await res.json();
-      } catch (err) {
-        const text = await res.text();
-        console.error('Invalid JSON:', text);
-        throw new Error('Server returned invalid JSON');
-      }
-
-      if (data.success) {
-        updateCartUI(productId, data);
-      } else {
-        Swal.fire('Error', data.message, 'error');
-        if (data.item) qtyInput.value = data.item.quantity;
-      }
-    } catch (error) {
-      console.error('Fetch error:', error);
-      Swal.fire('Connection Error', 'Failed to communicate with server.', 'error');
-    } finally {
-      itemRow.querySelectorAll('.qty-btn').forEach(b => b.disabled = false);
-    }
-  });
-});
-
-
-        // --- Handle Remove Item ---
-     document.querySelectorAll('.remove-item').forEach(btn => {
-    btn.addEventListener('click', async function() {
-        const productId = this.dataset.id;
-        
-        const confirmDelete = await Swal.fire({
-            title: 'Are you sure?',
-            text: "You won't be able to revert this!",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#3085d6',
-            confirmButtonText: 'Yes, remove it!'
-        });
-        
-        if (!confirmDelete.isConfirmed) return;
-
-        try {
-            const res = await fetch('/cart/remove-item', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ productId })
-            });
-
-            // Check if response is JSON
-            const contentType = res.headers.get('content-type');
-            if (!contentType || !contentType.includes('application/json')) {
-                throw new Error('Server did not return JSON');
-            }
-
-            const data = await res.json();
-
-            if (data.success) {
-                Swal.fire('Removed!', 'Item removed from cart', 'success');
-                document.getElementById('row-' + productId).remove();
-                
-                // Update totals
-                document.getElementById('cart-subtotal').innerText = 'Rs.' + data.cart.subtotal.toLocaleString('en-IN');
-                document.getElementById('cart-total').innerText = 'Rs.' + data.cart.total.toLocaleString('en-IN');
-
-                // Re-evaluate out-of-stock warning
-                const remainingRows = document.querySelectorAll('.cart-item-row');
-                const outOfStockRemaining = Array.from(remainingRows).some(row => Number(row.dataset.stock) === 0);
-                
-                const checkoutBtn = document.getElementById('checkoutBtn');
-                checkoutBtn.disabled = outOfStockRemaining;
-                const warning = document.querySelector('.disabled-checkout-warning');
-                if (warning) warning.style.display = outOfStockRemaining ? 'block' : 'none';
-
-                if (remainingRows.length === 0) {
-                    window.location.reload();
-                }
-            } else {
-                Swal.fire('Error', data.message, 'error');
-            }
-        } catch (error) {
-            console.error(error);
-            Swal.fire('Error', 'Failed to communicate with server.', 'error');
+        function updateCartUI(productId, data) {
+            const itemRow = document.getElementById('row-' + productId);
+            if (!itemRow) return;
+            const qtyInput = document.getElementById('qty-' + productId);
+            qtyInput.value = data.item.quantity;
+            document.getElementById('cart-subtotal').innerText = 'Rs.' + data.cart.subtotal.toLocaleString('en-IN');
+            document.getElementById('cart-total').innerText = 'Rs.' + data.cart.total.toLocaleString('en-IN');
+            const plusBtn = itemRow.querySelector('.plus-btn');
+            const minusBtn = itemRow.querySelector('.minus-btn');
+            plusBtn.disabled = (data.item.quantity >= Number(itemRow.dataset.stock));
+            minusBtn.disabled = (data.item.quantity <= 1);
         }
-    });
-});
 
-        // --- Checkout Button Logic ---
-        document.getElementById('checkoutBtn')?.addEventListener('click', function() {
-            if (this.disabled) {
-                // If button is disabled due to EJS render, do nothing, the warning is visible.
-                return;
-            }
-            window.location.href = "/checkout";
+        document.querySelectorAll('.qty-btn').forEach(btn => {
+            btn.addEventListener('click', async function () {
+                const productId = this.dataset.id;
+                const qtyInput = document.getElementById('qty-' + productId);
+                const isPlus = this.classList.contains('plus-btn');
+                let newQuantity = parseInt(qtyInput.value) + (isPlus ? 1 : -1);
+                
+                try {
+                    const res = await fetch('/cart/update-quantity', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ productId, quantity: newQuantity })
+                    });
+                    const data = await res.json();
+                    if (data.success) updateCartUI(productId, data);
+                    else Swal.fire('Error', data.message, 'error');
+                } catch (error) { console.error(error); }
+            });
         });
 
+        document.querySelectorAll('.remove-item').forEach(btn => {
+            btn.addEventListener('click', async function() {
+                const productId = this.dataset.id;
+                const result = await Swal.fire({
+                    title: 'Remove from Bag?',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#000',
+                    confirmButtonText: 'Yes, remove'
+                });
+                
+                if (result.isConfirmed) {
+                    const res = await fetch('/cart/remove-item', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ productId })
+                    });
+                    const data = await res.json();
+                    if (data.success) window.location.reload();
+                }
+            });
+        });
+
+        document.getElementById('checkoutBtn')?.addEventListener('click', () => window.location.href = "/checkout");
     </script>
 </body>
 </html>

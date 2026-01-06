@@ -263,7 +263,10 @@
                                 <% } %>
                             </div>
 
-                            <button class="btn-buy add-to-cart-btn" data-id="<%= product._id %>">
+                            <button class="btn-buy add-to-cart-btn" 
+                             data-product-id="<%= product._id %>" 
+                                data-variant-id="<%= product.variants?.[0]?._id || '' %>"
+data-stock="<%= product.variants?.[0]?.stock || 0 %>">
                                 <i class="fas fa-plus me-2"></i> Add to Cart
                             </button>
                         </div>
@@ -277,37 +280,64 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script>
+$(document).on('click', '.add-to-cart-btn', async function () {
+    const btn = $(this);
+    const productId = btn.data('product-id');
+    const variantId = btn.data('variant-id');
+    const stock = Number(btn.data('stock'));
+    const quantity = 1;
 
-    <script>
-        // Cart Logic with better feedback
-        document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const id = this.dataset.id;
-                
-                // Show loading state
-                this.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-                
-                setTimeout(() => {
-                    this.innerHTML = '<i class="fas fa-check"></i> Added';
-                    this.classList.replace('btn-buy', 'btn-success');
-                    
-                    Swal.fire({
-                        toast: true,
-                        position: 'top-end',
-                        icon: 'success',
-                        title: 'Added to your cart',
-                        showConfirmButton: false,
-                        timer: 2000
-                    });
-
-                    // Reset button after 2 seconds
-                    setTimeout(() => {
-                        this.innerHTML = '<i class="fas fa-plus me-2"></i> Add to Cart';
-                        this.classList.replace('btn-success', 'btn-buy');
-                    }, 2000);
-                }, 600);
-            });
+    if (stock === 0) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Out of Stock',
+            text: 'This product is currently out of stock.'
         });
-    </script>
+        return;
+    }
+
+    btn.prop('disabled', true);
+
+    try {
+        const res = await fetch('/cart/add', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ productId, variantId, quantity })
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Added!',
+                text: 'Product added to your cart.',
+                showCancelButton: true,
+                confirmButtonText: 'Go to Cart',
+                cancelButtonText: 'Continue Shopping'
+            }).then(result => {
+                if (result.isConfirmed) window.location.href = '/cart';
+            });
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops!',
+                text: data.message || 'Could not add product to cart.'
+            });
+        }
+    } catch (err) {
+        console.error(err);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Something went wrong. Please try again.'
+        });
+    } finally {
+        btn.prop('disabled', false);
+    }
+});
+</script>
 </body>
 </html>

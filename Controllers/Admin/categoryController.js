@@ -28,7 +28,7 @@ const categoryInfo = async (req, res) => {
             .limit(limit)
             .sort({ createdAt: -1 }); 
 
-        res.render("admin/category", {
+        res.render("Admin/category", {
             cat: categories,
             currentPage: page,
             totalPages,

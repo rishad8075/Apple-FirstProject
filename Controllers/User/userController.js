@@ -425,7 +425,7 @@ const loadShopPage = async (req, res) => {
         };
 
         // --- Render shop page ---
-        res.render('user/shop', {
+        res.render('User/shop', {
             products,
             categories,
             currentPage: queryParams.page,

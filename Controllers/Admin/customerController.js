@@ -24,7 +24,7 @@ const customerInfo =  async (req, res) => {
             .skip((page - 1) * limit)
             .limit(limit);
 
-       return res.render('admin/userManagement', { users, search, totalUsers, limit, page });
+       return res.render('Admin/userManagement', { users, search, totalUsers, limit, page });
     }
     return res.redirect('/admin/logout')
     } catch (error) {

@@ -177,7 +177,7 @@ const userProfile = async (req, res) => {
         const userData = await User.findById(userId).lean(); 
         if (!userData) return res.redirect('/login'); 
 
-        res.render("User/profileInfo", {
+        res.render("User/ProfileInfo", {
             user: userData,        
             activeLink: 'profile'  
         });
