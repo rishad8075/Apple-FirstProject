@@ -196,7 +196,7 @@ const adminLogout = async (req, res) => {
         if (err) {
             return res.status(500).send('Logout failed. Try again.');
         }
-        res.clearCookie('connect.sid'); // clear session cookie
+        res.clearCookie('connect.sid'); 
         res.redirect('/admin/login');
     });
 };

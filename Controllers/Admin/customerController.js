@@ -4,14 +4,14 @@ const customerInfo =  async (req, res) => {
     try {
         if(req.session.isAdmin){
         let { search, page } = req.query;
-        const limit = 5; // Users per page
+        const limit = 5;
         page = parseInt(page) || 1;
         let query = {};
 
         if (search) {
             query = {
                 $or: [
-                    { name: { $regex: search, $options: "i" } }, // Case-insensitive search
+                    { name: { $regex: search, $options: "i" } }, 
                     { email: { $regex: search, $options: "i" } },
                     { phoneNumber: { $regex: search, $options: "i" } }
                 ]
@@ -20,7 +20,7 @@ const customerInfo =  async (req, res) => {
 
         const totalUsers = await User.countDocuments(query);
         const users = await User.find(query)
-            .sort({ _id: -1 }) // Latest users first
+            .sort({ _id: -1 }) 
             .skip((page - 1) * limit)
             .limit(limit);
 

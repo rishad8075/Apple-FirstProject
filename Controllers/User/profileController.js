@@ -444,11 +444,16 @@ const userAddressManagement = async (req, res) => {
     try {
         const userId = req.session.userId;
         const user = await User.findById(userId)
+        const page = req.query.page||1
+        const limit =2
 
         // Get all addresses of this user
-        const userAddresses = await UserAddress.find({ user: userId });
+        const userAddresses = await UserAddress.find({ user: userId }).skip((page-1)*limit).limit(limit)
+        const totalCount = await UserAddress.countDocuments({ user: userId });
 
         res.render("User/addressManagement", {
+            currentPage:page,
+            totalPage:Math.ceil(totalCount/limit),
             user,
             addresses: userAddresses,
             activeLink: 'profile'

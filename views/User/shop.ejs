@@ -292,7 +292,7 @@
                                     data-product-id="<%= product._id %>" 
                                     data-variant-id="<%= variant ? variant._id : '' %>"
                                     data-stock="<%= variant ? variant.stock : 0 %>">
-                                <% if (variant && variant.stock === 0) { %>
+                                <% if (variant && variant.stock ===0) { %>
                                     <span class="text-danger">Out of Stock</span>
                                 <% } else { %>
                                     <i class="fas fa-shopping-bag me-2"></i>Add to Bag

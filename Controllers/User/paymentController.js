@@ -1,15 +1,15 @@
-const razorpay = require('../../config/razorpay'); // your Razorpay instance
+const razorpay = require('../../config/razorpay'); 
 const Orders = require('../../model/Orderss');
 const Product = require('../../model/Product');
 const { v4: uuidv4 } = require('uuid');
 const crypto = require('crypto');
 
-// --------------- Create Razorpay Order -----------------
+
 exports.createRazorpayOrder = async (req, res) => {
     try {
         const { amount } = req.body;
         const options = {
-            amount: Math.round(amount * 100), // paise
+            amount: Math.round(amount * 100), 
             currency: "INR",
             receipt: `rcpt_${uuidv4()}`,
         };
@@ -22,7 +22,7 @@ exports.createRazorpayOrder = async (req, res) => {
     }
 };
 
-// --------------- Verify Razorpay Payment -----------------
+
 exports.verifyRazorpayPayment = async (req, res) => {
     try {
         const { razorpay_payment_id, razorpay_order_id, razorpay_signature, orderDetails } = req.body;

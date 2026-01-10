@@ -222,10 +222,25 @@
                     </div>
                 </div>
             <% }) %>
+      <% if (totalPage > 1) { %>
+  <div class="mt-4 d-flex justify-content-center">
+    <ul class="pagination">
+      <% for (let i = 1; i <= totalPage; i++) { %>
+        <li class="page-item <%= currentPage == i ? 'active' : '' %>">
+          <a class="page-link" href="?page=<%= i %>">
+            <%= i %>
+          </a>
+        </li>
+      <% } %>
+    </ul>
+  </div>
+<% } %>
+
             
         </div>
         
     </div>
+    
     
    
 

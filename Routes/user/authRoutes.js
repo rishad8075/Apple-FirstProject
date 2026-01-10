@@ -1,6 +1,7 @@
 const router = require("express").Router();
 const UserController = require("../../Controllers/User/userController");
 const passport = require("passport");
+const User = require("../../model/user")
 
 // Signup / Login
 router.get("/signup", UserController.loadSignup);

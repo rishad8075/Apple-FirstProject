@@ -138,11 +138,11 @@ const listProducts= async (req, res) => {
         const category = await Category.find({ isListed: true });
         
         if (category) {
-            // Ensure each product has a displayImage (first image of first variant) for the list view
+           
           const productsWithImage = productData.map(p => {
     const prod = p.toObject();
 
-    // display image
+ 
     let displayImage = '/images/default-product.jpg';
     if (
         prod.variants?.length > 0 &&
@@ -154,7 +154,7 @@ const listProducts= async (req, res) => {
     }
     prod.displayImage = displayImage;
 
-    // 🟢 OFFER LOGIC STARTS HERE
+ 
     const categoryOffer = prod.category?.categoryOffer || 0;
 
     prod.variants.forEach(variant => {
@@ -167,7 +167,7 @@ const listProducts= async (req, res) => {
         variant.finalOffer = finalOffer;
         variant.finalPrice = finalPrice;
     });
-    // 🟢 OFFER LOGIC ENDS HERE
+  
 
     return prod;
 });
@@ -259,7 +259,7 @@ const editProductGet = async (req, res) => {
   }
 };
 
-// POST -> handle edit submission
+
 const editProductPost = async (req, res) => {
   try {
     const { id } = req.params;

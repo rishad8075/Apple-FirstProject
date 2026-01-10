@@ -274,6 +274,60 @@ const paymentPage = async (req, res) => {
 };
 
 
+const validateStock = async (req, res) => {
+  try {
+    const userId = req.session.userId;
+    if (!userId) {
+      return res.status(401).json({ success: false, message: 'Unauthorized' });
+    }
+
+    const cart = await Cart.findOne({ userId });
+    if (!cart || cart.items.length === 0) {
+      return res.json({ success: false, message: 'Cart is empty' });
+    }
+
+    const stockErrors = [];
+
+    for (const item of cart.items) {
+      const product = await Product.findById(item.productId);
+      if (!product) {
+        stockErrors.push('Product no longer available');
+        continue;
+      }
+
+      const variant = product.variants.id(item.variantId);
+      if (!variant) {
+        stockErrors.push(`${product.name} variant unavailable`);
+        continue;
+      }
+
+      if (variant.stock <= 0) {
+        stockErrors.push(`${product.name} is out of stock`);
+      } else if (item.quantity > variant.stock) {
+        stockErrors.push(
+          `${product.name} has only ${variant.stock} left`
+        );
+      }
+    }
+
+    if (stockErrors.length > 0) {
+      return res.json({
+        success: false,
+        message: 'Stock validation failed',
+        errors: stockErrors
+      });
+    }
+
+    return res.json({ success: true });
+
+  } catch (error) {
+    console.error('Stock validation error:', error);
+    return res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
+
+
+
 
 // PLACE ORDER (COD or Wallet) with coupon
 const placeOrder = async (req, res) => {
@@ -795,5 +849,6 @@ module.exports = {
     removeCoupon,
     razorpayPaymentFailed,
     retryRazorpayPayment,
-    retryVerifyPayment
+    retryVerifyPayment,
+    validateStock,
 };

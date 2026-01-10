@@ -19,5 +19,6 @@ router.post("/remove-coupon", auth, checkout.removeCoupon);
 router.post('/api/payment/razorpay/failure',auth,checkBlock,checkout.razorpayPaymentFailed)
 router.get("/api/payment/razorpay/retry/:orderId",auth,checkBlock,checkout.retryRazorpayPayment);
 router.post("/api/payment/razorpay/RetryVerify",auth,checkBlock,checkout.retryVerifyPayment)
+router.post('/checkout/validate-stock',auth,checkout.validateStock);
 
 module.exports = router;

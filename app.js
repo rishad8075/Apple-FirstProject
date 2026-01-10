@@ -17,15 +17,15 @@ app.use(express.urlencoded({extended:true}));
 app.use(session({
     secret: process.env.SESSION_SECRET,
     resave: false,
-    saveUninitialized: false,  // set false to avoid saving empty sessions
+    saveUninitialized: false,  
     cookie: {
-        secure: false,          // true only for HTTPS
+        secure: false,         
         httpOnly: true,
-        maxAge: 72 * 60 * 60 * 1000 // 72 hours
+        maxAge: 72 * 60 * 60 * 1000 
     }
 }));
 
-// Prevent caching for login/signup pages (and other protected pages)
+
 app.use((req, res, next) => {
     res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, private");
     res.setHeader("Pragma", "no-cache");

@@ -115,7 +115,7 @@ const editCategory = async (req, res) => {
         const id = req.params.id;
         const { name, description } = req.body;
 
-        // Case-insensitive check for existing category
+       
         const existingCategory = await Category.findOne({ 
             name: { $regex: `^${name}$`, $options: 'i' }, 
             _id: { $ne: id } 

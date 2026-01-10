@@ -24,17 +24,17 @@ const loadHome = async (req, res) => {
             return res.redirect("/login");
         }
 
-        // Fetch user
+     
         const userData = await User.findById(req.session.userId).lean();
 
-        // Fetch available, unblocked products sorted by newest
+       
        const products = await Product.aggregate([
             {
                 $match: { isBlocked: false }
             },
             {
                 $lookup: {
-                    from: 'categories', // Make sure your collection name is correct
+                    from: 'categories', 
                     localField: 'category',
                     foreignField: '_id',
                     as: 'categoryInfo'
@@ -44,12 +44,12 @@ const loadHome = async (req, res) => {
                 $unwind: '$categoryInfo'
             },
             {
-                $match: { 'categoryInfo.isListed': true } // Only products from listed categories
+                $match: { 'categoryInfo.isListed': true } 
             }
         ]);
        
 
-        // Map products to include first variant info and precompute display price
+       
         const displayProducts = products.map(product => {
             const firstVariant = product.variants[0] || {};
             const price = firstVariant.salePrice && firstVariant.salePrice < firstVariant.regularPrice
@@ -97,7 +97,7 @@ function generateOtp(){
 
 async function sendVerificationEmail(email, otp) {
     try {
-        console.log('Sending email to:', email);  // Debugging line
+        console.log('Sending email to:', email); 
 
         if (!email) {
             console.log('Error: Email is undefined or empty');
@@ -179,7 +179,6 @@ const verifyOtp = async (req, res) => {
     if (otp == req.session.userOtp) {
       const userData = req.session.userData;
 
-      // Generate unique referral code for new user
       const newReferralCode = generateReferralCode(userData.name);
 
       const newUser = new User({
@@ -193,11 +192,11 @@ const verifyOtp = async (req, res) => {
 
       await newUser.save();
 
-      // Handle referral reward
+     
       if (userData.referralCode) {
         const referrer = await User.findOne({ referralCode: userData.referralCode });
         if (referrer) {
-          // Find wallet document
+        
           let wallet = await Wallet.findOne({ userId: referrer._id });
 
           if (!wallet) {
@@ -208,7 +207,7 @@ const verifyOtp = async (req, res) => {
             });
           }
 
-          // Credit reward
+         
           const rewardAmount = 100;
           wallet.balance += rewardAmount;
           wallet.transactions.push({
@@ -325,7 +324,7 @@ const loadShopPage = async (req, res) => {
     try {
         if (!req.session.userId) return res.redirect('/login');
 
-        // --- Get query params ---
+     
         const queryParams = {
             search: req.query.search || '',
             category: req.query.category || '',
@@ -334,14 +333,13 @@ const loadShopPage = async (req, res) => {
             page: Math.max(1, parseInt(req.query.page) || 1)
         };
 
-        // --- Get all listed categories first ---
         const listedCategories = await Category.find({ isListed: true }).select('_id').lean();
         const listedCategoryIds = listedCategories.map(c => c._id);
 
-        // --- Base product query ---
+
         const query = {
             isBlocked: false,
-            category: { $in: listedCategoryIds } // Only products in listed categories
+            category: { $in: listedCategoryIds } 
         };
 
         // --- Search filter ---
@@ -383,7 +381,7 @@ const loadShopPage = async (req, res) => {
         const perPage = 5;
         const skip = (queryParams.page - 1) * perPage;
 
-        // --- Fetch products, categories, total count in parallel ---
+        
         const [totalProducts, products, categories] = await Promise.all([
             Product.countDocuments(query),
             Product.find(query)
@@ -407,16 +405,16 @@ const loadShopPage = async (req, res) => {
             ])
         ]);
 
-        // --- Generate URL helper for pagination, sort, filters ---
+    
         const generateShopUrl = (newParams = {}) => {
             const params = { ...queryParams, ...newParams };
 
-            // Reset page to 1 if filters/sort/search change
+          
             if ('search' in newParams || 'category' in newParams || 'price' in newParams || 'sort' in newParams) {
                 if (!('page' in newParams)) params.page = 1;
             }
 
-            // Remove undefined/null
+           
             Object.keys(params).forEach(key => {
                 if (params[key] === undefined || params[key] === null) delete params[key];
             });
@@ -424,7 +422,7 @@ const loadShopPage = async (req, res) => {
             return '/shop?' + new URLSearchParams(params).toString();
         };
 
-        // --- Render shop page ---
+   
         res.render('User/shop', {
             products,
             categories,
@@ -448,11 +446,11 @@ const loadProductDetail = async (req, res) => {
   try {
     const productId = req.params.id;
 
-    // Fetch main product with category populated
+    
     const product = await Product.findById(productId).populate("category").lean();
     if (!product) return res.status(404).send("Product not found");
 
-    // Fetch related products (same category, excluding current product)
+   
     let relatedProducts = [];
     if (product.category) {
       relatedProducts = await Product.find({
@@ -469,7 +467,7 @@ const loadProductDetail = async (req, res) => {
         categoryOffer: product.categoryOffer || 0
       });
 
-    // Render template
+  
     const user = await User.findById(req.session.userId).lean();
     res.render("User/productDetails", {
         priceData,

@@ -160,13 +160,13 @@ const updateQuantity = async (req, res) => {
     if (!variant) return res.json({ success: false, message: "Variant not found" });
 
  
-    if (quantity > variant.stock) {
-      return res.json({ 
-        success: false, 
-        message: `Cannot exceed stock limit (${variant.stock})`,
-        item: { ...item._doc, quantity: item.quantity }
-      });
-    }
+    if (quantity > item.quantity && quantity > variant.stock) {
+  return res.json({ 
+    success: false, 
+    message: `Cannot exceed stock limit (${variant.stock})`,
+    item: { ...item._doc, quantity: item.quantity }
+  });
+}
 
 
     const MAX_LIMIT = variant.maxQtyPerUser || 5;

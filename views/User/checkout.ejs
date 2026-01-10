@@ -245,16 +245,35 @@
         });
     });
 
-    // Redirect to payment page with selected address
-    document.getElementById('proceedBtn').addEventListener('click', () => {
-        if (!selectedAddress) {
-            Swal.fire('Select Address', 'Please select an address to continue.', 'warning');
-            return;
-        }
+   
+   document.getElementById('proceedBtn').addEventListener('click', async () => {
 
-        const query = new URLSearchParams({ addressId: selectedAddress }).toString();
-        window.location.href = `/payment?${query}`;
-    });
+    if (!selectedAddress) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Address Required',
+            text: 'Please select an address to continue'
+        });
+        return;
+    }
+
+    const res = await fetch('/checkout/validate-stock', { method: 'POST' });
+    const data = await res.json();
+
+    if (!data.success) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Stock Changed',
+            text: 'Some items are out of stock. Please review your cart.',
+            confirmButtonText: 'Go to Cart'
+        }).then(() => {
+            window.location.href = '/cart';
+        });
+        return;
+    }
+
+    window.location.href = `/payment?addressId=${selectedAddress}`;
+});
 
     //coupon
 
