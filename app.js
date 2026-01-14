@@ -7,6 +7,7 @@ const path = require("path");
 const session = require("express-session");
 const userRoutes = require("./Routes/user/userRoutes");
 const adminRoutes = require("./Routes/admin/adminRoutes");
+const errorMiddleware = require("./middleware/ErrorMiddleware");
 
 
 
@@ -48,6 +49,8 @@ app.use(passport.session());
 
 app.use("/",userRoutes)
 app.use(adminRoutes);
+
+app.use(errorMiddleware);
 
 app.listen(Port,()=>{
     console.log(`Server Running ${process.env.PORT}`);

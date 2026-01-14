@@ -1,6 +1,6 @@
 const User = require("../../model/user");
 
-const customerInfo =  async (req, res) => {
+const customerInfo =  async (req, res,next) => {
     try {
         if(req.session.isAdmin){
         let { search, page } = req.query;

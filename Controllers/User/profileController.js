@@ -437,7 +437,7 @@ const changeEmail = async (req, res) => {
 
 
 
-// User Address management (CRUD)
+// User Address management 
 
 
 const userAddressManagement = async (req, res) => {
@@ -447,7 +447,7 @@ const userAddressManagement = async (req, res) => {
         const page = req.query.page||1
         const limit =2
 
-        // Get all addresses of this user
+       
         const userAddresses = await UserAddress.find({ user: userId }).skip((page-1)*limit).limit(limit)
         const totalCount = await UserAddress.countDocuments({ user: userId });
 
@@ -477,18 +477,17 @@ const addAddress = async (req, res) => {
 
         const { fullname, email, mobile, houseName, locality, pincode, district, state, isDefault: userSetDefault } = req.body;
 
-        // Basic server-side validation
         if (!fullname || !email || !mobile || !houseName || !locality || !pincode || !district || !state) {
             return res.status(400).json({ success: false, message: "All fields are required" });
         }
 
-        // Check if the user already has addresses
+      
         const existingAddresses = await UserAddress.find({ user: userId });
 
-        // Determine if this should be default
+       
         let isDefault = existingAddresses.length === 0 ? true : false;
         if (userSetDefault) {
-            // If user wants this as default, unset previous default
+           
             await UserAddress.updateMany({ user: userId, isDefault: true }, { $set: { isDefault: false } });
             isDefault = true;
         }
@@ -508,7 +507,7 @@ const addAddress = async (req, res) => {
 
         await newAddress.save();
 
-        // Return the newly added address so frontend can update UI dynamically
+       
         res.json({ success: true, message: "New address added", address: newAddress });
 
     } catch (error) {

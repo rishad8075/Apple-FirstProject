@@ -174,6 +174,7 @@ const listProducts= async (req, res) => {
 
 
             res.render("Admin/products", {
+              currentPage:page,
                 data: productsWithImage,
                 currentPage: page,
                 totalPages: Math.ceil(count / limit),

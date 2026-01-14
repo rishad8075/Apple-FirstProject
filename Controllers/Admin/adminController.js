@@ -6,7 +6,7 @@ const Category = require("../../model/category");
 const Order = require("../../model/Orders");
 
 const { calculateSalesMetrics } = require("../../utils/saleHelper");
-const loadDashboard = async (req, res) => {
+const loadDashboard = async (req, res,next) => {
   try {
     const range = req.query.range || "monthly";
 
@@ -16,7 +16,7 @@ let chartType;
 let dateMatch = {};
 
 if (range === "weekly") {
-  groupFormat = "%Y-%m-%d";   // group per day
+  groupFormat = "%Y-%m-%d";  
   limit = 7;
   chartType = "line";
 
@@ -163,8 +163,7 @@ if (range === "weekly") {
     });
 
   } catch (error) {
-    console.error(error);
-    res.status(500).render("adminpage-500");
+    next(error)
   }
 };
 
@@ -176,7 +175,7 @@ const loadlogin = async(req,res)=>{
     return res.render("Admin/login");
 }
 
-const Adminlogin =  async (req, res) => {
+const Adminlogin =  async (req, res,next) => {
     const { email, password } = req.body;
     try {
         if (process.env.Admin.toString() === email && process.env.password.toString() === password) {
@@ -186,7 +185,7 @@ const Adminlogin =  async (req, res) => {
             return res.status(401).render('Admin/login',{errorMessage:"invalid password"});
         }
     } catch (err) {
-        return res.status(500).render("adminpage-500");
+        next(err)
     }
 }
 

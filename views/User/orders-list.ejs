@@ -287,31 +287,51 @@ document.querySelectorAll(".cancel-order-btn").forEach(btn => {
 
         Swal.fire({
             title: "Cancel Order?",
-            input: "text",
-            inputPlaceholder: "Reason ",
+            input: "select",
+            inputOptions: {
+                "Changed my mind": "Changed my mind",
+                "Ordered by mistake": "Ordered by mistake",
+                "Found a better price": "Found a better price",
+                "Delivery is too slow": "Delivery is too slow",
+                "Other": "Other"
+            },
+            inputPlaceholder: "Select a reason",
             showCancelButton: true,
             confirmButtonColor: "#dc3545",
-            confirmButtonText: "Cancel Order"
-        }).then(async result => {
+            confirmButtonText: "Cancel Order",
+            inputValidator: (value) => {
+                if (!value) {
+                    return "Please select a reason";
+                }
+            }
+        }).then(async (result) => {
             if (result.isConfirmed) {
                 const res = await fetch("/orders/cancel-entire", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ orderId, reason: result.value || "No reason" })
+                    body: JSON.stringify({
+                        orderId,
+                        reason: result.value
+                    })
                 });
 
                 const data = await res.json();
-                if (data.success) location.reload();
+                if (data.success) {
+                    location.reload();
+                } else {
+                    Swal.fire("Error", "Unable to cancel order", "error");
+                }
             }
         });
     });
 });
 
+
 /* RETURN ORDER */
 document.querySelectorAll(".return-order-btn").forEach(btn => {
     btn.addEventListener("click", async () => {
         const orderId = btn.dataset.orderid;
-        const productId = btn.dataset.productid || null; // optional
+        const productId = btn.dataset.productid || null; 
 
         const { value: reason } = await Swal.fire({
             title: "Return Order?",
@@ -322,7 +342,7 @@ document.querySelectorAll(".return-order-btn").forEach(btn => {
             confirmButtonColor: "#0d6efd",
         });
 
-        if (!reason) return; // cancelled or empty
+        if (!reason) return; 
 
         try {
             const res = await fetch("/return-order", {

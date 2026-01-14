@@ -5,25 +5,23 @@ const Coupon = require("../../model/Coupon");
 
 
 
-exports.getCoupon = async(req,res)=>{
+exports.getCoupon = async(req,res,next)=>{
     try {
         const coupons = await Coupon.find().sort({createdAt:-1})
         res.status(200).render("Admin/coupon-list",{coupons})
         
     } catch (error) {
-        console.log(error)
-        res.status(500).render("adminpage-500");
+      next(error)
     }
 }
 
 
-exports.addCoupon = async (req,res)=>{
+exports.addCoupon = async (req,res,next)=>{
     try {
         res.render("Admin/add-coupon");
 
     } catch (error) {
-        console.log(error);
-        res.status(500).render("adminpage-500");
+       next(error)
     }
 }
 
@@ -97,7 +95,7 @@ exports.postAddCoupon = async (req, res) => {
     }
 };
 
-exports.getEditPage = async (req, res) => {
+exports.getEditPage = async (req, res,next) => {
     try {
         const couponId = req.params.id; 
         const coupon = await Coupon.findById(couponId); 
@@ -107,8 +105,7 @@ exports.getEditPage = async (req, res) => {
 
         res.status(200).render("Admin/edit-coupon", { coupon });
     } catch (error) {
-        console.log(error);
-        res.status(500).render("adminpage-500");
+    next(error)
     }
 };
 

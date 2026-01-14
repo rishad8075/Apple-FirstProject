@@ -173,14 +173,14 @@
         </p>
     </div>
 
-    <!-- CANCEL ENTIRE ORDER -->
+   
     <% if(order.status !== "Delivered" && order.status !== "Cancelled" && order.status !== "Returned" && order.status !=="Return Requested") { %>
         <button class="btn btn-danger cancel-order-btn" data-orderid="<%= order._id %>">
             <i class="fas fa-times-circle"></i> Cancel Entire Order
         </button>
     <% } %>
 
-    <!-- RETURN ENTIRE ORDER -->
+   
     <% if(order.status === "Delivered" ) { %>
         <button class="btn btn-warning mt-3 return-order-btn" data-orderid="<%= order.orderId %>">
             <i class="fas fa-undo"></i> Return Entire Order
@@ -193,7 +193,7 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
-/* ---------------- ENTIRE ORDER RETURN ---------------- */
+
 document.querySelectorAll('.return-order-btn').forEach(btn => {
     btn.addEventListener('click', () => {
         const orderId = btn.dataset.orderid;
@@ -258,7 +258,7 @@ document.querySelectorAll(".returnCancel-product-btn").forEach(btn => {
 });
 
 
-/* ---------------- SPECIFIC PRODUCT RETURN ---------------- */
+
 document.querySelectorAll('.return-product-btn').forEach(btn => {
     btn.addEventListener('click', () => {
         const orderId = btn.dataset.orderid;
@@ -290,32 +290,54 @@ document.querySelectorAll('.return-product-btn').forEach(btn => {
 
 
 
-/* ---------------- CANCEL ENTIRE ORDER ---------------- */
+
 document.querySelectorAll('.cancel-order-btn').forEach(btn => {
     btn.addEventListener('click', () => {
         const orderId = btn.dataset.orderid;
 
         Swal.fire({
             title: 'Cancel Entire Order?',
-            input: 'text',
-            inputPlaceholder: 'Reason ',
+            input: 'select',
+            inputOptions: {
+                'Changed my mind': 'Changed my mind',
+                'Ordered by mistake': 'Ordered by mistake',
+                'Found a better price': 'Found a better price',
+                'Delivery delay': 'Delivery delay',
+                'Other': 'Other'
+            },
+            inputPlaceholder: 'Select a reason',
             showCancelButton: true,
             confirmButtonColor: '#dc3545',
-            confirmButtonText: 'Cancel Order'
+            confirmButtonText: 'Cancel Order',
+            inputValidator: (value) => {
+                if (!value) {
+                    return 'Please select a cancel reason';
+                }
+            }
         }).then(async result => {
-            if(result.isConfirmed){
+            if (result.isConfirmed) {
                 const res = await fetch('/orders/cancel-entire', {
                     method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ orderId, reason: result.value || 'No reason' })
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        orderId,
+                        reason: result.value
+                    })
                 });
+
                 const data = await res.json();
-                if(data.success) Swal.fire('Cancelled!', '', 'success').then(() => location.reload());
-                else Swal.fire('Error', data.message, 'error');
+
+                if (data.success) {
+                    Swal.fire('Cancelled!', 'Your order has been cancelled.', 'success')
+                        .then(() => location.reload());
+                } else {
+                    Swal.fire('Error', data.message || 'Something went wrong', 'error');
+                }
             }
         });
     });
 });
+
 
 /* ---------------- CANCEL PRODUCT ---------------- */
 document.querySelectorAll('.cancel-product-btn').forEach(btn => {
@@ -325,25 +347,48 @@ document.querySelectorAll('.cancel-product-btn').forEach(btn => {
 
         Swal.fire({
             title: 'Cancel Product?',
-            input: 'text',
-            inputPlaceholder: 'Reason ',
+            input: 'select',
+            inputOptions: {
+                'Ordered by mistake': 'Ordered by mistake',
+                'Product no longer needed': 'Product no longer needed',
+                'Found cheaper alternative': 'Found cheaper alternative',
+                'Delivery delay': 'Delivery delay',
+                'Other': 'Other'
+            },
+            inputPlaceholder: 'Select a reason',
             showCancelButton: true,
             confirmButtonColor: '#dc3545',
-            confirmButtonText: 'Cancel Product'
+            confirmButtonText: 'Cancel Product',
+            inputValidator: (value) => {
+                if (!value) {
+                    return 'Please select a cancel reason';
+                }
+            }
         }).then(async result => {
-            if(result.isConfirmed){
+            if (result.isConfirmed) {
                 const res = await fetch('/orders/cancel-product', {
                     method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ orderId, productId, reason: result.value || 'No reason' })
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        orderId,
+                        productId,
+                        reason: result.value
+                    })
                 });
+
                 const data = await res.json();
-                if(data.success) Swal.fire('Cancelled!', '', 'success').then(() => location.reload());
-                else Swal.fire('Error', data.message, 'error');
+
+                if (data.success) {
+                    Swal.fire('Cancelled!', 'Product has been cancelled.', 'success')
+                        .then(() => location.reload());
+                } else {
+                    Swal.fire('Error', data.message || 'Something went wrong', 'error');
+                }
             }
         });
     });
 });
+
 </script>
 
 </body>

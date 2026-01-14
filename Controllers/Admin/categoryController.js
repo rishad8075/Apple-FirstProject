@@ -8,7 +8,7 @@ const Product = require("../../model/Product")
 
 
 
-const categoryInfo = async (req, res) => {
+const categoryInfo = async (req, res,next) => {
     try {
         let { search, page } = req.query;
         page = parseInt(page) || 1;
@@ -35,13 +35,12 @@ const categoryInfo = async (req, res) => {
             search: search || "",
         });
     } catch (err) {
-        console.log(err);
-        res.render("adminpage-500");
+       next(err)
     }
 }
 
 
-const addCategory = async (req, res) => {
+const addCategory = async (req, res,next) => {
     try {
         let { name, description } = req.body;
 
@@ -68,7 +67,7 @@ const addCategory = async (req, res) => {
     }
 };
 
-const listCategory = async (req,res)=>{
+const listCategory = async (req,res,next)=>{
     try {
          const { id } = req.body;
     await Category.findByIdAndUpdate(id, { isListed: true });
@@ -76,19 +75,17 @@ const listCategory = async (req,res)=>{
 
         
     } catch (error) {
-         console.error(error);
-        res.status(500).send("Server error");
+        next(error)
     }
 }
 
-const unlistCategory = async (req,res)=>{
+const unlistCategory = async (req,res,next)=>{
     try {
            const { id } = req.body;
     await Category.findByIdAndUpdate(id, { isListed: false });
     return res.json({ message: "Category unlisted successfully" });
     } catch (error) {
-        console.error(error)
-        res.status(500).render("adminpage-500");
+       next(error)
     }
 }
 
@@ -178,8 +175,8 @@ const addCategoryOffer = async (req, res) => {
     });
 
   await Product.updateMany(
-      { category: categoryId },  // filter: all products in this category
-      { categoryOffer: offer }   // update field
+      { category: categoryId },  
+      { categoryOffer: offer }  
     );
     
 
