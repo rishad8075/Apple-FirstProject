@@ -70,7 +70,7 @@ const orderDetail = async (req, res) => {
         res.render("User/order-detail", { order, activeLink: 'orders' });
     } catch (error) {
         console.error(error);
-        res.status(500).render("page-404"); // or your error page
+        res.status(500).render("page-404"); 
     }
 };
 
@@ -81,11 +81,11 @@ const cancelEntireOrder = async (req, res) => {
         const order = await Orders.findById(orderId);
         if (!order) return res.json({ success: false, message: 'Order not found' });
 
-        // Prevent double cancel
+       
         if (order.status === 'Cancelled')
             return res.json({ success: false, message: 'Order already cancelled' });
 
-        // Restore stock
+      
         for (const item of order.orderItems) {
             await Products.updateOne(
                 { _id: item.productId },
@@ -93,7 +93,7 @@ const cancelEntireOrder = async (req, res) => {
             );
         }
 
-        // Update item statuses
+      
         for (let item of order.orderItems) {
             item.status = "Cancelled";
             item.cancellationReason = reason || "No reason";
@@ -101,10 +101,10 @@ const cancelEntireOrder = async (req, res) => {
 
         order.status = "Cancelled";
 
-        // 🔥 Refund Logic
+       
         const refundAmount = order.totalPrice;
 
-        // Refund for Razorpay / Wallet payments only
+        
           if (order.paymentMethod === "Razorpay" || order.paymentMethod === "Wallet") {
             await refundToWallet(order.userId, refundAmount, "CANCEL");
         }
@@ -134,28 +134,28 @@ const cancelProduct = async (req, res) => {
         if (item.status === "Cancelled")
             return res.json({ success: false, message: "Product already cancelled" });
 
-        // Restore stock
+        
         await Products.updateOne(
             { _id: item.productId },
             { $inc: { 'variants.0.stock': item.quantity } }
         );
 
-        // Cancel specific product
+       
         item.status = 'Cancelled';
         item.cancellationReason = reason || 'No reason';
 
         //  Calculate refund amount
        const refundAmount =
-  (item.subtotal || 0) -
-  (item.discount || 0) +
-  (item.tax || 0);
+  (item.subtotal || 0) +
+   (item.tax || 0) 
+   
 
        
         if (order.paymentMethod === "Razorpay" || order.paymentMethod === "Wallet") {
             await refundToWallet(order.userId, refundAmount, "CANCEL");
         }
 
-        //  If all items cancelled → cancel whole order
+      
         const allCancelled = order.orderItems.every(it => it.status === "Cancelled");
 
         if (allCancelled) {
@@ -187,7 +187,6 @@ const returnOrder = async (req, res) => {
         const order = await Orders.findOne({ orderId });
         if (!order) return res.status(404).json({ success: false, message: "Order not found." });
 
-      // Single Product Return
 if (productId) {
     const item = order.orderItems.find(item => item.productId.toString() === productId);
     if (!item) return res.status(404).json({ success: false, message: "Product not found in this order." });
@@ -197,7 +196,7 @@ if (productId) {
     item.status = "Return Requested";
     item.returnReason = reason;
 
-    // Update order status if any item has Return Requested
+ 
     if (order.orderItems.some(i => i.status === "Return Requested")) {
         
     }
@@ -243,7 +242,7 @@ const returnCancel = async (req, res) => {
       });
     }
 
-    // Single product return cancel
+   
     if (productId) {
       const item = order.orderItems.find(
         item => item.productId.toString() === productId

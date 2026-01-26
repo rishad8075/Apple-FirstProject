@@ -28,7 +28,7 @@ const customerInfo =  async (req, res,next) => {
     }
     return res.redirect('/admin/logout')
     } catch (error) {
-        res.status(500).render("adminpage-500");
+       next(error)
     }
 
 };

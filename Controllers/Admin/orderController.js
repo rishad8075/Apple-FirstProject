@@ -337,8 +337,7 @@ const approveReturnAdmin = async (req, res) => {
 
     
         const refundAmount =(order.shippingCharge||0)+
-  (item.subtotal || 0) -
-  (item.discount || 0) +
+  (item.subtotal || 0) +
   (item.tax || 0);
         await refundToWallet(order.userId._id, refundAmount, "RETURN");
 

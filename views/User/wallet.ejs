@@ -223,18 +223,18 @@
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
   <script>
-    // Server-provided keys / user info (ensure your controller passes razorpayKeyId & user)
+    
     const RAZORPAY_KEY_ID = '<%= razorpayKeyId || process.env.RAZORPAY_KEY_ID %>';
     const USER_NAME = '<%= (user && user.name) ? user.name : "" %>';
     const USER_EMAIL = '<%= (user && user.email) ? user.email : "" %>';
     const USER_PHONE = '<%= (user && user.phoneNumber) ? user.phoneNumber : (user && user.phone) ? user.phone : "" %>';
 
-    // Utility: show loading Swal
+   
     function showLoading(title = "Please wait...") {
       Swal.fire({ title, allowOutsideClick: false, didOpen: () => Swal.showLoading() });
     }
 
-    // Click handler for Add Money (Option B)
+    
     document.getElementById('addMoneyBtn').addEventListener('click', async function () {
       const raw = document.getElementById('walletAmount').value;
       const amount = parseFloat(raw);
@@ -246,7 +246,7 @@
       try {
         showLoading('Creating order...');
 
-        // Create order at server (route: /wallet/add-balance/create-order)
+        
         const createRes = await fetch('/wallet/add-balance/create-order', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },

@@ -22,29 +22,7 @@
 }
 
         
-        .account-sidebar {
-            position: fixed;
-            top: 1; left: 0;
-            width: 250px; height: 100vh;
-            background: #fff;
-            padding: 30px 0;
-            border-right: 1px solid #ddd;
-            overflow-y: auto;
-            z-index: 900;
-        }
-        .sidebar-menu { list-style: none; padding: 0; }
-        .sidebar-menu-item a {
-            padding: 12px 25px;
-            display: flex;
-            align-items: center;
-            color: #000;
-            text-decoration: none;
-            font-weight: 500;
-        }
-        .sidebar-menu-item a.active { background: #ffcc00; font-weight: 600; }
-        .sidebar-menu-item a:hover { background: #f2f2f2; }
-        .sidebar-menu-item a i { margin-right: 12px; }
-
+        
         /* MAIN */
         .main-content {
             margin-left: 250px;
@@ -98,16 +76,8 @@
     </nav>
 
 
-<aside class="account-sidebar" style="z-index: 900;">
-    <ul class="sidebar-menu">
-        <li class="sidebar-menu-item"><a href="/user/profile"><i class="fas fa-user"></i> PERSONAL INFO</a></li>
-        <li class="sidebar-menu-item"><a href="/user/addresseManagement"><i class="fas fa-map-marker-alt"></i> ADDRESSES</a></li>
-        <li class="sidebar-menu-item"><a href="/orders" class="active"><i class="fas fa-clock"></i> ORDERS</a></li>
-        <li class="sidebar-menu-item"><a href="/my-coupons"><i class="fas fa-ticket-alt"></i> COUPONS</a></li>
-        <li class="sidebar-menu-item"><a href="/wallet"><i class="fas fa-wallet"></i> WALLET</a></li>
-        <li class="sidebar-menu-item"><a href="/logout" class="text-danger"><i class="fas fa-sign-out-alt"></i> LOGOUT</a></li>
-    </ul>
-</aside>
+
+<%-include("../partials/UserSide-bar.ejs") %>
 
 
 <div class="main-content">
