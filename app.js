@@ -7,7 +7,10 @@ const path = require("path");
 const session = require("express-session");
 const userRoutes = require("./Routes/user/userRoutes");
 const adminRoutes = require("./Routes/admin/adminRoutes");
-const errorMiddleware = require("./middleware/ErrorMiddleware");
+const errorMiddleware = require("./middleware/errorHandler");
+const NotFound = require("./middleware/notFound");
+
+
 
 
 
@@ -47,8 +50,11 @@ app.use(passport.session());
 
 
 
-app.use("/",userRoutes)
-app.use(adminRoutes);
+app.use("/",userRoutes);
+app.use("/admin",adminRoutes);
+
+
+app.use(NotFound);
 
 app.use(errorMiddleware);
 

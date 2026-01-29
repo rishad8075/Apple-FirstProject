@@ -6,7 +6,7 @@ const crypto  = require("crypto");
 const  Address = require("../../model/address");
 const Cart = require("../../model/Cart")
 const Coupon = require("../../model/Coupon")
-const { v4: uuidv4 } = require("uuid");// for unique id
+const { v4: uuidv4 } = require("uuid");
 const Product = require("../../model/Product")
 
 
@@ -19,7 +19,7 @@ const razorpay = new Razorpay({
 
 // wallet page
 
-exports.getWalletPage = async (req, res) => {
+exports.getWalletPage = async (req, res,next) => {
     try {
         const userId = req.session.userId;
         const user = await User.findById(userId);
@@ -30,15 +30,15 @@ exports.getWalletPage = async (req, res) => {
             await wallet.save();
         }
 
-        // Pagination logic
-        const page = parseInt(req.query.page) || 1; // current page
-        const limit = 5;                            // transactions per page
+      
+        const page = parseInt(req.query.page) || 1; 
+        const limit = 5;                            
         const skip = (page - 1) * limit;
 
         const totalTxns = wallet.transactions.length;
         const totalPages = Math.ceil(totalTxns / limit);
 
-        // Sort transactions by latest first and slice for current page
+        
         const walletHistory = wallet.transactions
             .sort((a, b) => new Date(b.date) - new Date(a.date))
             .slice(skip, skip + limit);
@@ -54,12 +54,11 @@ exports.getWalletPage = async (req, res) => {
         });
         
     } catch (err) {
-        console.error(err);
-        res.status(500).render("page-500");
+     next(err)
     }
 };
 
-// Create Razorpay Order for Wallet Top-up
+
 exports.createOrder = async (req, res) => {
     try {
         const { amount } = req.body;
@@ -70,7 +69,7 @@ exports.createOrder = async (req, res) => {
         }
 
         const options = {
-            amount: amount * 100, // paise
+            amount: amount * 100, 
             currency: "INR",
             receipt: "WL_" + userId.toString().slice(-6) + "_" + Date.now().toString().slice(-6)
 
@@ -93,7 +92,7 @@ exports.createOrder = async (req, res) => {
     }
 };
 
-// 📌 2. Verify Razorpay Payment + Add Balance to Wallet
+
 exports.verifyPayment = async (req, res) => {
     try {
         const { payment_id, order_id, signature, amount } = req.body;
@@ -157,7 +156,7 @@ exports.useWalletForOrder =async (req, res) => {
     const wallet = await Wallet.findOne({ userId });
     if (!wallet || wallet.balance <= 0) return res.json({ success: false, message: "Wallet is empty" });
 
-    // Calculate order totals
+   
     const orderItems = cart.items.map(item => {
       const product = item.productId;
       const variant = product.variants.find(v => v._id.toString() === item.variantId.toString());
@@ -173,7 +172,7 @@ exports.useWalletForOrder =async (req, res) => {
     const shippingCharge = 70;
     let couponDiscount = 0;
 
-    // ✅ Coupon handling (optional)
+   
     if (req.session.appliedCoupon) {
       const coupon = await Coupon.findOne({ code: req.session.appliedCoupon });
       if (coupon && coupon.isActive) {
@@ -195,7 +194,7 @@ exports.useWalletForOrder =async (req, res) => {
       return res.json({ success: false, message: "Insufficient wallet balance" });
     }
 
-    // Deduct wallet balance & add transaction
+   
     wallet.balance -= grandTotal;
     wallet.transactions.push({
       amount: grandTotal,
@@ -231,7 +230,7 @@ exports.useWalletForOrder =async (req, res) => {
 
     await order.save();
 
-    // Update stock
+ 
     for (const item of orderItems) {
       await Product.updateOne(
         { _id: item.productId },
@@ -239,7 +238,7 @@ exports.useWalletForOrder =async (req, res) => {
       );
     }
 
-    // Clear cart
+   
     await Cart.deleteMany({ userId });
 
     req.session.appliedCoupon = null;

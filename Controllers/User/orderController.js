@@ -23,7 +23,7 @@ async function refundToWallet(userId, amount, source) {
     wallet.transactions.push({
         amount,
         type: 'CREDIT',
-        source,  // CANCEL / RETURN / PAYMENT
+        source,  
         description: `Refund of ₹${amount}`,
         date: new Date()
     });
@@ -34,7 +34,7 @@ async function refundToWallet(userId, amount, source) {
 
 
 //  LIST ORDERS 
-const listOrders = async (req, res) => {
+const listOrders = async (req, res,next) => {
     try {
         const userId = req.session.userId;
 
@@ -54,28 +54,31 @@ const listOrders = async (req, res) => {
         });
 
     } catch (error) {
-        console.log(error);
-        res.render("page-404");   // If you don't have this page, create it or redirect.
+        error.statusCode = 404
+        next(error)
     }
 };
 
 
 // ORDER DETAIL 
-const orderDetail = async (req, res) => {
+const orderDetail = async (req, res,next) => {
     try {
-        const orderId = req.params.orderId; // make sure this matches :id
+        const orderId = req.params.orderId; 
         const order = await Orders.findById(orderId);
-        if (!order) return res.status(404).send("Order not found");
+        if (!order) {
+          const error = new Error("Order NOTFound");
+          error.statusCode = 404;
+          throw error
+        }
 
         res.render("User/order-detail", { order, activeLink: 'orders' });
     } catch (error) {
-        console.error(error);
-        res.status(500).render("page-404"); 
+       next(error)
     }
 };
 
 //  CANCEL ORDER OR ITEM
-const cancelEntireOrder = async (req, res) => {
+const cancelEntireOrder = async (req, res,next) => {
     try {
         const { orderId, reason } = req.body;
         const order = await Orders.findById(orderId);
@@ -144,7 +147,7 @@ const cancelProduct = async (req, res) => {
         item.status = 'Cancelled';
         item.cancellationReason = reason || 'No reason';
 
-        //  Calculate refund amount
+      
        const refundAmount =
   (item.subtotal || 0) +
    (item.tax || 0) 
@@ -333,7 +336,7 @@ function ensureY(doc, y, marginBottom = 72) {
   return y;
 }
 
-const downloadInvoice =async (req, res) => {
+const downloadInvoice =async (req, res,next) => {
   try {
     const orderId = req.params.orderId;
 
@@ -367,9 +370,9 @@ const downloadInvoice =async (req, res) => {
 
     doc.fillColor("black");
 
-    // ------------------------------
+
     // ORDER DETAILS
-    // ------------------------------
+
     doc.fontSize(12);
 
     const addInfo = (label, value) => {
@@ -387,9 +390,9 @@ const downloadInvoice =async (req, res) => {
 
     doc.moveDown(1.2);
 
-    // ------------------------------
+ 
     // BILLING ADDRESS
-    // ------------------------------
+ 
     doc.font("Helvetica-Bold").fontSize(14).text("Billing Address").moveDown(0.4);
 
     const a = order.address;
@@ -401,9 +404,9 @@ const downloadInvoice =async (req, res) => {
     doc.text(`${a.country}`);
     doc.moveDown(1.2);
 
-    // ------------------------------
+  
     // ITEMS TABLE HEADER
-    // ------------------------------
+ 
     doc
       .font("Helvetica-Bold")
       .fontSize(14)
@@ -426,9 +429,8 @@ const downloadInvoice =async (req, res) => {
     doc.moveTo(40, doc.y).lineTo(550, doc.y).stroke();
     doc.moveDown(0.5);
 
-    // ------------------------------
     // ITEMS LIST
-    // ------------------------------
+ 
     doc.font("Helvetica").fontSize(12);
 
     order.orderItems.forEach((item) => {
@@ -442,9 +444,9 @@ const downloadInvoice =async (req, res) => {
 
     doc.moveDown(1);
 
-    // ------------------------------
+   
     // PRICE SUMMARY
-    // ------------------------------
+
     doc
       .font("Helvetica-Bold")
       .fontSize(14)
@@ -473,8 +475,7 @@ const downloadInvoice =async (req, res) => {
 
     doc.end();
   } catch (err) {
-    console.error(err);
-    res.redirect("/orders");
+ next(err)
   }
 };
 

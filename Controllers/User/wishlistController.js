@@ -2,7 +2,7 @@ const Wishlist = require("../../model/wishlist");
 const Products = require("../../model/Product");
 const User = require("../../model/user")
 
-exports.getWishlist = async (req, res) => {
+exports.getWishlist = async (req, res,next) => {
     try {
         const userid = req.session.userId;
         const wishlist = await Wishlist.findOne({ userId: req.session.userId })
@@ -14,9 +14,9 @@ exports.getWishlist = async (req, res) => {
         }
         const user = await User.findById(userid)
 
-        // Filter out items where productId failed to populate
+   
         const wishlistItems = wishlist.products
-            .filter(item => item.productId !== null) // product exists
+            .filter(item => item.productId !== null)
             .map(item => ({
                 Product_id: item.productId._id,
                 product: item.productId,
@@ -26,8 +26,7 @@ exports.getWishlist = async (req, res) => {
         res.render("User/wishlist", { wishlistItems,user });
 
     } catch (error) {
-        console.error(error);
-        res.render("page-404");
+    next(error)
     }
 };
 
@@ -44,22 +43,22 @@ exports.toggleWishlist = async (req, res) => {
             });
         }
 
-        // Find wishlist for user
+   
         let wishlist = await Wishlist.findOne({ userId });
 
-        // If no wishlist exists, create one
+        
         if (!wishlist) {
             wishlist = new Wishlist({ userId:userId, products: [] });
         }
 
-        // Check if product already exists
+     
         const index = wishlist.products.findIndex(p => p.productId.toString() === productId);
 
         if (index > -1) {
             
             return res.json({ success: false, message: 'Product is already in wishlist' });
         } else {
-            // Add product
+           
             wishlist.products.push({ productId });
             await wishlist.save();
             return res.json({ success: true, action: 'added', message: 'Product added to wishlist' });
@@ -71,7 +70,7 @@ exports.toggleWishlist = async (req, res) => {
     }
 };
 
-// Remove from Wishlist (used after Add to Cart)
+
 exports.removeFromWishlist = async (req, res) => {
     try {
         const userId = req.session.userId;

@@ -2,7 +2,7 @@ const Coupon = require('../../model/Coupon');
 const User = require("../../model/user")
 
 
-const getUserCoupons = async (req, res) => {
+const getUserCoupons = async (req, res,next) => {
     try {
         const userId = req.session.userId;
         if (!userId) return res.redirect('/login');
@@ -23,8 +23,7 @@ const getUserCoupons = async (req, res) => {
          activeLink: "coupon"
         });
     } catch (err) {
-        console.error('Error fetching coupons:', err);
-        res.redirect('/');
+    next(err)
     }
 };
 

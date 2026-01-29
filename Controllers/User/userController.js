@@ -18,7 +18,7 @@ const generateReferralCode = (name) => {
 };
 
 
-const loadHome = async (req, res) => {
+const loadHome = async (req, res,next) => {
     try {
         if (!req.session.userId) {
             return res.redirect("/login");
@@ -80,8 +80,7 @@ const loadHome = async (req, res) => {
         });
 
     } catch (error) {
-        console.error("Error loading home:", error);
-        return res.status(500).send('Server error: ' + error);
+       next(error)
     }
 };
 
@@ -288,7 +287,7 @@ const Loadlogin = async (req,res)=>{
     return res.redirect("/");
 };
 
-const login = async (req,res) => {
+const login = async (req,res,next) => {
     const {email,password} = req.body;
     try{
         if(req.session.userId){
@@ -310,17 +309,15 @@ const login = async (req,res) => {
         await req.session.save();
         res.redirect('/');
 
-    }catch(err){
-        res.status(500).render('User/login', {
-           errorMessage: 'Error login. Please try again.'
-        });
+    }catch(error){
+      next(error)
 
     }
 }
 
 
 
-const loadShopPage = async (req, res) => {
+const loadShopPage = async (req, res,next) => {
     try {
         if (!req.session.userId) return res.redirect('/login');
 
@@ -437,19 +434,21 @@ const loadShopPage = async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Shop error:', error);
-        res.status(500).send('Error loading shop: ' + error.message);
+        next(error)
     }
 };
 
-const loadProductDetail = async (req, res) => {
+const loadProductDetail = async (req, res,next) => {
   try {
     const productId = req.params.id;
 
     
     const product = await Product.findById(productId).populate("category").lean();
-    if (!product) return res.status(404).send("Product not found");
-
+ if (!product) {
+  const error = new Error("Product not found");
+  error.statusCode = 404;
+  return next(error);
+}
    
     let relatedProducts = [];
     if (product.category) {
@@ -478,32 +477,29 @@ const loadProductDetail = async (req, res) => {
     });
 
   } catch (error) {
-    console.error(error);
-    res.status(500).send("Server Error");
+   next(error)
   }
 };
 
 
 
-const loadContactPage = async (req,res)=>{
+const loadContactPage = async (req,res,next)=>{
     try {
         const userId = req.session.userId;
         const user = await User.findById(userId);
         res.status(200).render("User/contact",{user})
     } catch (error) {
-        console.log(error)
-        res.status(500).render("page-500")
+     next(error)
     }
 }
 
-const loadAboutPage =   async (req,res)=>{
+const loadAboutPage =   async (req,res,next)=>{
     try {
         const userId = req.session.userId;
         const user = await User.findById(userId);
         res.status(200).render("User/about",{user})
     } catch (error) {
-        console.log(error)
-        res.status(500).render("page-500")
+        next(error)
     }
 }
 

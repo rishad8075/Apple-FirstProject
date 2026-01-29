@@ -74,7 +74,7 @@ const addToCart = async (req, res) => {
   }
 };
 
-const getCart = async (req, res) => {
+const getCart = async (req, res,next) => {
   try {
     const userId = req.session.userId;
     const userData = await User.findById(userId)

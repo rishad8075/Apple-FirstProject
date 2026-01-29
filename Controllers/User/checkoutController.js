@@ -4,7 +4,7 @@ const Cart = require("../../model/Cart");
 const Product = require("../../model/Product");
 const User = require("../../model/user");
 const Orders = require("../../model/Orders");
-const { v4: uuidv4 } = require("uuid");// for unique id
+const { v4: uuidv4 } = require("uuid");
 const Payment = require("../../model/payment");
 const Razorpay = require("razorpay");
 const Coupon = require("../../model/Coupon");
@@ -19,7 +19,7 @@ const razorpayInstance = new Razorpay({
 });
 
 
-const getCheckoutPage = async (req, res) => {
+const getCheckoutPage = async (req, res,next) => {
   try {
     const userId = req.session.userId;
     if (!userId) return res.redirect("/login");
@@ -101,8 +101,7 @@ const getCheckoutPage = async (req, res) => {
     });
 
   } catch (err) {
-    console.error("Checkout Error:", err);
-    res.status(500).render("page-404");
+  next(err)
   }
 };
 
@@ -111,7 +110,7 @@ const getCheckoutPage = async (req, res) => {
 
 
 
-const checkoutAdd_Address = async (req, res) => {
+const checkoutAdd_Address = async (req, res,next) => {
     try {
         const userId = req.session.userId;
 
@@ -126,13 +125,13 @@ const checkoutAdd_Address = async (req, res) => {
         });
 
     } catch (error) {
-        console.error(error);
-        res.render("page-404");
+      error.statusCode = 404;
+       next(error)
     }
 };
 
 //   Add Address
-const checkoutAddAddress = async (req, res) => { 
+const checkoutAddAddress = async (req, res,next) => { 
     try {
         const userId = req.session.userId;
 
@@ -184,7 +183,7 @@ const checkoutAddAddress = async (req, res) => {
 };
 
 
-const paymentPage = async (req, res) => {
+const paymentPage = async (req, res,next) => {
   try {
     const userId = req.session.userId;
     const addressId = req.query.addressId;
@@ -268,8 +267,9 @@ const paymentPage = async (req, res) => {
     });
 
   } catch (err) {
-    console.error(err);
-    res.redirect("/checkout");
+    
+          next(err)
+
   }
 };
 
@@ -459,7 +459,7 @@ const createRazorpayOrder = async (req, res) => {
     try {
         const { amount } = req.body;
         const options = {
-            amount: Math.round(amount * 100), // in paise
+            amount: Math.round(amount * 100), 
             currency: "INR",
             receipt: uuidv4()
         };
@@ -518,7 +518,7 @@ const verifyRazorpayPayment = async (req, res) => {
     const tax = orderItems.reduce((sum, i) => sum + i.tax, 0);
     const shippingCharge = 70;
 
-        // 3️⃣ Coupon discount
+        
         let couponDiscount = 0;
         if (req.session.appliedCoupon) {
             const coupon = await Coupon.findOne({ code: req.session.appliedCoupon });
@@ -731,7 +731,7 @@ const razorpayPaymentFailed = async (req, res) => {
     const tax = orderItems.reduce((sum, i) => sum + i.tax, 0);
     const shippingCharge = 70;
 
-        // 3️⃣ Coupon discount
+       
         let couponDiscount = 0;
         if (req.session.appliedCoupon) {
             const coupon = await Coupon.findOne({ code: req.session.appliedCoupon });

@@ -10,7 +10,7 @@ function generateOtp() {
     return Math.floor(100000 + Math.random() * 900000).toString();
 }
 
-async function sendVerificationEmail(email, otp) {
+async function sendVerificationEmail(email, otp,next) {
     try {
         console.log('sending email to ' + email);
 
@@ -37,19 +37,20 @@ async function sendVerificationEmail(email, otp) {
 
     } catch (error) {
         console.log("Error sending email:", error);
-        return false;
+        next(error)
     }
 }
 
-const getForgot_password = async (req, res) => {
+const getForgot_password = async (req, res,next) => {
     try {
         return res.render("User/forgot-password");
     } catch (error) {
-        return res.render("page-404");
+       error.statusCode = 404;
+       next(error)
     }
 };
 
-const postForgot_password = async (req, res) => {
+const postForgot_password = async (req, res,next) => {
     try {
         const { email } = req.body;
 
@@ -74,9 +75,8 @@ const postForgot_password = async (req, res) => {
 
     } catch (error) {
         console.error("Error during sending otp:", error);
-        return res.status(500).render("page-404", {
-            errorMessage: "Error. Please try again." + error
-        });
+     error.statusCode = 404;
+     next(error)
     }
 };
 
@@ -100,11 +100,12 @@ const verifyPassForgotOtp = async (req, res) => {
     }
 };
 
-const getResetPassword = async (req, res) => {
+const getResetPassword = async (req, res,next) => {
     try {
         res.render("User/resetPassword");
     } catch (error) {
-        res.render("page-404");
+        error.statusCode = 404;
+        next(error)
     }
 };
 
@@ -137,7 +138,7 @@ const resend_ForgotPass_Otp = async (req,res)=>{
 };
 
 
-const resetPassword = async (req, res) => {
+const resetPassword = async (req, res,next) => {
     try {
         if(req.session.Otp){
             req.session.Otp = null
@@ -161,15 +162,15 @@ const resetPassword = async (req, res) => {
         res.redirect("/login");
 
     } catch (error) {
-        console.error("Error resetting password:", error);
-        res.redirect("/pageNotFound");
+       error.statusCode = 404;
+       next(error)
     }
 };
 
 // User profile
 
 
-const userProfile = async (req, res) => {
+const userProfile = async (req, res,next) => {
     try {
         const userId = req.session.userId;
         if (!userId) return res.redirect('/login');
@@ -184,36 +185,42 @@ const userProfile = async (req, res) => {
 
     } catch (error) {
         console.log(error);
-        res.render("page-404", { error: error });
+       error.statusCode = 404;
+       next(error)
     }
 };
 
 
 //editprofile
-const getEditProfile = async (req, res) => {
+const getEditProfile = async (req, res,next) => {
     try {
         const userId = req.session.userId; 
        
 
         const user = await User.findById(userId);
         if (!user) {
-            return res.status(404).render('page-404', { errorMessage: "User not found" });
+         const error = new Error("User not found")
+         error.statusCode = 404;
+         throw error
         }
 
         res.render('User/editProfile', { user }); 
 
     } catch (error) {
-        console.error("Error loading edit profile page:", error);
-        res.status(500).render('page-404', { errorMessage: "Something went wrong" });
+        next(error)
     }
 };
 
-const postEditProfile = async (req, res) => {
+const postEditProfile = async (req, res,next) => {
   try {
     const userId = req.session.userId;
     const user = await User.findById(userId);
 
-    if (!user) return res.status(404).send("User not found");
+    if (!user){
+        const error = new Error("user Not Found");
+        error.statusCode = 404;
+        throw error
+    }
 
     const { name, phoneNumber, dob, removeImage } = req.body;
 
@@ -243,8 +250,7 @@ const postEditProfile = async (req, res) => {
     res.redirect("/user/profile");
 
   } catch (error) {
-    console.error(error);
-    res.status(500).send("Server Error");
+   next(error)
   }
 };
 
@@ -288,7 +294,7 @@ const changePassword = async (req, res) => {
 
 
 
-const getchangeEmail_valid = async (req,res)=>{
+const getchangeEmail_valid = async (req,res,next)=>{
     try {
         const userid = req.session.userId
         const user = await User.findById(userid)
@@ -296,12 +302,11 @@ const getchangeEmail_valid = async (req,res)=>{
         res.render("User/changeEmail-valid",{user});
         
     } catch (error) {
-        console.log(error)
-        res.status(500).render("page-404",{errorMessage:"server Error"})
+       next(error)
     }
 }
 
-const postchangeEmail = async (req, res) => {
+const postchangeEmail = async (req, res,next) => {
     try {
         const { email } = req.body;
 
@@ -326,10 +331,7 @@ const postchangeEmail = async (req, res) => {
         return res.render("User/changeEmailOtp-verify");
 
     } catch (error) {
-        console.error("Error during sending otp:", error);
-        return res.status(500).render("page-404", {
-            errorMessage: "Error. Please try again." + error
-        });
+       next(error)
     }
 };
 
@@ -389,17 +391,18 @@ const resend_changeEmail_Otp = async (req,res)=> {
     }
 };
 
-const getchangeEmail = async (req, res) => {
+const getchangeEmail = async (req, res,next) => {
     try {
         res.render("User/changeEmail");
     } catch (error) {
-        res.render("page-404");
+        error.statusCode = 404;
+        next(error)
     }
 };
 
 
 
-const changeEmail = async (req, res) => {
+const changeEmail = async (req, res,next) => {
     try {
         const { newEmail } = req.body;
         const email = req.session.userData;  
@@ -416,7 +419,8 @@ const changeEmail = async (req, res) => {
 
     } catch (error) {
         console.error("Error changing email:", error);
-        res.render("page-404");
+        error.statusCode = 404;
+        next(error)
     }
 };
 
@@ -440,12 +444,18 @@ const changeEmail = async (req, res) => {
 // User Address management 
 
 
-const userAddressManagement = async (req, res) => {
+const userAddressManagement = async (req, res,next) => {
     try {
         const userId = req.session.userId;
         const user = await User.findById(userId)
         const page = req.query.page||1
         const limit =2
+
+        if(!user){
+            const error = new Error('user Not Found');
+            error.statusCode = 404;
+            throw error
+        }
 
        
         const userAddresses = await UserAddress.find({ user: userId }).skip((page-1)*limit).limit(limit)
@@ -460,14 +470,13 @@ const userAddressManagement = async (req, res) => {
         });
 
     } catch (error) {
-        console.error(error);
-        res.render("page-404");
+        next(error)
     }
 };
 
 
 
-const addAddress = async (req, res) => { 
+const addAddress = async (req, res,next) => { 
     try {
         const userId = req.session.userId;
 
@@ -539,12 +548,16 @@ const deleteAddress = async (req, res) => {
 
 
 // GET: Edit Address Page
-const getEditAddress = async (req, res) => {
+const getEditAddress = async (req, res,next) => {
     try {
         const addressId = req.params.id;
         const userId = req.session.userId;
 
-        if (!userId) throw new Error("User not found, try again");
+        if (!userId) {
+            const error = new Error("User not found, try again");
+            error.statusCode = 404;
+            throw error
+        }
 
         const address = await UserAddress.findOne({ _id: addressId, user: userId });
         if (!address) throw new Error("Address not found");
@@ -552,8 +565,7 @@ const getEditAddress = async (req, res) => {
         res.render("User/editAddress", { address });
 
     } catch (error) {
-        console.log(error);
-        res.render("page-404");
+      next(error)
     }
 };
 
@@ -591,10 +603,10 @@ const setDefaultAddress = async (req, res) => {
 
         if (!userId) return res.json({ success: false, message: "User not found" });
 
-        // Set all user addresses to false
+      
         await UserAddress.updateMany({ user: userId }, { isDefault: false });
 
-        // Set selected address to true
+      
         const updated = await UserAddress.findOneAndUpdate(
             { _id: addressId, user: userId },
             { isDefault: true },
