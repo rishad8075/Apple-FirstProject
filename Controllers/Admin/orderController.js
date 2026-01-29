@@ -30,7 +30,7 @@ async function refundToWallet(userId, amount, source) {
 }
 
 
-const listOrdersAdmin = async (req, res) => {
+const listOrdersAdmin = async (req, res,next) => {
   try {
     const page = Math.max(1, parseInt(req.query.page || '1'));
     const limit = Math.max(1, parseInt(req.query.limit || '10'));
@@ -93,12 +93,11 @@ const listOrdersAdmin = async (req, res) => {
       status: statusFilter
     });
   } catch (err) {
-    console.error('Admin listOrders error:', err);
-    return res.status(500).render("adminpage-500");
+    next(err)
   }
 };
 
-const orderDetailAdmin = async (req, res) => {
+const orderDetailAdmin = async (req, res,next) => {
   try {
     const id = req.params.id;
 
@@ -111,15 +110,18 @@ const orderDetailAdmin = async (req, res) => {
       order = await Orders.findOne({ orderId: id }).populate('orderItems.productId').populate('userId', 'name email') .lean();
     }
 
-    if (!order) return res.status(404).render('page-404');
+    if (!order){
+        const error = new Error("admin order Not found")
+        error.statusCode = 404;
+        throw error
+    }
 
    
     const user = order.userId ? await User.findById(order.userId, 'name email phone').lean() : null;
 
     res.render('Admin/order-detail', { order, user });
   } catch (err) {
-    console.error('orderDetailAdmin error:', err);
-    return res.status(500).render("adminpage-500");
+    next(err)
   }
 };
 
@@ -220,7 +222,7 @@ const updateOrderStatusAdmin = async (req, res) => {
 };
 
 
-const cancelProductAdmin = async (req, res) => {
+const cancelProductAdmin = async (req, res,next) => {
     try {
         const { orderId, productId, reason } = req.body;
 
@@ -279,7 +281,7 @@ const cancelProductAdmin = async (req, res) => {
 
 
 
-const listReturnRequestsAdmin = async (req, res) => {
+const listReturnRequestsAdmin = async (req, res,next) => {
     try {
         const requests = await Orders.find({ "orderItems.status": "Return Requested" })
             .populate("userId", "name email")
@@ -308,8 +310,8 @@ const listReturnRequestsAdmin = async (req, res) => {
 
         res.render("Admin/return-requests", { requests: formattedRequests });
     } catch (err) {
-        console.error(err);
-        res.status(500).render("adminpage-500");
+          next(err)
+
     }
 };
 const approveReturnAdmin = async (req, res) => {

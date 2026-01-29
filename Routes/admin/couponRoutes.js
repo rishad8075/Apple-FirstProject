@@ -4,14 +4,14 @@ const auth = require("../../middleware/adminAuth");
 const CouponController = require("../../Controllers/Admin/CouponController");
 
 
-router.use(auth)
 
-router.get("/admin/coupons/add",CouponController.addCoupon);
-router.get("/admin/coupons",CouponController.getCoupon);
-router.post("/admin/coupons/add",CouponController.postAddCoupon);
-router.get("/admin/coupons/edit/:id",CouponController.getEditPage);
-router.patch('/admin/coupons/edit/:id',CouponController.editCoupon);
-router.delete("/admin/coupons/delete/:id", CouponController.deleteCoupon);
+
+router.get("/coupons/add",CouponController.addCoupon);
+router.get("/coupons",CouponController.getCoupon);
+router.post("/coupons/add",CouponController.postAddCoupon);
+router.get("/coupons/edit/:id",CouponController.getEditPage);
+router.patch('/coupons/edit/:id',CouponController.editCoupon);
+router.delete("/coupons/delete/:id", CouponController.deleteCoupon);
 
 
 

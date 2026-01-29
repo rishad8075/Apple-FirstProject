@@ -70,7 +70,7 @@ const getDateFilter = (type, startDate, endDate) => {
 };
 
 
-exports.getSalesReport = async (req, res) => {
+exports.getSalesReport = async (req, res,next) => {
   try {
     const { type = "daily", startDate, endDate } = req.query;
 
@@ -145,8 +145,7 @@ exports.getSalesReport = async (req, res) => {
     });
 
   } catch (error) {
-    console.error("Sales report error:", error);
-    res.status(500).render("adminpage-500");
+   next(error)
   }
 };
 

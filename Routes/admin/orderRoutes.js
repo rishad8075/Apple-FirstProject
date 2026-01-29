@@ -3,14 +3,14 @@ const router = express.Router();
 const adminOrderController = require("../../Controllers/Admin/orderController");
 const adminAuth = require("../../middleware/adminAuth");
 
-router.use(adminAuth)
 
-router.get('/admin/orders', adminOrderController.listOrdersAdmin);
-router.get('/admin/orders/detail/:id', adminOrderController.orderDetailAdmin);
-router.post('/admin/orders/update-status',adminOrderController.updateOrderStatusAdmin);
-router.post('/admin/orders/cancel-product', adminOrderController.cancelProductAdmin);
-router.get('/admin/returns',  adminOrderController.listReturnRequestsAdmin);
- router.post('/admin/returns/approve',  adminOrderController.approveReturnAdmin);
- router.post('/admin/returns/reject',  adminOrderController.rejectReturnAdmin);
+
+router.get('/orders', adminOrderController.listOrdersAdmin);
+router.get('/orders/detail/:id', adminOrderController.orderDetailAdmin);
+router.post('/orders/update-status',adminOrderController.updateOrderStatusAdmin);
+router.post('/orders/cancel-product', adminOrderController.cancelProductAdmin);
+router.get('/returns',  adminOrderController.listReturnRequestsAdmin);
+ router.post('/returns/approve',  adminOrderController.approveReturnAdmin);
+ router.post('/returns/reject',  adminOrderController.rejectReturnAdmin);
 
 module.exports = router;

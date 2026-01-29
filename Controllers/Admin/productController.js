@@ -10,19 +10,18 @@ const uploadToCloudinary = require("../../helpers/cloudinaryUpload");
 
 
 
-const addProducts = async(req,res)=>{
+const addProducts = async(req,res,next)=>{
     try {
         const category = await Category.find({isListed:true});
         res.render("Admin/productAdd",{
             cat:category
         })
     } catch (error) {
-        console.error(error)
-        res.status(500).render("adminpage-500");
+       next(error)
     }
 }
 
-const addProductPost = async (req, res) => {
+const addProductPost = async (req, res,next) => {
   try {
     const { productName, description, category, status } = req.body;
 
@@ -113,7 +112,7 @@ function calculateFinalPrice(salePrice, productOffer, categoryOffer) {
 
 
 
-const listProducts= async (req, res) => {
+const listProducts= async (req, res,next) => {
     try {
         const search = req.query.search || "";
         const page = req.query.page || 1;
@@ -181,11 +180,12 @@ const listProducts= async (req, res) => {
                 cat: category,
             });
         } else {
-            res.render("page-404");
+            const error = new Error("product not found")
+            error.statusCode = 404
+            throw error
         }
     } catch (error) {
-        console.error("Error fetching products:", error);
-        res.status(500).render("adminpage-500");
+        next(error)
     }
 }
 
