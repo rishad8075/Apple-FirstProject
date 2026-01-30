@@ -175,19 +175,33 @@ const loadlogin = async(req,res)=>{
     return res.render("Admin/login");
 }
 
-const Adminlogin =  async (req, res,next) => {
+const Adminlogin = async (req, res, next) => {
     const { email, password } = req.body;
+
     try {
-        if (process.env.Admin.toString() === email && process.env.password.toString() === password) {
+        if (
+            process.env.Admin === email &&
+            process.env.password === password
+        ) {
             req.session.isAdmin = true;
-            return res.redirect('/admin'); 
-        } else {
-            return res.status(401).render('Admin/login',{errorMessage:"invalid password"});
+
+            return req.session.save(err => {
+                if (err) {
+                    return next(err);
+                }
+                return res.redirect('/admin');
+            });
         }
+
+        return res.status(401).render('Admin/login', {
+            errorMessage: "Invalid password"
+        });
+
     } catch (err) {
-        next(err)
+        next(err);
     }
-}
+};
+
 
 
 const adminLogout = async (req, res) => {

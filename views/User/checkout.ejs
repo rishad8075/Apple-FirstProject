@@ -5,66 +5,157 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Checkout</title>
 
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
 
     <style>
-        body { background: #f6f6f6; }
+        :root {
+            --primary-yellow: #ffcc00;
+            --dark-bg: #f8f9fa;
+            --card-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        }
+
+        body { 
+            background: var(--dark-bg); 
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            padding-bottom: 100px; /* Space for mobile sticky button */
+        }
+
+        .checkout-header {
+            font-weight: 800;
+            font-size: 1.75rem;
+            margin-bottom: 25px;
+            color: #1a1a1a;
+        }
 
         .checkout-grid {
-            width: 90%;
-            margin: 30px auto;
+            width: 95%;
+            max-width: 1200px;
+            margin: 20px auto;
             display: grid;
             grid-template-columns: 1.3fr 1fr;
-            gap: 40px;
+            gap: 25px;
+        }
+
+        /* Responsive Grid */
+        @media (max-width: 991px) {
+            .checkout-grid { grid-template-columns: 1fr; width: 100%; padding: 10px; }
         }
 
         .card-box {
             background: white;
-            padding: 25px;
-            border: 1px solid #ddd;
+            padding: 24px;
+            border-radius: 16px;
+            border: 1px solid rgba(0,0,0,0.05);
+            box-shadow: var(--card-shadow);
+            margin-bottom: 20px;
         }
 
+        /* Product Box */
         .product-box {
             display: flex;
             align-items: center;
             padding: 15px 0;
-            border-bottom: 1px solid #eee;
+            border-bottom: 1px solid #f1f1f1;
         }
 
         .product-image {
-            width: 80px;
-            height: 80px;
+            width: 70px;
+            height: 70px;
             object-fit: cover;
-            border: 1px solid #ddd;
-            margin-right: 20px;
+            border-radius: 12px;
+            margin-right: 15px;
+            background: #fdfdfd;
         }
 
+        /* Address Selection Styling */
         .address-box {
-            background: white;
+            background: #fff;
             padding: 18px;
-            border: 1px solid #ccc;
+            border: 2px solid #eee;
+            border-radius: 14px;
             cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
         }
 
         .address-active {
-            border: 2px solid black !important;
+            border-color: #000 !important;
+            background: #fcfcfc;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
         }
 
-        .btn-yellow {
-            background: #ffcc00;
-            border: none;
-            padding: 10px 25px;
-            font-weight: 600;
-            cursor: pointer;
+        .address-active::after {
+            content: '\F26E'; /* Bootstrap check-circle-fill */
+            font-family: 'bootstrap-icons';
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 1.2rem;
+            color: #000;
         }
+
+        /* Custom Radio */
+        .set-default-radio { transform: scale(1.2); cursor: pointer; }
+
+        /* Buttons */
+        .btn-yellow {
+            background: var(--primary-yellow);
+            border: none;
+            width: 100%;
+            padding: 15px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 1rem;
+            transition: 0.3s;
+            box-shadow: 0 4px 15px rgba(255, 204, 0, 0.3);
+        }
+
+        .btn-yellow:hover:not(:disabled) { background: #e6b800; transform: translateY(-2px); }
+        .btn-yellow:disabled { background: #e0e0e0; cursor: not-allowed; box-shadow: none; }
 
         .btn-outline {
-            border: 1px solid #000;
+            border: 2px solid #000;
+            background: transparent;
             width: 100%;
             padding: 12px;
-            text-transform: uppercase;
+            border-radius: 12px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            transition: 0.2s;
+        }
+        .btn-outline:hover { background: #000; color: #fff; }
+
+        /* Sidebar summary spacing */
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            font-size: 0.95rem;
+        }
+
+        .coupon-section {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 12px;
+            margin: 15px 0;
+        }
+
+        /* Fixed Mobile Button Container */
+        @media (max-width: 768px) {
+            .mobile-fix-btn {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                background: white;
+                padding: 15px 20px;
+                border-top: 1px solid #eee;
+                z-index: 999;
+                box-shadow: 0 -5px 20px rgba(0,0,0,0.05);
+            }
         }
     </style>
 </head>
@@ -75,44 +166,48 @@
 </header>
 
 <div class="container mt-4">
-    <h4>CHECKOUT</h4>
+    <h4 class="checkout-header">CHECKOUT</h4>
 </div>
 
 <div class="checkout-grid">
 
-    <!-- LEFT SIDE: PRODUCTS LIST -->
-    <div class="card-box">
-        <h5>Your Items (<%= items.length %>)</h5>
-        <hr>
-        <% items.forEach(item => { %>
-            <div class="product-box">
-                <img src="<%= item.image %>" class="product-image">
-                <div style="flex:1">
-                    <div class="fw-semibold"><%= item.name %></div>
-                    <div class="text-muted">Qty: <%= item.qty %></div>
+    <div class="left-section">
+        <div class="card-box">
+            <h5 class="fw-bold mb-3"><i class="bi bi-bag-check me-2"></i>Your Items (<%= items.length %>)</h5>
+            <hr class="text-muted opacity-25">
+            <% items.forEach(item => { %>
+                <div class="product-box">
+                    <img src="<%= item.image %>" class="product-image">
+                    <div style="flex:1">
+                        <div class="fw-bold text-dark"><%= item.name %></div>
+                        <div class="text-muted small">Quantity: <%= item.qty %></div>
+                    </div>
+                    <div class="text-end">
+                        <div class="fw-bold">₹ <%= item.price.toLocaleString('en-IN') %></div>
+                        <small class="text-muted">Total: ₹ <%= item.total.toLocaleString('en-IN') %></small>
+                    </div>
                 </div>
-                <div class="text-end">
-                    <div>₹ <%= item.price.toLocaleString('en-IN') %></div>
-                    <small class="text-muted">Total: ₹ <%= item.total.toLocaleString('en-IN') %></small>
-                </div>
-            </div>
-        <% }) %>
+            <% }) %>
+        </div>
     </div>
 
-    <!-- RIGHT SIDE: ADDRESS + SUMMARY -->
-    <div>
-        <!-- ADDRESS SELECTION -->
-        <h6 class="mb-2">SELECT ADDRESS</h6>
+    <div class="right-section">
+        <div class="d-flex justify-content-between align-items-center mb-3 px-1">
+            <h6 class="fw-bold mb-0">SELECT ADDRESS</h6>
+        </div>
+
         <% addresses.forEach(addr => { %>
             <div class="address-box mb-3 <%= addr.isDefault ? 'address-active' : '' %>" data-id="<%= addr._id %>">
                 <div>
-                    <strong><%= addr.fullname %></strong> — <%= addr.mobile %><br>
-                    <%= addr.houseName %>, <%= addr.locality %><br>
-                    <%= addr.district %>, <%= addr.state %> - <%= addr.pincode %>
+                    <div class="fw-bold mb-1"><%= addr.fullname %> <span class="text-muted fw-normal ms-2">| <%= addr.mobile %></span></div>
+                    <div class="small text-secondary">
+                        <%= addr.houseName %>, <%= addr.locality %><br>
+                        <%= addr.district %>, <%= addr.state %> - <%= addr.pincode %>
+                    </div>
                 </div>
-                <div class="mt-2 d-flex justify-content-between align-items-center">
-                    <a href="/user/edit-address/<%= addr._id %>" class="btn btn-warning btn-sm">EDIT</a>
-                    <label class="mb-0">
+                <div class="mt-3 pt-2 border-top d-flex justify-content-between align-items-center">
+                    <a href="/user/edit-address/<%= addr._id %>" class="btn btn-light btn-sm fw-bold border" style="font-size: 0.7rem;">EDIT</a>
+                    <label class="mb-0 small fw-600 d-flex align-items-center gap-2">
                         <input type="radio" class="set-default-radio" name="defaultAddress" value="<%= addr._id %>" <%= addr.isDefault ? 'checked' : '' %> >
                         Default
                     </label>
@@ -120,61 +215,60 @@
             </div>
         <% }) %>
 
-        <a href="/checkout/AddAddress">
-            <button class="btn-outline mt-2">ADD NEW ADDRESS</button>
+        <a href="/checkout/AddAddress" class="text-decoration-none">
+            <button class="btn-outline mb-4"><i class="bi bi-plus-lg me-2"></i>ADD NEW ADDRESS</button>
         </a>
 
-        <!-- ORDER SUMMARY -->
-        <div class="card-box mt-4">
-            <h5>Order Summary</h5>
-            <hr>
-            <div class="d-flex justify-content-between">
-                <span>Subtotal</span>
-                <span>₹ <%= subtotal.toLocaleString('en-IN') %></span>
+        <div class="card-box sticky-top" style="top: 20px;">
+            <h5 class="fw-bold mb-4">Order Summary</h5>
+            <div class="summary-row">
+                <span class="text-muted">Subtotal</span>
+                <span class="fw-600">₹ <%= subtotal.toLocaleString('en-IN') %></span>
             </div>
-            <div class="d-flex justify-content-between mt-2">
-                <span>Tax</span>
-                <span>₹ <%= tax || 0 %></span>
+            <div class="summary-row">
+                <span class="text-muted">Tax</span>
+                <span class="fw-600">₹ <%= tax || 0 %></span>
             </div>
-            <div class="d-flex justify-content-between mt-2">
-                <span>Shipping Charge</span>
-                <span>₹ <%= shipping || 0 %></span>
+            <div class="summary-row">
+                <span class="text-muted">Shipping</span>
+                <span class="fw-600">₹ <%= shipping || 0 %></span>
             </div>
-               <div class="d-flex justify-content-between mt-2">
-                <span>Delivery Charge</span>
-                <span>₹ <%= deliveryCharge || 0 %></span>
-            </div>
-                            <div class="mt-3">
-                    <label class="fw-semibold">Have a Coupon?</label>
-                    <div class="input-group mt-2">
-                        <input type="text" name="couponCode" id="couponCode" class="form-control" placeholder="Enter coupon code">
-                        <button class="btn btn-dark" id="applyCouponBtn">Apply</button>
-                    </div>
-
-                    <% if (appliedCoupon) { %>
-                        <div class="mt-2">
-                            <span class="badge bg-success">Applied: <%= appliedCoupon %></span>
-                            <button class="btn btn-sm btn-danger ms-2" id="removeCouponBtn">Remove</button>
-                        </div>
-                    <% } %>
-                </div>
-
-                <div class="d-flex justify-content-between mt-2">
-                    <span>Coupon Applied</span>
-                    <span class="text-success fw-bold">- ₹<%= discountAmount %></span>
-                </div>
-            <!-- <div class="d-flex justify-content-between mt-2">
-                <span>Offer</span>
-                <span><%=appliedCoupon %> %</span>
-            </div> -->
-            <hr>
-            <div class="d-flex justify-content-between fw-bold">
-                <span>Total</span>
-                <span>₹ <%= total.toLocaleString('en-IN') %></span>
+            <div class="summary-row">
+                <span class="text-muted">Delivery</span>
+                <span class="fw-600">₹ <%= deliveryCharge || 0 %></span>
             </div>
 
-            <!-- Proceed to Payment button -->
-            <div class="text-center my-4">
+            <div class="coupon-section">
+                <label class="fw-bold small mb-2 d-block">Apply Coupon</label>
+                <a href="/my-coupons" class="text-decoration-none small fw-bold text-primary d-block mb-2">
+                    <i class="bi bi-ticket-perforated me-1"></i> View Coupons
+                </a>
+
+           <div id="applyCouponBox">
+        <div class="input-group">
+            <input type="text" id="couponCode" class="form-control" placeholder="Code">
+            <button class="btn btn-dark" id="applyCouponBtn">Apply</button>
+        </div>
+    </div>
+
+    <div id="appliedCouponBox" class="d-none mt-2 d-flex align-items-center justify-content-between bg-white p-2 rounded border">
+        <span  class="badge bg-success" id="appliedCouponCode"></span>
+        <button class="btn btn-sm text-danger fw-bold" id="removeCouponBtn">Remove</button>
+    </div>
+            </div>
+
+            <div class="summary-row text-success fw-bold">
+                <span>Discount Applied</span>
+                <span id="couponDiscount">- ₹<%= discountAmount %></span>
+            </div>
+            
+            <hr class="my-3">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <span id="total" class="h5 fw-bold mb-0">Total</span>
+                <span id="totalAmount" class="h4 fw-800 text-dark mb-0">₹ <%= total.toLocaleString('en-IN') %></span>
+            </div>
+
+            <div class="mobile-fix-btn">
                 <button id="proceedBtn" class="btn-yellow" disabled>Proceed to Payment</button>
             </div>
         </div>
@@ -245,7 +339,7 @@
         });
     });
 
-   
+    
    document.getElementById('proceedBtn').addEventListener('click', async () => {
 
     if (!selectedAddress) {
@@ -276,13 +370,19 @@
 });
 
     //coupon
+const applyBox = document.getElementById("applyCouponBox");
+const appliedBox = document.getElementById("appliedCouponBox");
+const appliedCode = document.getElementById("appliedCouponCode");
+const couponDiscount = document.getElementById("couponDiscount");
+const totalAmountEl = document.getElementById("totalAmount");
+let originalTotal = Number(
+    totalAmountEl.innerText.replace(/[₹, ]/g, "")
+);
 
-    document.getElementById("applyCouponBtn")?.addEventListener("click", async () => {
+document.getElementById("applyCouponBtn")?.addEventListener("click", async () => {
     const code = document.getElementById("couponCode").value.trim();
-
     if (!code) {
-        Swal.fire("Error", "Please enter a coupon code", "warning");
-        return;
+        return Swal.fire("Error", "Enter coupon code", "warning");
     }
 
     const res = await fetch("/apply-coupon", {
@@ -294,28 +394,53 @@
     const data = await res.json();
 
     if (data.success) {
-        Swal.fire("Success", data.message, "success")
-            .then(() => location.reload());
+
+       
+        let totalPrice = Number(
+            totalAmountEl.innerText.replace(/[₹, ]/g, "")
+        );
+
+       
+        totalPrice -= data.discountAmount;
+
+        
+        appliedCode.innerText = data.code;
+        couponDiscount.innerText = `- ₹${data.discountAmount}`;
+        totalAmountEl.innerText = `₹ ${totalPrice.toLocaleString('en-IN')}`;
+
+        applyBox.classList.add("d-none");
+        appliedBox.classList.remove("d-none");
+
+        Swal.fire("Success", data.message, "success");
+
     } else {
         Swal.fire("Error", data.message, "error");
     }
 });
 
 document.getElementById("removeCouponBtn")?.addEventListener("click", async () => {
-    const res = await fetch("/remove-coupon", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" }
-    });
-
+    const res = await fetch("/remove-coupon", { method: "POST" });
     const data = await res.json();
 
     if (data.success) {
-        Swal.fire("Removed", data.message, "success")
-            .then(() => location.reload());
+
+     
+        totalAmountEl.innerText = `₹ ${originalTotal.toLocaleString('en-IN')}`;
+
+        couponDiscount.innerText = "- ₹0";
+        document.getElementById("couponCode").value = "";
+
+        applyBox.classList.remove("d-none");
+        appliedBox.classList.add("d-none");
+
+        Swal.fire("Removed", data.message, "success");
+
     } else {
         Swal.fire("Error", data.message, "error");
     }
 });
+
+
 
 
 </script>
