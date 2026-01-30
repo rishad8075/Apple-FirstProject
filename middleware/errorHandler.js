@@ -1,5 +1,6 @@
 module.exports = (err, req, res, next) => {
- console.error(`[${req.method}] ${req.originalUrl} → ${err.message} ${err}`);
+//  console.error(`[${req.method}] ${req.originalUrl} → ${err.message} ${err}`);
+console.log(err)
 
 
   let statusCode = err.statusCode || 500;

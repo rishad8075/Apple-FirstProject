@@ -192,34 +192,53 @@ const verifyOtp = async (req, res) => {
       await newUser.save();
 
      
-      if (userData.referralCode) {
-        const referrer = await User.findOne({ referralCode: userData.referralCode });
+            if (userData.referralCode) {
+        const referrer = await User.findOne({
+            referralCode: userData.referralCode
+        });
+
         if (referrer) {
+
         
-          let wallet = await Wallet.findOne({ userId: referrer._id });
+            const existingWallet = await Wallet.findOne({ userId: newUser._id });
 
-          if (!wallet) {
-            wallet = new Wallet({
-              userId: referrer._id,
-              balance: 0,
-              transactions: []
+            if (!existingWallet) {
+            await Wallet.create({
+                userId: newUser._id,
+                balance: 50,
+                transactions: [{
+                amount: 50,
+                type: "CREDIT",
+                source: "SIGNUP_BONUS",
+                description: "Signup reward",
+                date: new Date()
+                }]
             });
-          }
+            }
 
-         
-          const rewardAmount = 100;
-          wallet.balance += rewardAmount;
-          wallet.transactions.push({
-            amount: rewardAmount,
+
+            let wallet = await Wallet.findOne({ userId: referrer._id });
+
+            if (!wallet) {
+            wallet = new Wallet({
+                userId: referrer._id,
+                balance: 0,
+                transactions: []
+            });
+            }
+
+            wallet.balance += 100;
+            wallet.transactions.push({
+            amount: 100,
             type: "CREDIT",
             source: "REFERRAL",
             description: `Referral reward from ${newUser.name}`,
             date: new Date()
-          });
+            });
 
-          await wallet.save();
+            await wallet.save();
         }
-      }
+        }
 
       req.session.userId = newUser._id;
 
