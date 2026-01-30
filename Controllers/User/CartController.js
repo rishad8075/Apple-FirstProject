@@ -91,7 +91,7 @@ const getCart = async (req, res,next) => {
           if (!product) return null; 
 
          
-          if (product.isBlocked) return null;
+          // if (product.isBlocked) return null;
 
         
           const category = await Category.findById(product.category).lean();

@@ -29,6 +29,15 @@ const getCheckoutPage = async (req, res,next) => {
 
     const cart = await Cart.findOne({ userId }).populate("items.productId");
     if (!cart || cart.items.length === 0) return res.redirect("/cart");
+    
+     for (let item of cart.items) {
+      const product = await Product.findById(item.productId);
+      if (product && product.isBlocked) {
+        
+       return res.json({success:false,message:`product ${product.productName} is Blocked please remove from cart`})
+       
+      }
+    }
 
     
     const items = cart.items.map(item => {
@@ -837,6 +846,33 @@ const retryVerifyPayment = async(req,res)=>{
 }
 
 
+const validateCheckout = async (req, res) => {
+  const userId = req.session.userId;
+  if (!userId) {
+    return res.json({ success: false, message: "Please login first" });
+  }
+
+  const cart = await Cart.findOne({ userId }).populate("items.productId");
+  if (!cart || cart.items.length === 0) {
+    return res.json({ success: false, message: "Cart is empty" });
+  }
+
+  const blockedProduct = await Product.findOne({
+    _id: { $in: cart.items.map(i => i.productId) },
+    isBlocked: true
+  });
+
+  if (blockedProduct) {
+    return res.json({
+      success: false,
+      message: `Product "${blockedProduct.productName}" is blocked. Remove it from cart.`
+    });
+  }
+
+  return res.json({ success: true });
+};
+
+
 module.exports = {
     getCheckoutPage,
     checkoutAdd_Address,
@@ -853,4 +889,5 @@ module.exports = {
     retryRazorpayPayment,
     retryVerifyPayment,
     validateStock,
+    validateCheckout,
 };

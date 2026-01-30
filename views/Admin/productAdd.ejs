@@ -151,7 +151,8 @@
         <!-- Product Name -->
         <div class="mb-3">
           <label class="form-label">Product Name</label>
-          <input name="productName" class="form-control" placeholder="Enter product name" required>
+          <input name="productName" class="form-control" placeholder="Enter product name">
+          <div class="text-danger small error-Name"></div>
         </div>
 
         <!-- Category -->
@@ -168,6 +169,7 @@
         <div class="mb-3">
           <label class="form-label">Description</label>
           <textarea name="description" class="form-control" rows="3" placeholder="Enter product description"></textarea>
+          <div class="text-danger small error-description"></div>
         </div>
 
         <!-- Hidden JSON for variants -->
@@ -203,28 +205,34 @@
         <div class="col-md-3 mb-2">
           <label class="form-label">Color</label>
           <input type="text" class="form-control attr-color" placeholder="e.g. Space Gray">
+          <div class="text-danger small error-color"></div>
         </div>
         <div class="col-md-3 mb-2">
           <label class="form-label">Storage</label>
           <input type="text" class="form-control attr-storage" placeholder="e.g. 256GB">
+          <div class="text-danger small error-storage"></div>
         </div>
         <div class="col-md-2 mb-2">
           <label class="form-label">Regular Price</label>
           <input type="number" class="form-control variant-regularPrice" min="0">
+          <div class="text-danger small error-regularPrice"></div>
         </div>
         <div class="col-md-2 mb-2">
           <label class="form-label">Sale Price</label>
           <input type="number" class="form-control variant-salePrice" min="0">
+          <div class="text-danger small error-salePrice"></div>
         </div>
         <div class="col-md-2 mb-2">
           <label class="form-label">Stock</label>
           <input type="number" class="form-control variant-stock" min="0">
+          <div class="text-danger small error-stock"></div>
         </div>
       </div>
 
       <div class="mb-2">
         <label class="form-label">Product Offer (%)</label>
         <input type="number" class="form-control variant-offer" min="0" value="0">
+        <div class="text-danger small error-Offer"></div>
       </div>
 
       <!-- Images -->
@@ -234,6 +242,8 @@
         <input type="file" accept="image/*" class="d-none variant-file-input" multiple>
         <button type="button" class="btn btn-sm btn-outline-light pick-images-btn">Choose images</button>
         <small class="text-muted ms-2">Crop each image after selection</small>
+        <div class="text-danger small error-Images"></div>
+
       </div>
     </div>
   </template>
@@ -330,61 +340,154 @@
       boxes.forEach((b, i) => b.querySelector('.variant-index').innerText = i + 1);
     }
 
-    document.getElementById('productForm').addEventListener('submit', function(e) {
-      const boxes = document.querySelectorAll('.variant-box');
-      if (!boxes.length) {
-        e.preventDefault();
-        Swal.fire({ icon:'warning', title:'Add at least one variant' });
-        return;
-      }
 
-      const variantsToSend = [];
-      let allGood = true;
 
-      boxes.forEach((box, idx) => {
-        const color = box.querySelector('.attr-color').value.trim();
-        const storage = box.querySelector('.attr-storage').value.trim();
-        const regularPrice = box.querySelector('.variant-regularPrice').value;
-        const salePrice = box.querySelector('.variant-salePrice').value;
-        const stock = box.querySelector('.variant-stock').value;
-        const offer = box.querySelector('.variant-offer').value || 0;
+    function validateProductForm() {
+  let valid = true;
 
-        if (!color || !storage || !regularPrice || !salePrice || !stock) allGood = false;
-        const dt = variantFileStores[idx];
-        if (!dt || dt.files.length < 3) allGood = false;
+  const nameInput = document.querySelector('input[name="productName"]');
+  const descInput = document.querySelector('textarea[name="description"]');
 
-        variantsToSend.push({
-          attributes: { Color: color, storage: storage },
-          regularPrice: Number(regularPrice),
-          salePrice: Number(salePrice),
-          productOffer: Number(offer),
-          stock: Number(stock),
-          fileFieldName: `variant_images_${idx}[]`,
-          fileCount: dt ? dt.files.length : 0
-        });
-      });
+  document.querySelector('.error-Name').innerText = '';
+  document.querySelector('.error-description').innerText = '';
 
-      if (!allGood) {
-        e.preventDefault();
-        Swal.fire({ icon: 'error', title: 'Validation failed', html: 'Every variant must have Color, Storage, prices, stock, and at least <strong>3 images</strong>.' });
-        return;
-      }
+  if (!nameInput.value.trim()) {
+    document.querySelector('.error-Name').innerText = 'Product name is required.';
+    valid = false;
+  }
 
-      // Attach files
-      document.querySelectorAll('.hidden-variant-files').forEach(n => n.remove());
-      variantFileStores.forEach((dt, idx) => {
-        if (!dt) return;
-        const input = document.createElement('input');
-        input.type = 'file';
-        input.name = `variant_images_${idx}[]`;
-        input.multiple = true;
-        input.className = 'hidden-variant-files d-none';
-        input.files = dt.files;
-        document.getElementById('productForm').appendChild(input);
-      });
+  if (!descInput.value.trim()) {
+    document.querySelector('.error-description').innerText = 'Description is required.';
+    valid = false;
+  }
 
-      document.getElementById('variantsJson').value = JSON.stringify(variantsToSend);
+  return valid;
+}
+
+// Validate a single variant
+function validateVariant(box) {
+  let valid = true;
+  const idx = Array.from(document.querySelectorAll('.variant-box')).indexOf(box);
+  const dt = variantFileStores[idx];
+
+  const color = box.querySelector('.attr-color');
+  const storage = box.querySelector('.attr-storage');
+  const regularPrice = box.querySelector('.variant-regularPrice');
+  const salePrice = box.querySelector('.variant-salePrice');
+  const stock = box.querySelector('.variant-stock');
+  const offer = box.querySelector('.variant-offer');
+
+  // Clear previous errors
+  box.querySelectorAll('.text-danger').forEach(div => div.innerText = '');
+
+  if (!color.value.trim()) {
+    box.querySelector('.error-color').innerText = 'Color is required.';
+    valid = false;
+  }
+
+  if (!storage.value.trim()) {
+    box.querySelector('.error-storage').innerText = 'Storage is required.';
+    valid = false;
+  }
+
+  if (!regularPrice.value || Number(regularPrice.value) < 0) {
+    box.querySelector('.error-regularPrice').innerText = 'Regular price must be >= 0.';
+    valid = false;
+  }
+
+  if (!salePrice.value || Number(salePrice.value) < 0) {
+    box.querySelector('.error-salePrice').innerText = 'Sale price must be >= 0.';
+    valid = false;
+  }
+
+  if (Number(salePrice.value) > Number(regularPrice.value)) {
+    box.querySelector('.error-salePrice').innerText = 'Sale price cannot exceed regular price.';
+    valid = false;
+  }
+
+  if (!stock.value || Number(stock.value) < 0) {
+    box.querySelector('.error-stock').innerText = 'Stock must be >= 0.';
+    valid = false;
+  }
+
+  if (!offer.value || Number(offer.value) < 0) {
+    box.querySelector('.error-Offer').innerText = 'Offer must be >= 0.';
+    valid = false;
+  }
+
+  if (!dt || dt.files.length < 3) {
+    box.querySelector('.error-Images').innerText = 'At least 3 images are required.';
+    valid = false;
+  }
+
+  return valid;
+}
+
+
+function attachVariantLiveValidation(box) {
+  box.querySelectorAll('input').forEach(input => {
+    input.addEventListener('input', () => validateVariant(box));
+  });
+}
+
+document.getElementById('productForm').addEventListener('submit', function(e) {
+  let formValid = validateProductForm();
+
+  const variantBoxes = document.querySelectorAll('.variant-box');
+  if (!variantBoxes.length) {
+    Swal.fire({ icon:'warning', title:'Add at least one variant' });
+    e.preventDefault();
+    return;
+  }
+
+  variantBoxes.forEach(box => {
+    const variantValid = validateVariant(box);
+    if (!variantValid) formValid = false;
+  });
+
+  if (!formValid) {
+    e.preventDefault();
+    Swal.fire({ icon:'error', title:'Validation failed', html:'Please fix all errors.' });
+    return;
+  }
+
+  const variantsToSend = [];
+  variantBoxes.forEach((box, idx) => {
+    const color = box.querySelector('.attr-color').value.trim();
+    const storage = box.querySelector('.attr-storage').value.trim();
+    const regularPrice = box.querySelector('.variant-regularPrice').value;
+    const salePrice = box.querySelector('.variant-salePrice').value;
+    const stock = box.querySelector('.variant-stock').value;
+    const offer = box.querySelector('.variant-offer').value || 0;
+
+    const dt = variantFileStores[idx];
+
+    variantsToSend.push({
+      attributes: { Color: color, storage: storage },
+      regularPrice: Number(regularPrice),
+      salePrice: Number(salePrice),
+      productOffer: Number(offer),
+      stock: Number(stock),
+      fileFieldName: `variant_images_${idx}[]`,
+      fileCount: dt ? dt.files.length : 0
     });
+  });
+
+  // Attach files
+  document.querySelectorAll('.hidden-variant-files').forEach(n => n.remove());
+  variantFileStores.forEach((dt, idx) => {
+    if (!dt) return;
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.name = `variant_images_${idx}[]`;
+    input.multiple = true;
+    input.className = 'hidden-variant-files d-none';
+    input.files = dt.files;
+    document.getElementById('productForm').appendChild(input);
+  });
+
+  document.getElementById('variantsJson').value = JSON.stringify(variantsToSend);
+});
 
     document.getElementById('addVariantBtn').addEventListener('click', () => addVariant());
     addVariant(); // first variant by default

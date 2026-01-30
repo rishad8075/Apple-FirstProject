@@ -5,6 +5,8 @@ const checkBlock = require("../../middleware/checkBlock");
 
 
 router.get("/checkout", auth,checkBlock, checkout.getCheckoutPage);
+router.get("/checkout/validate", auth,checkBlock, checkout.validateCheckout);
+
 router.get("/checkout/AddAddress", auth, checkout.checkoutAdd_Address);
 router.post("/checkout/AddAddress", auth, checkout.checkoutAddAddress);
 
