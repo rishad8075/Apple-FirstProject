@@ -166,9 +166,9 @@ class="btn btn-outline-success btn-sm">
     && firstItem.status !== 'Return Requested') { %>
 
     <!-- Show FULL ORDER RETURN only once -->
-    <button class="return-order-btn" data-orderid="<%= order.orderId %>">
-        Return Full Order
-    </button>
+     <button class="btn btn-outline-warning btn-sm return-order-btn" data-orderid="<%= order.orderId %>">
+                        Return Full Order
+                    </button>
 
     <!-- Show SINGLE PRODUCT RETURN inside loop -->
   

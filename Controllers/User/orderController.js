@@ -64,6 +64,7 @@ const listOrders = async (req, res,next) => {
 const orderDetail = async (req, res,next) => {
     try {
         const orderId = req.params.orderId; 
+        const user = await User.findById(req.session.userId)
         const order = await Orders.findById(orderId);
         if (!order) {
           const error = new Error("Order NOTFound");
@@ -71,7 +72,7 @@ const orderDetail = async (req, res,next) => {
           throw error
         }
 
-        res.render("User/order-detail", { order, activeLink: 'orders' });
+        res.render("User/order-detail", { user,order, activeLink: 'orders' });
     } catch (error) {
        next(error)
     }

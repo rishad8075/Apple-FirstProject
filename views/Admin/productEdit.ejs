@@ -26,32 +26,15 @@
     .cropper-dialog{width:90%;max-width:900px;background:#111;padding:12px;border-radius:8px;}
     .variant-thumb-container{position:relative;display:inline-block;margin:2px;}
     .variant-thumb-container button{position:absolute;top:-6px;right:-6px;background:#c82333;border:none;color:#fff;border-radius:50%;width:22px;height:22px;font-size:12px;line-height:18px;cursor:pointer;}
+     @media (max-width: 992px) {
+            .main-content { margin-left: 0; padding: 1.5rem; }
+            .page-header { flex-direction: column; align-items: flex-start; }
+        }
   </style>
 </head>
 <body>
 
-<div class="sidebar">
-  <h4 class="text-center">Admin</h4>
- <a href="/admin"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
-    <a href="/admin/users"><i class="fas fa-users"></i> Users</a>
-    <a href="/admin/orders"><i class="fas fa-users"></i> Orders</a>
-    <li class="nav-item">
-    <a class="nav-link text-white" href="/admin/returns">
-        <i class="fas fa-undo-alt"></i> Return Requests </a>
-</li>
-  <a class="nav-link text-white" href="/admin/coupons">
-        <i class="fas fa-undo-alt"></i>  Coupon </a> 
-</li>
-
-    <a class="nav-link text-white" href="/admin/sales/report">
-        <i class="fas fa-undo-alt"></i> salesReport </a>
-
-
-    <a href="/admin/products"><i class="fas fa-box"></i> Products</a>
-    <a href="/admin/addProducts"><i class="fas fa-plus"></i> Add Product</a>
-    <a href="/admin/category"><i class="fas fa-tags"></i> Categories</a>
-    <a href="/admin/logout" class="text-danger"><i class="fas fa-sign-out-alt"></i> Logout</a>
-</div>
+<%- include("../partials/adminSide-bar.ejs") %>
 
 <div class="main-content">
   <div class="card p-4">
