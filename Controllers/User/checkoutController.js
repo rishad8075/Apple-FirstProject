@@ -329,7 +329,7 @@ const validateStock = async (req, res) => {
 
 
 
-// PLACE ORDER (COD or Wallet) with coupon
+
 const placeOrder = async (req, res) => {
   try {
     const userId = req.session.userId;
@@ -584,20 +584,23 @@ const verifyRazorpayPayment = async (req, res) => {
 };
 
 // Order Success Page
-const orderSuccessPage = async (req, res) => {
+const orderSuccessPage = async (req, res,next) => {
     try {
         const orderId = req.params.orderId;
         const order = await Orders.findById(orderId);
         const user = await User.findById(req.session.userId);
-        if (!order) return res.redirect("/");
+        if (!order){
+          const error = new Error("Order notFound");
+          error.statusCode = 404;
+          throw error
+        }
         res.render("User/order-success", { order, user });
     } catch (err) {
-        console.error(err);
-        res.redirect("/");
+        next(err)
     }
 };
 
-const orderFailurePage = async (req, res) => {
+const orderFailurePage = async (req, res,next) => {
     try {
        
         const reason = req.query.reason || "Transaction failed";
@@ -605,8 +608,7 @@ const orderFailurePage = async (req, res) => {
         
         res.render("User/order-failure", { reason });
     } catch (err) {
-        console.error(err);
-        res.redirect("/checkout");
+        next(err)
     }
 };
 
