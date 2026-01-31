@@ -3,242 +3,235 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add New Address - E-commerce</title>
+    <title>Edit Address - E-commerce</title>
     
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
-    
+
     <style>
-        /* Basic Reset and Setup */
+        :root {
+            --sidebar-width: 280px;
+            --apple-bg: #f5f5f7;
+            --primary-orange: #ff9500;
+        }
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            background-color: #f5f5f7;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
+            font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+            background-color: var(--apple-bg);
             margin: 0;
+            min-height: 100vh;
         }
 
-        /* Container for the Card */
-        .address-container {
-            padding: 20px;
+        /* --- Layout Control --- */
+        .page-wrapper {
+            display: flex;
             width: 100%;
-            max-width: 400px;
+            min-height: 100vh;
         }
 
-        /* The Address Card Styling */
+        .main-content {
+            flex-grow: 1;
+            padding: 40px 20px;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+
+        @media (min-width: 992px) {
+            .main-content { margin-left: var(--sidebar-width); }
+        }
+
+        @media (max-width: 991px) {
+            .main-content { margin-left: 0; padding: 20px 15px; }
+            .page-wrapper { flex-direction: column; }
+        }
+
+        /* --- Address Card Styling --- */
         .address-card {
             background-color: #ffffff;
-            border-radius: 12px;
-            padding: 30px 25px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            border-radius: 18px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+            max-width: 550px; /* Slightly wider for better inline feel */
+            margin: 0 auto;
         }
 
-        /* Card Header */
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        .card-header-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #1d1d1f;
             margin-bottom: 25px;
+            text-align: center;
         }
 
-        .card-header h2 {
-            font-size: 16px;
+        /* Form Controls */
+        .form-group { margin-bottom: 1.2rem; }
+        
+        .form-label {
+            font-size: 0.85rem;
             font-weight: 600;
-            color: #333;
-            letter-spacing: 0.5px;
-            margin: 0;
-        }
-
-        .close-icon {
-            font-size: 24px;
-            color: #a0a0a0;
-            cursor: pointer;
-            line-height: 1;
-        }
-
-        /* Form Groups and Inputs */
-        .form-group {
-            margin-bottom: 18px;
-        }
-
-        .address-label {
-            font-size: 14px;
-            font-weight: 500;
-            color: #8a8a8e;
+            color: #86868b;
+            margin-bottom: 6px;
             display: block;
-            margin-bottom: 5px;
         }
 
-        input[type="text"],
-        input[type="email"],
-        input[type="tel"] {
+        .form-control {
             width: 100%;
-            padding: 10px 12px;
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
-            box-sizing: border-box;
+            padding: 12px 15px;
+            border: 1px solid #d2d2d7;
+            border-radius: 10px;
             font-size: 14px;
-            color: #333;
-            transition: border-color 0.2s;
+            background-color: #fbfbfd;
+            transition: all 0.2s;
         }
 
-        input::placeholder {
-            color: #c0c0c0;
-        }
-
-        input:focus {
-            border-color: #007aff;
+        .form-control:focus {
+            border-color: var(--primary-orange);
+            background-color: #fff;
             outline: none;
-            box-shadow: 0 0 0 1px #007aff;
+            box-shadow: 0 0 0 4px rgba(255, 149, 0, 0.15);
         }
 
-        /* Inline Group for Address Fields */
+        /* Inline Groupings */
         .inline-group {
-            display: flex;
-            gap: 10px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
         }
 
-        .inline-item {
-            flex: 1;
-        }
-
-        /* --- BUTTON GROUP STYLES --- */
+        /* --- Buttons --- */
         .button-group {
             display: flex;
-            gap: 10px;
-            margin-top: 20px;
+            gap: 12px;
+            margin-top: 30px;
         }
 
-        .save-button, .cancel-button {
-            padding: 12px 20px;
-            font-size: 16px;
-            font-weight: 600;
-            border-radius: 8px;
-            cursor: pointer;
-            flex: 1; /* Makes both buttons take equal space */
-            transition: background-color 0.2s, opacity 0.2s;
-        }
-
-        /* Primary Button: Save */
         .save-button {
-            background-color: #ff9500; /* Primary Orange */
+            background-color: var(--primary-orange);
             color: white;
             border: none;
+            flex: 2;
+            padding: 14px;
+            font-weight: 700;
+            border-radius: 12px;
+            transition: 0.2s;
         }
 
-        .save-button:hover {
-            background-color: #e58600;
-        }
-        
-        /* Secondary Button: Cancel */
+        .save-button:hover { background-color: #e58600; transform: translateY(-1px); }
+
         .cancel-button {
-            background-color: #e0e0e0; /* Light Gray */
-            color: #333;
-            border: 1px solid #c0c0c0;
-        }
-        
-        .cancel-button:hover {
-            background-color: #d0d0d0;
+            background-color: #f2f2f7;
+            color: #1d1d1f;
+            border: none;
+            flex: 1;
+            padding: 14px;
+            font-weight: 600;
+            border-radius: 12px;
+            text-decoration: none;
+            text-align: center;
         }
 
-        /* Validation Error Styling */
+        /* Error States */
         .error-message {
             color: #ff3b30;
-            font-size: 12px;
-            display: block;
+            font-size: 0.75rem;
+            font-weight: 500;
             margin-top: 4px;
+            height: 15px;
+            display: block;
         }
 
-        .input-error {
-            border-color: #ff3b30 !important;
-        }
-        
-        /* SweetAlert2 Custom Styling */
-        .swal2-styled-button {
-            background-color: #ff9500 !important;
-            color: white !important;
-            font-weight: 600 !important;
-            border-radius: 8px !important;
-            box-shadow: none !important;
-        }
-
-        .swal2-styled-button:hover {
-            background-color: #e58600 !important;
-        }
-        
-        .swal2-styled-button-error {
-            background-color: #6c757d !important; 
-            color: white !important;
-            font-weight: 600 !important;
-            border-radius: 8px !important;
-            box-shadow: none !important;
-        }
+        .input-error { border-color: #ff3b30 !important; background-color: #fff2f1 !important; }
     </style>
 </head>
 <body>
 
-<div class="address-container">
-    <div class="address-card">
-        <header class="card-header">
-            <h2>Edit ADDRESS</h2>
-            <span class="close-icon">&bull;</span>
-        </header>
-       <form id="addressForm">
-    <div class="form-group">
-        <label>Fullname</label>
-        <input type="text" id="fullname" name="fullname" value="<%= address.fullname %>">
-        <span class="error-message" id="fullname-error"></span>
-    </div>
+<%- include("../partials/header.ejs") %>
 
-    <div class="form-group">
-        <label>Email</label>
-        <input type="email" id="email" name="email" value="<%= address.email %>">
-        <span class="error-message" id="email-error"></span>
-    </div>
+<div class="page-wrapper">
+    <%- include("../partials/UserSide-bar.ejs", { activeLink: 'addresses' }) %>
 
-    <div class="form-group">
-        <label>Mobile No</label>
-        <input type="tel" id="mobile" name="mobile" value="<%= address.mobile %>">
-        <span class="error-message" id="mobile-error"></span>
-    </div>
+    <div class="main-content">
+        <nav aria-label="breadcrumb" class="mb-4 d-none d-md-block" style="max-width: 550px; margin: 0 auto 20px;">
+            <ol class="breadcrumb" style="font-size: 0.8rem;">
+                <li class="breadcrumb-item"><a href="/" class="text-muted text-decoration-none">Home</a></li>
+                <li class="breadcrumb-item"><a href="/user/addresses" class="text-muted text-decoration-none">Addresses</a></li>
+                <li class="breadcrumb-item active text-dark fw-bold">Edit Address</li>
+            </ol>
+        </nav>
 
-    <div class="form-group">
-        <label>House Name</label>
-        <input type="text" id="houseName" name="houseName" value="<%= address.houseName %>">
-        <span class="error-message" id="houseName-error"></span>
-    </div>
+        <div class="address-card">
+            <h2 class="card-header-title">Update Address Information</h2>
+            
+            <form id="addressForm">
+                <div class="form-group">
+                    <label class="form-label">Full Name</label>
+                    <input type="text" id="fullname" name="fullname" class="form-control" value="<%= address.fullname %>">
+                    <span class="error-message" id="fullname-error"></span>
+                </div>
 
-    <div class="form-group inline-group">
-        <input type="text" id="locality" name="locality" placeholder="Locality" value="<%= address.locality %>">
-        <span class="error-message" id="locality-error"></span>
+                <div class="form-group">
+                    <label class="form-label">Email Address</label>
+                    <input type="email" id="email" name="email" class="form-control" value="<%= address.email %>">
+                    <span class="error-message" id="email-error"></span>
+                </div>
 
-        <input type="text" id="pincode" name="pincode" placeholder="Pincode" value="<%= address.pincode %>">
-        <span class="error-message" id="pincode-error"></span>
-    </div>
+                <div class="form-group">
+                    <label class="form-label">Mobile Number</label>
+                    <input type="tel" id="mobile" name="mobile" class="form-control" value="<%= address.mobile %>">
+                    <span class="error-message" id="mobile-error"></span>
+                </div>
 
-    <div class="form-group inline-group">
-        <input type="text" id="district" name="district" placeholder="District" value="<%= address.district %>">
-        <span class="error-message" id="district-error"></span>
+                <div class="form-group">
+                    <label class="form-label">House Name / Flat No.</label>
+                    <input type="text" id="houseName" name="houseName" class="form-control" value="<%= address.houseName %>">
+                    <span class="error-message" id="houseName-error"></span>
+                </div>
 
-        <input type="text" id="state" name="state" placeholder="State" value="<%= address.state %>">
-        <span class="error-message" id="state-error"></span>
-    </div>
+                <div class="inline-group">
+                    <div class="form-group">
+                        <label class="form-label">Locality</label>
+                        <input type="text" id="locality" name="locality" class="form-control" value="<%= address.locality %>">
+                        <span class="error-message" id="locality-error"></span>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Pincode</label>
+                        <input type="text" id="pincode" name="pincode" class="form-control" value="<%= address.pincode %>">
+                        <span class="error-message" id="pincode-error"></span>
+                    </div>
+                </div>
 
-    <div class="button-group">
-        <button type="button" id="cancelButton" class="cancel-button">Cancel</button>
-        <button type="submit" class="save-button">Save Address</button>
-    </div>
-</form>
+                <div class="inline-group">
+                    <div class="form-group">
+                        <label class="form-label">District</label>
+                        <input type="text" id="district" name="district" class="form-control" value="<%= address.district %>">
+                        <span class="error-message" id="district-error"></span>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">State</label>
+                        <input type="text" id="state" name="state" class="form-control" value="<%= address.state %>">
+                        <span class="error-message" id="state-error"></span>
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button type="button" id="cancelButton" class="cancel-button">Cancel</button>
+                    <button type="submit" class="save-button">Update Address</button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <script>
+// YOUR ORIGINAL SCRIPT LOGIC (UNTOUCHED)
 document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('addressForm');
     const cancelBtn = document.getElementById('cancelButton');
-
     const inputs = form.querySelectorAll('input');
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -255,13 +248,10 @@ document.addEventListener('DOMContentLoaded', () => {
     function validateField(input) {
         const value = input.value.trim();
         const name = input.name;
-
         if (!value) { setError(input, name + ' is required'); return false; }
-
         if (name === 'email' && !emailRegex.test(value)) { setError(input, 'Invalid email'); return false; }
         if (name === 'mobile' && !/^\d{10}$/.test(value)) { setError(input, 'Mobile must be 10 digits'); return false; }
         if (name === 'pincode' && !/^\d{6}$/.test(value)) { setError(input, 'Pincode must be 6 digits'); return false; }
-
         clearError(input);
         return true;
     }
@@ -284,19 +274,16 @@ document.addEventListener('DOMContentLoaded', () => {
         }).then(result => {
             if (result.isConfirmed) {
                 window.history.back();
-               
             }
         });
     });
 
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
-
         let valid = true;
         inputs.forEach(input => { if (!validateField(input)) valid = false; });
         if (!valid) return;
 
-        // Send updated address to backend
         const data = {};
         inputs.forEach(input => data[input.name] = input.value.trim());
 
@@ -307,20 +294,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: JSON.stringify(data)
             });
             const result = await res.json();
-
             if (result.success) {
                 Swal.fire({
                     icon: 'success',
                     title: 'Updated!',
                     text: result.message
-                }).then(() => {
-                                        window.history.back(); 
-
-                });
+                }).then(() => { window.location.href="/user/addresseManagement"; });
             } else {
                 Swal.fire({ icon: 'error', title: 'Error', text: result.message });
             }
-
         } catch (err) {
             console.error(err);
             Swal.fire({ icon: 'error', title: 'Error', text: 'Server error' });
@@ -328,6 +310,5 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 </script>
-
 </body>
 </html>

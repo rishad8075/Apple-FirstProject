@@ -204,7 +204,9 @@ const getEditProfile = async (req, res,next) => {
          throw error
         }
 
-        res.render('User/editProfile', { user }); 
+        res.render('User/editProfile', { user,
+            activeLink:"profile"
+         }); 
 
     } catch (error) {
         next(error)
@@ -449,7 +451,7 @@ const userAddressManagement = async (req, res,next) => {
         const userId = req.session.userId;
         const user = await User.findById(userId)
         const page = req.query.page||1
-        const limit =2
+        const limit =4
 
         if(!user){
             const error = new Error('user Not Found');
@@ -552,7 +554,7 @@ const getEditAddress = async (req, res,next) => {
     try {
         const addressId = req.params.id;
         const userId = req.session.userId;
-
+        const user = await User.findById(userId)
         if (!userId) {
             const error = new Error("User not found, try again");
             error.statusCode = 404;
@@ -562,7 +564,7 @@ const getEditAddress = async (req, res,next) => {
         const address = await UserAddress.findOne({ _id: addressId, user: userId });
         if (!address) throw new Error("Address not found");
 
-        res.render("User/editAddress", { address });
+        res.render("User/editAddress", { address,user});
 
     } catch (error) {
       next(error)

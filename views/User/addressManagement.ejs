@@ -5,355 +5,352 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Address Management</title>
     
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-   <style>
-    /* Reset and Layout */
-    body {
-        background-color: #F5F5F5;
-        font-family: 'Plus Jakarta Sans', sans-serif;
-    }
-
-    .account-page-wrapper {
-        display: flex;
-        min-height: 100vh;
-        max-width: 1400px;
-        margin: 0 auto;
-    }
-
-    /* --- Responsive Sidebar Support --- */
-    .account-content {
-        flex-grow: 1;
-        padding: 40px 20px;
-        transition: all 0.3s ease;
-        /* Default margin for desktop (matches your sidebar width) */
-        margin-left: 260px; 
-    }
-
-    /* --- Titles and Buttons --- */
-    .my-addresses-title {
-        font-size: 24px;
-        font-weight: 700;
-        color: #333;
-        margin-bottom: 30px;
-        text-align: center;
-        text-transform: uppercase;
-    }
-
-    .btn-add-new-address {
-        display: block;
-        width: 100%;
-        max-width: 350px;
-        margin: 0 auto 40px auto;
-        padding: 12px 25px;
-        background-color: #FFD700 !important;
-        color: #000 !important;
-        border: 1px solid #000 !important;
-        border-radius: 8px;
-        font-size: 15px;
-        font-weight: 600;
-        transition: 0.3s;
-    }
-
-    .btn-add-new-address:hover {
-        background-color: #000 !important;
-        color: #fff !important;
-        transform: translateY(-2px);
-    }
-
-    /* --- Individual Address Card --- */
-    .address-display-card {
-        background-color: #fff;
-        padding: 20px;
-        border-radius: 12px;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-        max-width: 700px;
-        margin: 0 auto 20px auto;
-        position: relative;
-        border: 1px solid #eee;
-    }
-
-    .address-header {
-        display: flex;
-        align-items: flex-start;
-        gap: 15px;
-    }
-
-    .icon-container {
-        color: #FF9500;
-        font-size: 20px;
-        margin-top: 3px;
-    }
-
-    .address-details p {
-        margin-bottom: 4px;
-        color: #666;
-        font-size: 14px;
-    }
-
-    .full-name {
-        font-weight: 700;
-        color: #000;
-        font-size: 16px;
-        margin-bottom: 8px !important;
-    }
-
-    .default-tag {
-        background-color: #000;
-        color: #fff;
-        padding: 4px 12px;
-        border-radius: 4px;
-        font-size: 10px;
-        font-weight: 700;
-        letter-spacing: 1px;
-    }
-
-    /* --- Action Buttons --- */
-    .address-actions-bottom {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-        margin-top: 15px;
-        padding-top: 15px;
-        border-top: 1px solid #f0f0f0;
-    }
-
-    .address-actions-bottom .btn {
-        font-size: 13px;
-        font-weight: 600;
-        padding: 6px 15px;
-        border-radius: 6px;
-        border: 1px solid #ddd;
-        flex: 1; /* Makes buttons equal width on small screens */
-        min-width: 100px;
-    }
-
-    /* --- MOBILE RESPONSIVENESS --- */
-    @media (max-width: 992px) {
-        .account-content {
-            margin-left: 0; /* Remove sidebar margin on mobile */
-            padding: 20px 15px;
-        }
-        
-        .account-page-wrapper {
-            flex-direction: column;
+    <style>
+        :root {
+            --sidebar-width: 280px;
+            --primary-blue: #0071e3;
+            --apple-bg: #f5f5f7;
         }
 
-        .my-addresses-title {
-            font-size: 20px;
+        body {
+            background-color: var(--apple-bg);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            margin: 0;
         }
-    }
 
-    @media (max-width: 576px) {
-        .address-actions-bottom {
-            flex-direction: column; /* Stack buttons on very small screens */
-        }
-        .address-actions-bottom .btn {
+        /* --- Layout Logic --- */
+        .page-container {
+            display: flex;
             width: 100%;
+            min-height: 100vh;
         }
-       
-     
-    }
 
-    /* Error Styling */
-    .error-text { color: #dc3545; font-size: 0.85rem; margin-top: 3px; }
-    .form-error { border-color: #dc3545 !important; }
-</style>
+        .main-content {
+            flex-grow: 1;
+            padding: 30px;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+
+        /* Desktop: Add margin to prevent overlap with sidebar */
+        @media (min-width: 992px) {
+            .main-content {
+                margin-left: var(--sidebar-width);
+            }
+        }
+
+        /* Mobile: Remove margin and stack */
+        @media (max-width: 991px) {
+            .main-content {
+                margin-left: 0;
+                padding: 15px;
+            }
+            .page-container {
+                flex-direction: column;
+            }
+        }
+
+        /* --- UI Components --- */
+        .address-card {
+            background: #ffffff;
+            border-radius: 18px;
+            padding: 20px;
+            border: 1px solid rgba(0,0,0,0.05);
+            margin-bottom: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+            position: relative;
+        }
+
+        .address-card:hover {
+            border-color: var(--primary-blue);
+        }
+
+        .btn-add-address {
+            background: #000;
+            color: #fff;
+            border-radius: 12px;
+            font-weight: 600;
+            padding: 12px 20px;
+            border: none;
+            width: auto;
+            transition: 0.3s;
+        }
+
+        .btn-add-address:hover {
+            background: var(--primary-blue);
+            color: #fff;
+        }
+
+        @media (max-width: 576px) {
+            .btn-add-address {
+                width: 100%; /* Full width button on small phones */
+            }
+        }
+
+        /* Address Details */
+        .name-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .name-row h5 {
+            margin: 0;
+            font-weight: 700;
+            font-size: 1.05rem;
+        }
+
+        .badge-default {
+            background: #e8f3ff;
+            color: var(--primary-blue);
+            font-size: 0.65rem;
+            font-weight: 800;
+            padding: 4px 8px;
+            border-radius: 6px;
+            text-transform: uppercase;
+        }
+
+        .address-text {
+            color: #6e6e73;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            margin-bottom: 15px;
+        }
+
+        /* Actions */
+        .card-actions {
+            display: flex;
+            gap: 8px;
+            border-top: 1px solid #f2f2f2;
+            padding-top: 15px;
+        }
+
+        .action-link {
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 600;
+            padding: 6px 12px;
+            border-radius: 8px;
+            border: 1px solid #d2d2d7;
+            color: #1d1d1f;
+            flex: 1;
+            text-align: center;
+            transition: 0.2s;
+        }
+
+        .action-link:hover {
+            background: #f5f5f7;
+        }
+
+        .btn-remove {
+            color: #ff3b30;
+        }
+
+        /* Modal & Forms */
+        .modal-content {
+            border-radius: 24px;
+            border: none;
+        }
+        .form-control {
+            border-radius: 10px;
+            background: #f5f5f7;
+            border: 1px solid transparent;
+            padding: 12px;
+        }
+        .form-control:focus {
+            background: #fff;
+            border-color: var(--primary-blue);
+            box-shadow: none;
+        }
+        .error-text { color: #ff3b30; font-size: 0.75rem; margin-top: 4px; }
+    </style>
 </head>
 <body>
 
-    <%- include("../partials/header") %>
-    <nav aria-label="breadcrumb">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a style="text-decoration: none;color: #000;" href="/"><i class="fas fa-home"></i> Home</a></li>
-            <li class="breadcrumb-item"><a style="text-decoration: none;color: #000;" href="/user/profile">My Profile</a></li>
-            <li class="breadcrumb-item active">Address</li>
-        </ol>
-    </nav>
+<%- include("../partials/header") %>
 
-    <div class="account-page-wrapper">
-        
-        <%- include("../partials/UserSide-bar.ejs", { activeLink: 'addresses' }) %>
 
-        <div class="account-content">
-            
-            <h2 class="my-addresses-title">MY ADDRESSES</h2>
 
-            <button type="button" style="color: #000;margin-left: 22rem; background-color: #FFD700; box-shadow: #000;width: 19rem;" class="btn btn-add-new-address" data-bs-toggle="modal" data-bs-target="#addAddressModal">
-                ADD NEW ADDRESS+
+<div class="page-container">
+    <%- include("../partials/UserSide-bar.ejs", { activeLink: 'addresses' }) %>
+
+    <div class="main-content">
+        <div class="container-fluid bg-white border-bottom py-2">
+    <div class="ms-lg-5">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0" style="font-size: 0.8rem;">
+                <li class="breadcrumb-item"><a href="/" class="text-muted">Home</a></li>
+                <li class="breadcrumb-item"><a href="/user/profile" class="text-muted">Profile</a></li>
+                <li class="breadcrumb-item active text-dark fw-bold">Address</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+            <h3 class="fw-bold m-0">Shipping Addresses</h3>
+            <button class="btn-add-address" data-bs-toggle="modal" data-bs-target="#addAddressModal">
+                <i class="fas fa-plus me-2"></i>Add New Address
             </button>
-         
+        </div>
 
-          
+        <div class="row">
+            <% if (addresses.length === 0) { %>
+                <div class="col-12 text-center py-5">
+                    <p class="text-muted">No addresses found. Add one to get started!</p>
+                </div>
+            <% } %>
 
             <% addresses.forEach(addr => { %>
-                <div class="address-display-card">
-                    <div class="icon-container">
-                        <i class="fas fa-map-marker-alt"></i> 
+                <div class="col-12 col-xl-6 mb-3">
+                    <div class="address-card">
+                          <div class="icon-container" >
+
+                        <i class="fas fa-map-marker-alt"></i>
+
                     </div>
-                    <div class="address-details flex-grow-1">
-                        <p class="full-name"><%= addr.fullname %></p>
-                        <p><%= addr.houseName %>, <%= addr.locality %></p>
-                        <p><%= addr.district %>, <%= addr.state %> - <%= addr.pincode %></p>
-                        <p>Phone: <%= addr.mobile %></p>
-                        <div style="flex-grow: 1;"></div>
-                    </div>
-                    
-                    <% if (addr.isDefault) { %>
-                        <span class="default-tag">DEFAULT</span>
-                    <% } %>
+                        <div class="name-row">
+                            <h5><%= addr.fullname %></h5>
+                            <% if (addr.isDefault) { %>
+                                <span class="badge-default">Default</span>
+                            <% } %>
+                        </div>
+                        
+                        <div class="address-text">
+                            <div><%= addr.houseName %>, <%= addr.locality %></div>
+                            <div><%= addr.district %>, <%= addr.state %> - <strong><%= addr.pincode %></strong></div>
+                            <div class="mt-2 text-dark"><i class="fas fa-phone-alt me-2"></i><%= addr.mobile %></div>
+                        </div>
 
-                    <div class="address-actions-bottom">
-                        <button type="button" class="btn" onclick="editAddress('<%= addr._id %>')">Edit</button>
-
-                        <button type="button" class="btn btn-remove" data-id="<%= addr._id %>">Remove</button>
-
-                       <% if (!addr.isDefault) { %>
-                       <button 
-                            type="button" 
-                            class="btn btn-set-default" 
-                            data-id="<%= addr._id %>" 
-                            style="border-color:#FFD700; color: #FFD700;">
-                            Set Default
-                        </button>
-                    <% } %>
+                        <div class="card-actions">
+                            <button class="action-link" onclick="editAddress('<%= addr._id %>')">Edit</button>
+                            
+                            <button class="action-link btn-remove" data-id="<%= addr._id %>">Remove</button>
+                            
+                            <% if (!addr.isDefault) { %>
+                                <button class="action-link btn-set-default" data-id="<%= addr._id %>" style="color: var(--primary-blue);">
+                                    Set Default
+                                </button>
+                            <% } %>
+                        </div>
                     </div>
                 </div>
             <% }) %>
-      <% if (totalPage > 1) { %>
-<div class="mt-4 d-flex justify-content-center">
-    <ul class="pagination">
-        <% for(let i =1;i<totalPage;i++) {%>
-     <li class="page-item <%-(currentPage==i)?'active':''%>">
-        <a href="?page=<%=i%>" class="page-link"><%=i%></a>
-     </li>
+        </div>
 
-            <%}%>
-    </ul>
+        <% if (totalPage > 1) { %>
+            <nav class="mt-4">
+                <ul class="pagination justify-content-center">
+                    <% for(let i =1;i<=totalPage;i++) {%>
+                        <li class="page-item <%-(currentPage==i)?'active':''%>">
+                            <a href="?page=<%=i%>" class="page-link shadow-none border-0 rounded-3 mx-1"><%=i%></a>
+                        </li>
+                    <%}%>
+                </ul>
+            </nav>
+        <% } %>
+    </div>
 </div>
-<% } %>
 
-            
-        </div>
-        
-    </div>
-    
-    
-   
-
-
-    <div class="modal fade" id="addAddressModal" tabindex="-1" aria-labelledby="addAddressModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content add-address-card">
-                <div class="modal-header d-flex justify-content-between align-items-center" style="border-bottom: none; padding-bottom: 0;">
-                    <h2 class="modal-title" id="addAddressModalLabel" style="font-weight: 700; font-size: 1.6rem;">ADD NEW ADDRESS</h2>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body" style="padding-top: 0;">
-                   <form id="addAddressForm" action="/user/add-address" method="POST">
-
-    <div class="form-group mb-2">
-        <input type="text" class="form-control" name="fullname" placeholder="Fullname" >
-        <div class="error-text" id="fullnameError"></div>
-    </div>
-
-    <div class="form-group mb-2">
-        <input type="email" class="form-control" name="email" placeholder="Email" >
-        <div class="error-text" id="emailError"></div>
-    </div>
-
-    <div class="form-group mb-2">
-        <input type="tel" class="form-control" name="phoneNumber" placeholder="Mobile No" >
-        <div class="error-text" id="mobileError"></div>
-    </div>
-
-    <div class="form-group mb-2">
-        <input type="text" class="form-control" name="houseName" placeholder="House Name" >
-        <div class="error-text" id="houseNameError"></div>
-    </div>
-
-    <div class="form-group mb-2">
-        <input type="text" class="form-control" name="locality" placeholder="Locality">
-        <div class="error-text" id="localityError"></div>
-    </div>
-
-    <div class="row g-2 mb-3">
-        <div class="col-md-6">
-            <input type="text" class="form-control" name="pincode" placeholder="Pincode" >
-            <div class="error-text" id="pincodeError"></div>
-        </div>
-        <div class="col-md-6">
-            <input type="text" class="form-control" name="district" placeholder="District" >
-            <div class="error-text" id="districtError"></div>
-        </div>
-    </div>
-
-    <div class="form-group mb-2">
-        <input type="text" class="form-control" name="state" placeholder="State" >
-        <div class="error-text" id="stateError"></div>
-    </div>
-
-    <div class="form-check mb-3">
-        <input class="form-check-input" type="checkbox" name="isDefault" id="isDefault">
-        <label class="form-check-label" for="isDefault">
-            Set as default address
-        </label>
-    </div>
-
-    <button type="submit" class="btn btn-save-address btn-secondary">Save Address</button>
-</form>
-                </div>
+<div class="modal fade" id="addAddressModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="fw-bold">Add Address</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addAddressForm" action="/user/add-address" method="POST">
+                    <div class="mb-2">
+                        <input type="text" class="form-control" name="fullname" placeholder="Full Name">
+                        <div class="error-text" id="fullnameError"></div>
+                    </div>
+                    <div class="mb-2">
+                        <input type="email" class="form-control" name="email" placeholder="Email">
+                        <div class="error-text" id="emailError"></div>
+                    </div>
+                    <div class="mb-2">
+                        <input type="tel" class="form-control" name="phoneNumber" placeholder="Mobile">
+                        <div class="error-text" id="mobileError"></div>
+                    </div>
+                    <div class="mb-2">
+                        <input type="text" class="form-control" name="houseName" placeholder="House Name/No.">
+                        <div class="error-text" id="houseNameError"></div>
+                    </div>
+                    <div class="mb-2">
+                        <input type="text" class="form-control" name="locality" placeholder="Locality">
+                        <div class="error-text" id="localityError"></div>
+                    </div>
+                    <div class="row g-2 mb-2">
+                        <div class="col-6">
+                            <input type="text" class="form-control" name="pincode" placeholder="Pincode">
+                            <div class="error-text" id="pincodeError"></div>
+                        </div>
+                        <div class="col-6">
+                            <input type="text" class="form-control" name="district" placeholder="District">
+                            <div class="error-text" id="districtError"></div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <input type="text" class="form-control" name="state" placeholder="State">
+                        <div class="error-text" id="stateError"></div>
+                    </div>
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" name="isDefault" id="isDefault">
+                        <label class="form-check-label" for="isDefault text-muted">Set as default</label>
+                    </div>
+                    <button type="submit" class="btn btn-dark w-100 py-2 rounded-3 fw-bold">Save Address</button>
+                </form>
             </div>
         </div>
     </div>
-     <%- include("../partials/footer.ejs") %>
-    
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    
+</div>
+
+<%- include("../partials/footer.ejs") %>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
 <script>
 
-document.querySelectorAll('.btn-set-default').forEach(button => {
-    button.addEventListener('click', function() {
-        const addressId = this.dataset.id; // must not be undefined
-       
 
-        Swal.fire({
-            title: "Set this Address as default?",
-            icon: "question",
-            showCancelButton: true,
-            confirmButtonColor: '#FF9500',
-            cancelButtonColor: '#d33',
-            confirmButtonText: 'Yes, set as default'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                fetch(`/user/set-default-address/${addressId}`, {
-                    method: "PATCH",
-                    headers: { "Content-Type": "application/json" }
-                })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success) {
-                        Swal.fire('Updated!', data.message, 'success')
-                            .then(() => window.location.reload());
-                    } else {
-                        Swal.fire('Error!', data.message, 'error');
-                    }
-                })
-                .catch(err => {
-                    console.error(err);
-                    Swal.fire('Error!', 'Server error', 'error');
-                });
-            }
+    document.querySelectorAll('.btn-set-default').forEach(button => {
+        button.addEventListener('click', function() {
+            const addressId = this.dataset.id;
+            Swal.fire({
+                title: "Set Default?",
+                icon: "question",
+                showCancelButton: true,
+                confirmButtonColor: '#0071e3',
+                confirmButtonText: 'Yes'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch(`/user/set-default-address/${addressId}`, {
+                        method: "PATCH",
+                        headers: { "Content-Type": "application/json" }
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire('Updated!', data.message, 'success').then(() => window.location.reload());
+                        } else {
+                            Swal.fire('Error!', data.message, 'error');
+                        }
+                    });
+                }
+            });
         });
     });
-});
+
+    function editAddress(id){
+        window.location.href =`/user/edit-address/${id}`
+    }
 
 
-   function editAddress(id){
-    window.location.href =`/user/edit-address/${id}`
-   }
 
 document.getElementById("addAddressForm").addEventListener("submit", function(e){
     e.preventDefault();
