@@ -1,6 +1,9 @@
 const Order = require('../../model/Orders');
 const ExcelJS = require("exceljs");
 const PDFDocument = require("pdfkit");
+const puppeteer = require("puppeteer");
+const fs = require("fs");
+const path = require("path");
 
 
 const getDateFilter = (type, startDate, endDate) => {
@@ -201,45 +204,130 @@ exports.downloadExcel = async (req, res) => {
 };
 
 
-exports.downloadPDF = async (req, res) => {
-  const { type, startDate, endDate } = req.query;
-  const dateFilter = getDateFilter(type, startDate, endDate);
+// exports.downloadPDF = async (req, res) => {
+//   const { type, startDate, endDate } = req.query;
+//   const dateFilter = getDateFilter(type, startDate, endDate);
 
-  const orders = await Order.find({
-    status: "Delivered",
-    paymentStatus: { $ne: "Refunded" },
-    ...dateFilter
+//   const orders = await Order.find({
+//     status: "Delivered",
+//     paymentStatus: { $ne: "Refunded" },
+//     ...dateFilter
+//   });
+
+//   const doc = new PDFDocument({ margin: 30 });
+//   res.setHeader("Content-Disposition", "attachment; filename=sales-report.pdf");
+//   doc.pipe(res);
+
+//   doc.fontSize(18).text("Sales Report", { align: "center" });
+//   doc.moveDown();
+
+//   orders.forEach(order => {
+//     let gross = 0;
+//     let discount = 0;
+
+//     order.orderItems.forEach(item => {
+//       gross += item.subtotal;
+//       discount += item.discount || 0;
+//     });
+
+//     const coupon = Number(order.coupon || 0);
+//     const net = gross - discount - coupon + order.shippingCharge;
+
+//     doc
+//       .fontSize(10)
+//       .text(`Order ID: ${order.orderId}`)
+//       .text(`Date: ${order.createdAt.toLocaleDateString()}`)
+//       .text(`Gross Amount: ₹${gross}`)
+//       .text(`Offer Discount: ₹${discount}`)
+//       .text(`Coupon Discount: ₹${coupon}`)
+//       .text(`Net Revenue: ₹${net}`)
+//       .moveDown();
+//   });
+
+//   doc.end();
+// };
+
+const calculateOrderAmounts = (order) => {
+  let gross = 0;
+  let discount = 0;
+
+  order.orderItems.forEach(item => {
+    gross += Number(item.subtotal || 0);
+    discount += Number(item.discount || 0);
   });
 
-  const doc = new PDFDocument({ margin: 30 });
-  res.setHeader("Content-Disposition", "attachment; filename=sales-report.pdf");
-  doc.pipe(res);
+  const coupon = Number(order.coupon || 0);
+  const shipping = Number(order.shippingCharge || 0);
 
-  doc.fontSize(18).text("Sales Report", { align: "center" });
-  doc.moveDown();
+  const net = gross - discount - coupon + shipping;
 
-  orders.forEach(order => {
-    let gross = 0;
-    let discount = 0;
+  return { gross, discount, coupon, net };
+};
 
-    order.orderItems.forEach(item => {
-      gross += item.subtotal;
-      discount += item.discount || 0;
+
+exports.downloadPDF = async (req, res) => {
+  try {
+    const { type, startDate, endDate } = req.query;
+    const dateFilter = getDateFilter(type, startDate, endDate);
+
+    const orders = await Order.find({
+      status: "Delivered",
+      paymentStatus: { $ne: "Refunded" },
+      ...dateFilter
+    }).lean();
+
+    let rows = "";
+    let totalRevenue = 0;
+
+    orders.forEach(order => {
+      const { gross, discount, net } = calculateOrderAmounts(order);
+      totalRevenue += net;
+
+      rows += `
+        <tr>
+          <td>${order.orderId}</td>
+          <td>${order.createdAt.toLocaleDateString()}</td>
+          <td>₹${gross}</td>
+          <td>₹${discount}</td>
+          <td>₹${net}</td>
+        </tr>
+      `;
     });
 
-    const coupon = Number(order.coupon || 0);
-    const net = gross - discount - coupon + order.shippingCharge;
+    let html = fs.readFileSync(
+      path.join(__dirname, "../../views/Admin/salesReport.html"),
+      "utf8"
+    );
 
-    doc
-      .fontSize(10)
-      .text(`Order ID: ${order.orderId}`)
-      .text(`Date: ${order.createdAt.toLocaleDateString()}`)
-      .text(`Gross Amount: ₹${gross}`)
-      .text(`Offer Discount: ₹${discount}`)
-      .text(`Coupon Discount: ₹${coupon}`)
-      .text(`Net Revenue: ₹${net}`)
-      .moveDown();
-  });
+    html = html
+      .replace("{{period}}", type.toUpperCase())
+      .replace("{{date}}",endDate.toUpperCase())
+      .replace("{{totalOrders}}", orders.length)
+      .replace("{{netRevenue}}", totalRevenue)
+      .replace("{{rows}}", rows);
 
-  doc.end();
+    const browser = await puppeteer.launch();
+    const page = await browser.newPage();
+
+    await page.setContent(html, { waitUntil: "networkidle0" });
+
+    const pdf = await page.pdf({
+      format: "A4",
+      printBackground: true
+    });
+
+    await browser.close();
+
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader(
+      "Content-Disposition",
+      "attachment; filename=sales-report.pdf"
+    );
+
+    res.send(pdf);
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Failed to generate PDF");
+  }
 };

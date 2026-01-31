@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SalesReport</title>
+    <style>
+     body {
+    font-family: 'Roboto', sans-serif;
+    padding: 30px;
+    background-color: #f9f9f9;
+}
+h1 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 10px;
+}
+.summary {
+    display: flex;
+    justify-content: space-around;
+    background: #fff;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.05);
+    margin-bottom: 20px;
+}
+.summary p {
+    margin: 0;
+    font-weight: bold;
+    color: #555;
+}
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 0 10px rgba(0,0,0,0.05);
+}
+th {
+    background-color: #007BFF;
+    color: #fff;
+}
+tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+td, th {
+    padding: 12px;
+    text-align: center;
+}
+
+    </style>
+</head>
+<body>
+    <h1>AppleStore - Sales Report</h1>
+    <p><strong>Period :</strong>{{period}}</p>
+    <p><strong>Generated On :</strong>{{date}}</p>
+
+
+    <div class="summary">
+        <p><strong>Total Orders :</strong>{{totalOrders}}</p>
+        <p><strong>Net Revenue :</strong>₹ {{netRevenue}}</p>
+         </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Order Id</th>
+                    <th>Date</th>
+                    <th>gross</th>
+                    <th>Discount</th>
+                    <th>Net</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{rows}}
+            </tbody>
+        </table>
+    <p style="margin-top:20px; font-size:12px;">
+    This is a system-generated report.
+  </p>
+</body>
+</html>

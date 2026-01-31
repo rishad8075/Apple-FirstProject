@@ -835,6 +835,14 @@ const retryVerifyPayment = async(req,res)=>{
     order.status="Pending"
     order.paymentStatus="Paid"
     await order.save()
+    
+       for (const item of order.orderItems) {
+            await Product.updateOne(
+                { _id: item.productId },
+                { $inc: { "variants.0.stock": -item.quantity } }
+            );
+        }
+       
 
     return res.json({success:true})
 
