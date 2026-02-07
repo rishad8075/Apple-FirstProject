@@ -25,7 +25,7 @@ router.get('/auth/google/callback',
         if (req.user.isBlocked) {
             req.logout(() => {
                 req.session.destroy(() => {
-                    res.render("user/login", { errorMessage: "User is Blocked" });
+                    res.render("User/login", { errorMessage: "User is Blocked" });
                 });
             });
         } else {

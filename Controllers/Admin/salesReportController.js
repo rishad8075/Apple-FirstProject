@@ -267,8 +267,10 @@ const calculateOrderAmounts = (order) => {
 
 exports.downloadPDF = async (req, res) => {
   try {
-    const { type, startDate, endDate } = req.query;
+    let { type, startDate, endDate } = req.query;
     const dateFilter = getDateFilter(type, startDate, endDate);
+      type = type ? type.toUpperCase() : "ALL";
+    endDate = endDate ? endDate.toUpperCase() : "N/A";
 
     const orders = await Order.find({
       status: "Delivered",
@@ -282,11 +284,12 @@ exports.downloadPDF = async (req, res) => {
     orders.forEach(order => {
       const { gross, discount, net } = calculateOrderAmounts(order);
       totalRevenue += net;
+      const orderDate = new Date(order.createdAt).toLocaleDateString();
 
       rows += `
         <tr>
           <td>${order.orderId}</td>
-          <td>${order.createdAt.toLocaleDateString()}</td>
+          <td>${orderDate}</td>
           <td>₹${gross}</td>
           <td>₹${discount}</td>
           <td>₹${net}</td>
