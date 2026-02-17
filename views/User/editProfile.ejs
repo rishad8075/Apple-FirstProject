@@ -194,6 +194,8 @@
 
                     <div class="col-12 mb-4">
                         <label for="dob" class="form-label">Date of Birth</label>
+                        <div id="error4" class="error-msg"></div>
+
                         <input type="date" id="dob" name="dob" class="form-control" value="<%= user.dob ? user.dob.toISOString().split('T')[0] : '' %>">
                     </div>
                 </div>
@@ -285,14 +287,21 @@ document.getElementById('editProfileForm').addEventListener('submit', function(e
 
     const nameField = document.getElementById("name");
     const phoneNumber = document.getElementById("phoneNumber");
+    let DoB = document.getElementById("dob").value
     // const email = document.getElementById("email"); // Email was in your script but not in your HTML inputs
-
+   let BirthDate = new Date(DoB);
+   let today = new Date()
     const error1 = document.getElementById("error1");
     const error3 = document.getElementById("error3");
+    const error4 = document.getElementById("error4");
+
 
     let isValid = true;
     error1.textContent = "";
     error3.textContent = "";
+    error4.textContent = "";
+
+
 
     if (nameField.value.trim().length < 3) {
         error1.textContent = "Name must be at least 3 characters long.";
@@ -304,6 +313,12 @@ document.getElementById('editProfileForm').addEventListener('submit', function(e
         error3.textContent = "Phone number must be 10-15 digits.";
         isValid = false;
     }
+
+    if(BirthDate>today){
+        error4.textContent ="Birth of Date cannot be in the future"
+        isValid=false
+    }
+
 
     if (!isValid) e.preventDefault();
 });

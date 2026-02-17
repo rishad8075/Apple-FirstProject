@@ -386,8 +386,8 @@ const loadShopPage = async (req, res,next) => {
 
         // --- Sort options ---
         const sortOptions = {
-            'price_asc': { 'variants.0.regularPrice': 1 },
-            'price_desc': { 'variants.0.regularPrice': -1 },
+            'price_asc': { 'variants.0.salePrice': 1 },
+            'price_desc': { 'variants.0.salePrice': -1 },
             'name_asc': { productName: 1 },
             'name_desc': { productName: -1 },
             '': { createdAt: -1 }

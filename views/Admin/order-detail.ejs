@@ -92,7 +92,7 @@
         Change Status
       </button>
       <ul class="dropdown-menu dropdown-menu-dark">
-        <% ['Pending','Confirmed','Shipped','Out for Delivery','Delivered','Cancelled','Returned'].forEach(status => { %>
+        <% ['Pending','Confirmed','Shipped','Out for Delivery','Delivered','Cancelled'].forEach(status => { %>
           <li><a class="dropdown-item change-status-btn" href="#" data-orderid="<%= order._id %>" data-newstatus="<%= status %>"><%= status %></a></li>
         <% }) %>
       </ul>
