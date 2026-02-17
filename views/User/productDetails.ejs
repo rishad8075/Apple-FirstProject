@@ -3,478 +3,447 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title><%= product.productName %> - Product Details</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <title><%= product.productName %> | Premium Store</title>
   
-
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #000000;
+      --accent: #0071e3;
+      --surface: #f5f5f7;
+      --text-muted: #6e6e73;
+      --success: #28a745;
+      --danger: #dc3545;
+    }
 
-<style>
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: #ffffff;
+      color: #1d1d1f;
+      overflow-x: hidden;
+    }
 
-  body {
-    font-family: 'Plus Jakarta Sans', sans-serif;
-    color: #1a1a1a;
-  }
-    .magnifier-container {
+    .product-main-container { padding-top: 40px; }
+    .gallery-column { position: sticky; top: 100px; height: fit-content; }
+    
+    .hero-stage {
+      background: var(--surface);
+      border-radius: 32px;
+      padding: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       position: relative;
-      width: 100%;
-      max-height: 450px;
-      padding: 10px;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      background-color: #fff;
-      box-shadow: 0 0 8px rgba(0,0,0,0.05);
+      transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
-    .magnifier-image {
-      width: 100%;
-      max-height: 450px;
+    .main-img-display {
+      max-width: 100%;
+      max-height: 480px;
       object-fit: contain;
-      cursor: crosshair;
-      border-radius: 6px;
+      mix-blend-mode: multiply;
+      filter: drop-shadow(0 20px 30px rgba(0,0,0,0.05));
     }
 
-    .magnifier-container:hover {
-      box-shadow: 0 0 12px rgba(0,0,0,0.15);
-      transition: 0.2s ease;
+    .thumb-nav { display: flex; gap: 15px; margin-top: 25px; justify-content: center; }
+    .thumb-cube {
+      width: 80px; height: 80px; border-radius: 16px; background: var(--surface);
+      padding: 10px; cursor: pointer; border: 2px solid transparent; transition: all 0.3s;
     }
+    .thumb-cube.active { border-color: var(--primary); background: #fff; transform: translateY(-5px); }
+    .thumb-cube img { width: 100%; height: 100%; object-fit: contain; mix-blend-mode: multiply; }
+
+    .product-label { font-size: 11px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); display: block; margin-bottom: 12px; }
+    .product-h1 { font-size: 3rem; font-weight: 800; line-height: 1.1; letter-spacing: -1.5px; margin-bottom: 20px; }
+
+    .price-tag-large { font-size: 2.8rem; font-weight: 700; letter-spacing: -1px; }
+    .strike-price { color: var(--text-muted); text-decoration: line-through; font-size: 1.4rem; margin-left: 15px; font-weight: 400; }
+    
+    .offer-box {
+      display: inline-flex; align-items: center; background: #eef7ff; color: var(--accent);
+      padding: 6px 14px; border-radius: 100px; font-size: 13px; font-weight: 700; margin-left: 15px;
+    }
+
+    /* --- Stock & Quantity UI --- */
+    .stock-badge {
+        font-size: 13px; font-weight: 700; padding: 6px 16px; border-radius: 50px; display: inline-block; margin-bottom: 20px;
+    }
+    .stock-in { background: #e8f5e9; color: var(--success); }
+    .stock-low { background: #fff3e0; color: #ef6c00; }
+    .stock-out { background: #ffebee; color: var(--danger); }
+
+    .qty-selector {
+        display: flex; align-items: center; background: var(--surface);
+        border-radius: 100px; width: fit-content; padding: 4px; margin-bottom: 25px;
+    }
+    .qty-btn {
+        width: 40px; height: 40px; border-radius: 50%; border: none; background: #fff;
+        display: flex; align-items: center; justify-content: center; transition: 0.2s;
+    }
+    .qty-btn:hover { background: var(--primary); color: #fff; }
+    .qty-input {
+        width: 50px; border: none; background: transparent; text-align: center; font-weight: 700;
+    }
+
+    .btn-buy-now {
+      background: var(--primary); color: #fff; border-radius: 100px; padding: 20px 40px;
+      font-weight: 700; font-size: 18px; border: none; width: 100%; transition: 0.3s;
+    }
+    .btn-buy-now:hover { background: #333; transform: translateY(-3px); box-shadow: 0 15px 30px rgba(0,0,0,0.15); }
+  /* --- Redesigned Related Products --- */
+
+    .related-section { background-color: var(--surface); border-radius: 50px; padding: 80px 0; margin-top: 100px; }
+
+    .related-title { font-size: 2.2rem; font-weight: 800; letter-spacing: -1px; margin-bottom: 40px; text-align: center; }
+
+
+
+    .collection-card {
+
+      background: #fff;
+
+      border-radius: 24px;
+
+      padding: 25px;
+
+      height: 100%;
+
+      transition: all 0.4s;
+
+      border: 1px solid transparent;
+
+      text-decoration: none;
+
+      display: block;
+
+      color: inherit;
+
+    }
+
+
+
+    .collection-card:hover {
+
+      transform: translateY(-10px);
+
+      box-shadow: 0 30px 60px rgba(0,0,0,0.08);
+
+      border-color: #eee;
+
+    }
+
+
+
+    .collection-img-wrapper {
+
+      background: var(--surface);
+
+      border-radius: 18px;
+
+      padding: 30px;
+
+      margin-bottom: 20px;
+
+      height: 220px;
+
+      display: flex;
+
+      align-items: center;
+
+      justify-content: center;
+
+      overflow: hidden;
+
+    }
+
+
+
+    .collection-img-wrapper img { max-width: 100%; max-height: 100%; object-fit: contain; mix-blend-mode: multiply; transition: transform 0.5s; }
+
+    .collection-card:hover img { transform: scale(1.1); }
+
+
+
+    .collection-card h6 { font-weight: 700; font-size: 16px; margin-bottom: 5px; }
+
+    .collection-card p { color: var(--text-muted); font-size: 13px; margin-bottom: 15px; }
+
+
+
+    .btn-circle-view {
+
+      width: 40px;
+
+      height: 40px;
+
+      border-radius: 50%;
+
+      background: var(--primary);
+
+      color: #fff;
+
+      display: flex;
+
+      align-items: center;
+
+      justify-content: center;
+
+      transition: 0.3s;
+
+      margin-top: auto;
+
+    }
+
+
 
     .img-zoom-result {
-      border: 1px solid #ccc;
-      width: 450px;
-      height: 450px;
+
+      width: 500px;
+
+      height: 500px;
+
       position: absolute;
-      left: calc(100% + 20px);
-      top: 30px;
-      background-repeat: no-repeat;
+
+      left: 105%;
+
+      top: 0;
+
+      z-index: 100;
+
+      border-radius: 30px;
+
+      box-shadow: 0 30px 70px rgba(0,0,0,0.2);
+
       display: none;
-      z-index: 99999;
-      background-color: white;
-      box-shadow: 0 0 10px rgba(0,0,0,0.2);
-      overflow: hidden;
+
+      background-repeat: no-repeat;
+
+      background-color: #fff;
+
     }
 
-    @media(max-width: 768px){
+
+
+    @media (max-width: 991px) {
+
+      .product-h1 { font-size: 2rem; }
+
+      .price-tag-large { font-size: 2rem; }
+
+      .hero-stage { padding: 30px; min-height: 300px; }
+
       .img-zoom-result { display: none !important; }
-    }
 
-    .thumbnail-img {
-      width: 60px;
-      height: 60px;
-      object-fit: cover;
-      cursor: pointer;
-      border: 1px solid #ddd;
-      border-radius: 5px;
-      margin-right: 5px;
-    }
-   
-
-    .thumbnail-img.active { border: 2px solid #007bff; }
-
-    .price { font-size: 1.8rem; font-weight: bold; }
-    .old-price { text-decoration: line-through; color: #888; margin-left: 10px; }
-    .badge-stock { font-size: 0.9rem; padding: 0.5em; }
-   .related-section-title {
-      font-weight: 700;
-      font-size: 1.5rem;
-      margin-bottom: 25px;
-      padding-bottom: 10px;
-      border-bottom: 2px solid #f0f0f0;
-    }
-
-    .related-card {
-      border: none !important;
-      border-radius: 12px !important;
-      background: #fbfbfb;
-      transition: all 0.3s ease;
-    }
-
-    .related-card:hover {
-      transform: translateY(-8px);
-      box-shadow: 0 10px 25px rgba(0,0,0,0.08);
-      background: #fff;
-    }
-
-    .related-card img {
-      height: 200px;
-      object-fit: contain; /* Better for electronics/products than 'cover' */
-      padding: 15px;
-      mix-blend-mode: multiply; /* Blends white image backgrounds with the card gray */
-    }
-
-    .related-card .card-title {
-      font-size: 0.95rem;
-      font-weight: 600;
-      color: #333;
-      height: 2.4em; /* Ensures titles align even if 1 or 2 lines */
-      overflow: hidden;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-    }
-
-    .related-card .btn-view {
-      border-radius: 8px;
-      font-weight: 600;
-      font-size: 0.85rem;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      padding: 8px;
     }
   </style>
 </head>
 <body>
 
+<%- include("../partials/header.ejs") %>
 
-
-             <%-include("../partials/header.ejs") %>  
-
-<div class="container mt-4">
-
-  <!-- Breadcrumb -->
-  <nav aria-label="breadcrumb">
-    <ol class="breadcrumb">
-      <li class="breadcrumb-item"><a style="text-decoration: none;color: #000;" href="/">Home</a></li>
-      <li class="breadcrumb-item"><a style="text-decoration: none;color: #000;" href="/shop">Products</a></li>
-      <li class="breadcrumb-item active" aria-current="page"><%= product.productName %></li>
-    </ol>
-  </nav>
-
-  <div class="row g-4">
-    <!-- Product Images -->
-    <div class="col-lg-6">
-      <div class="product-gallery mb-3 position-relative">
+<div class="container product-main-container">
+  <div class="row g-5">
+    
+    <div class="col-lg-7 gallery-column">
+      <div class="hero-stage shadow-sm">
+        <button class="wishlist-btn-action position-absolute top-0 end-0 m-4 btn bg-white rounded-circle shadow-sm p-3" data-id="<%= product._id %>" style="z-index: 10;">
+          <i class="<%= (product.isWishlisted) ? 'fa-solid' : 'fa-regular' %> fa-heart" id="wishlistIcon" style="color: #ff3b30; font-size: 22px;"></i>
+        </button>
+        
         <% let mainImage = (product.variants[0] && product.variants[0].images[0]) || '/uploads/product-images/default.png'; %>
-        <div class="magnifier-container">
-          <img id="mainImage" src="<%= mainImage %>" class="magnifier-image" alt="<%= product.productName %>">
-        </div>
+        <img id="mainImage" src="<%= mainImage %>" class="main-img-display" alt="<%= product.productName %>">
         <div id="zoomResult" class="img-zoom-result"></div>
       </div>
 
-      <!-- Thumbnails -->
-      <div class="d-flex flex-wrap mt-2">
+      <div class="thumb-nav">
         <% if (product.variants[0] && product.variants[0].images.length > 0) { %>
           <% product.variants[0].images.forEach((img, idx) => { %>
-            <img class="thumbnail-img <%= idx === 0 ? 'active' : '' %>" 
-                 src="<%= img %>" 
-                 onclick="changeImage('<%= img %>', this)">
+            <div class="thumb-cube <%= idx === 0 ? 'active' : '' %>" onclick="changeImage('<%= img %>', this)">
+                <img src="<%= img %>" alt="thumbnail">
+            </div>
           <% }) %>
         <% } %>
       </div>
     </div>
 
-    <!-- Product Info -->
-    <div class="col-lg-6">
-      <h2><%= product.productName %></h2>
-      <!-- Wishlist Button -->
-<button 
-  class="btn btn-light border wishlist-btn" 
-  data-id="<%= product._id %>" 
-  style="border-radius: 50%; width: 45px; height: 45px;">
-  <i class="fa-regular fa-heart" id="wishlistIcon"></i>
-</button>
-
-      <!-- Category -->
-      <% if(product.category && product.category.name) { %>
-        <p>Category: <strong><%= product.category.name %></strong></p>
-      <% } %>
-
-      <!-- Brand -->
-      <p>Brand: <strong><%= product.brand || 'APPLE' %></strong></p>
-
-      <!-- Rating -->
-      <div class="mb-2">
-        Rating: 
-        <span style="color:#f0ad4e;">
-          <% for(let i=0; i<5; i++) { %>
-            <% if(i < Math.round(product.rating || 0)) { %>★<% } else { %>☆<% } %>
-          <% } %>
-        </span>
-        (<%= (product.reviews || []).length %> reviews)
-      </div>
-
-      <!-- Variant Attributes -->
-      <% const variant = product.variants[0] || {}; %>
-      <% if(variant.attributes) { %>
-        <div class="mb-2">
-          <% for(const [key, value] of Object.entries(variant.attributes)) { %>
-            <span class="badge bg-secondary me-1"><%= key %>: <%= value %></span>
-          <% } %>
+    <div class="col-lg-5">
+      <div class="product-details-wrap py-2">
+        <span class="product-label"><%= product.brand %> &bull; <%= product.category.name %></span>
+        <h1 class="product-h1"><%= product.productName %></h1>
+        
+        <% const variant = product.variants[0] || {}; %>
+        
+        <div class="stock-status">
+            <% if (variant.stock <= 0) { %>
+                <span class="stock-badge stock-out"><i class="bi bi-x-circle me-2"></i>Currently Out of Stock</span>
+            <% } else if (variant.stock < 10) { %>
+                <span class="stock-badge stock-low"><i class="bi bi-exclamation-triangle me-2"></i>Only <%= variant.stock %> items left!</span>
+            <% } else { %>
+                <span class="stock-badge stock-in"><i class="bi bi-check-circle me-2"></i>In Stock & Ready to Ship</span>
+            <% } %>
         </div>
-      <% } %>
 
-      <!-- Price -->
-      <div class="mb-3">
-        <span class="price text-success">₹<%= priceData.finalPrice || 0 %></span>
-        <% if(priceData.appliedOffer > 0) { %>
-          <span class="old-price">₹<%= variant.regularPrice %></span>
-          <span class="text-danger ms-2"><%= priceData.appliedOffer %>% OFF</span>
-        <% } %>
-      </div>
-
-      <!-- Stock -->
-      <div class="mb-3">
-        <span class="badge badge-stock <%= variant.stock > 0 ? 'bg-success' : 'bg-danger' %>">
-          <%= variant.stock > 0 ? 'In Stock' : 'Out of Stock' %>
-        </span>
-      </div>
-
-      <!-- Add to Cart -->
- <button id="addToCartBtn" 
-        class="btn btn-primary btn-lg" 
-        data-product-id="<%= product._id %>" 
-        data-variant-id="<%= variant._id %>" 
-        <%= variant.stock === 0 ? 'disabled' : '' %>>
-  <%= variant.stock === 0 ? 'Sold Out' : 'Add to Cart' %>
-</button>
-
-      <!-- Description -->
-      <div class="mt-4">
-        <h5>Description</h5>
-        <p><%= product.description || 'No description available.' %></p>
-      </div>
-
-      <!-- Reviews -->
-      <% if(product.reviews && product.reviews.length > 0) { %>
-        <div class="mt-4">
-          <h5>Reviews</h5>
-          <% product.reviews.forEach(r => { %>
-            <div class="border p-2 mb-2">
-              <strong><%= r.userName || 'User' %></strong> - 
-              <% for(let i=0;i<5;i++){ %>
-                <% if(i<r.rating){ %>★<% } else { %>☆<% } %>
-              <% } %>
-              <p><%= r.comment %></p>
-            </div>
-          <% }) %>
+        <div class="d-flex align-items-center mb-4">
+          <div class="bg-dark text-white px-3 py-1 rounded-pill fw-bold me-3" style="font-size: 13px;">
+            <i class="bi bi-star-fill text-warning me-1"></i> <%= product.rating || '4.8' %>
+          </div>
+          <span class="text-muted fw-medium" style="font-size: 14px;"><%= (product.reviews || []).length %> Verified Reviews</span>
         </div>
-      <% } %>
 
-    </div>
-  </div>
-
-  <div class="mt-4 p-3 border rounded bg-light">
-  <h5>Sold By</h5>
-  <p>Seller: <strong>Best Electronics Store</strong></p>
-  <p>Rating: ★★★★☆ (4.5)</p>
-  <p>Location: Mumbai, India</p>
-  <a href="#" class="btn btn-sm btn-outline-secondary">Visit Store</a>
-</div>
-
-<!-- Offers -->
-<div class="mt-3 p-3 border rounded bg-light">
-  <h5>Available Offers</h5>
-  <ul>
-    <li>10% Cashback on XYZ Bank Cards</li>
-    <li>Extra 5% off on next purchase</li>
-    <li>Free shipping on orders above ₹5,000</li>
-  </ul>
-</div>
-
-<!-- Shipping & Returns -->
-<div class="mt-3 p-3 border rounded bg-light">
-  <h5>Shipping & Returns</h5>
-  <p>Estimated Delivery: 3-5 business days</p>
-  <p>Return Policy: 7-day easy return</p>
-  <p>Cash on Delivery available</p>
-</div>
-
-<!-- Q&A Section -->
-<div class="mt-4">
-  <h5>Customer Questions & Answers</h5>
-  <div class="border p-2 mb-2">
-    <strong>Q: Does it come with warranty?</strong>
-    <p>A: Yes, 1-year manufacturer warranty included.</p>
-  </div>
-  <div class="border p-2 mb-2">
-    <strong>Q: Can I get it in other colors?</strong>
-    <p>A: Currently available only in Black and Silver.</p>
-  </div>
- 
-</div>
-
-  <!-- Related Products -->
- <div class="mt-5 pb-5">
-    <h4 class="related-section-title">You May Also Like</h4>
-    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-4 g-4">
-      <% (relatedProducts).forEach(p => { %>
-        <div class="col">
-          <div class="card h-100 related-card shadow-sm">
-            <img src="<%= (p.variants[0] && p.variants[0].images[0]) || '/uploads/product-images/default.png' %>" 
-                 class="card-img-top" alt="<%= p.productName %>">
-            
-            <div class="card-body d-flex flex-column">
-              <h6 class="card-title"><%= p.productName %></h6>
-              
-              <p class="text-muted small mb-2"><%= p.brand || 'Premium Product' %></p>
-
-              <div class="mt-auto">
-                 <a href="/productDetails/<%= p._id %>" class="btn btn-outline-primary btn-view w-100">
-                    View Product
-                 </a>
-              </div>
-            </div>
+        <div class="price-section mb-4">
+          <div class="d-flex align-items-center">
+            <span class="price-tag-large">₹<%= priceData.finalPrice.toLocaleString() %></span>
+            <% if(priceData.appliedOffer > 0) { %>
+              <span class="strike-price">₹<%= variant.regularPrice.toLocaleString() %></span>
+              <span class="offer-box"><%= priceData.appliedOffer %>% OFF</span>
+            <% } %>
           </div>
         </div>
-      <% }) %>
+
+        <% if(variant.stock > 0) { %>
+        <label class="fw-bold mb-2 d-block" style="font-size: 14px;">Select Quantity</label>
+        <div class="qty-selector">
+            <button class="qty-btn" onclick="updateQty(-1)"><i class="bi bi-dash"></i></button>
+            <input type="number" id="qtyInput" class="qty-input" value="1" min="1" max="<%= variant.stock %>" readonly>
+            <button class="qty-btn" onclick="updateQty(1)"><i class="bi bi-plus"></i></button>
+        </div>
+        <% } %>
+
+        <div class="purchase-area">
+          <button id="addToCartBtn" 
+                  class="btn-buy-now shadow-lg" 
+                  data-product-id="<%= product._id %>" 
+                  data-variant-id="<%= variant._id %>" 
+                  <%= variant.stock <= 0 ? 'disabled' : '' %>>
+            <i class="bi bi-bag-plus me-2"></i>
+            <%= variant.stock <= 0 ? 'Notify Me When Available' : 'Add to Shopping Bag' %>
+          </button>
+        </div>
+
+        <div class="row g-2 mt-4">
+            <div class="col-4 text-center">
+                <i class="bi bi-truck text-muted" style="font-size: 20px;"></i>
+                <p style="font-size: 10px;" class="fw-bold mt-1">FREE SHIPPING</p>
+            </div>
+            <div class="col-4 text-center border-start border-end">
+                <i class="bi bi-shield-lock text-muted" style="font-size: 20px;"></i>
+                <p style="font-size: 10px;" class="fw-bold mt-1">SECURE PAY</p>
+            </div>
+            <div class="col-4 text-center">
+                <i class="bi bi-arrow-repeat text-muted" style="font-size: 20px;"></i>
+                <p style="font-size: 10px;" class="fw-bold mt-1">7 DAYS RETURN</p>
+            </div>
+        </div>
+
+        <div class="mt-5 pt-4 border-top">
+            <h5 class="fw-800 mb-3">Description</h5>
+            <p class="text-muted" style="line-height: 1.8; font-size: 15px;">
+                <%= product.description %>
+            </p>
+        </div>
+      </div>
     </div>
   </div>
-
 </div>
+
+<section class="related-section">
+    <div class="container">
+        <h2 class="text-center fw-800 mb-5">You May Also Like</h2>
+        <div class="row g-4">
+            <% relatedProducts.forEach(p => { %>
+                <div class="col-6 col-md-3">
+                    <a href="/productDetails/<%= p._id %>" class="collection-card shadow-sm">
+                        <div class="collection-img-wrapper">
+                            <img src="<%= p.variants[0].images[0] %>" alt="<%= p.productName %>">
+                        </div>
+                        <h6 class="text-truncate"><%= p.productName %></h6>
+                        <p class="small"><%= p.brand %></p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="fw-bold">₹<%= p.variants[0].regularPrice.toLocaleString() %></span>
+                            <div class="btn-circle-view"><i class="bi bi-arrow-right"></i></div>
+                        </div>
+                    </a>
+                </div>
+            <% }) %>
+        </div>
+    </div>
+</section>
+
 <%- include('../partials/footer.ejs') %>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-
 <script>
+// Quantity Logic
+function updateQty(change) {
+    const input = document.getElementById('qtyInput');
+    let val = parseInt(input.value) + change;
+    if(val >= 1 && val <= parseInt(input.max)) input.value = val;
+}
 
-
+// Add to Cart Logic
 document.getElementById('addToCartBtn')?.addEventListener('click', async function() {
   const btn = this;
-  const productId = btn.dataset.productId;
-  const variantId = btn.dataset.variantId;
-  const quantity = 1; // default 1, can add quantity selector later
-
-  btn.disabled = true; // prevent double-click
+  const quantity = document.getElementById('qtyInput')?.value || 1;
+  btn.disabled = true;
 
   try {
     const res = await fetch('/cart/add', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ productId, variantId, quantity })
+      body: JSON.stringify({ 
+          productId: btn.dataset.productId, 
+          variantId: btn.dataset.variantId, 
+          quantity: parseInt(quantity) 
+      })
     });
-
     const data = await res.json();
-
     if (data.success) {
       Swal.fire({
-        icon: 'success',
-        title: 'Added!',
-        text: 'Product added to your cart.',
-        showCancelButton: true,
-        confirmButtonText: 'Go to Cart',
-        cancelButtonText: 'Continue Shopping'
-      }).then(result => {
-        if (result.isConfirmed) {
-          window.location.href = '/cart';
-        }
-      });
+        icon: 'success', title: 'Added to Bag',
+        showCancelButton: true, confirmButtonText: 'Checkout', confirmButtonColor: '#000'
+      }).then(r => { if (r.isConfirmed) window.location.href = '/cart'; });
     } else {
-      Swal.fire({
-        icon: 'error',
-        title: 'Oops!',
-        text: data.message || 'Could not add product to cart.'
-      });
+      Swal.fire({ icon: 'error', title: 'Error', text: data.message });
     }
-
   } catch (err) {
-    console.error(err);
-    Swal.fire({
-      icon: 'error',
-      title: 'Error',
-      text: 'Something went wrong. Please try again.'
-    });
-  } finally {
-    btn.disabled = false;
-  }
+    Swal.fire({ icon: 'error', title: 'Error', text: 'Something went wrong.' });
+  } finally { btn.disabled = false; }
 });
 
-
+// Gallery & Zoom (Same as your preferred logic)
 function enableZoom(imgID, resultID) {
   const img = document.getElementById(imgID);
   const result = document.getElementById(resultID);
-  const scale = 1;
-
-  img.addEventListener("mouseenter", () => {
-    result.style.display = "block";
-    result.style.backgroundImage = `url(${img.src})`;
-    result.style.backgroundSize = img.width * scale + "px " + img.height * scale + "px";
-  });
-
-  img.addEventListener("mouseleave", () => {
-    result.style.display = "none";
-  });
-
-  img.addEventListener("mousemove", function (e) {
+  const scale = 2.5;
+  img.addEventListener("mouseenter", () => { if(window.innerWidth > 991) result.style.display = "block"; });
+  img.addEventListener("mouseleave", () => { result.style.display = "none"; });
+  img.addEventListener("mousemove", (e) => {
     const rect = img.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
-    const posX = -(x * scale - result.offsetWidth / 2);
-    const posY = -(y * scale - result.offsetHeight / 2);
-    result.style.backgroundPosition = `${posX}px ${posY}px`;
+    result.style.backgroundImage = `url(${img.src})`;
+    result.style.backgroundSize = img.width * scale + "px " + img.height * scale + "px";
+    result.style.backgroundPosition = `${-(x * scale - result.offsetWidth/2)}px ${-(y * scale - result.offsetHeight/2)}px`;
   });
 }
-
 enableZoom("mainImage", "zoomResult");
 
 function changeImage(src, thumb) {
   const main = document.getElementById("mainImage");
-  const zoom = document.getElementById("zoomResult");
-
-  main.src = src;
-  zoom.style.backgroundImage = `url(${src})`;
-
-  document.querySelectorAll(".thumbnail-img")
-    .forEach(t => t.classList.remove("active"));
-
+  main.style.opacity = '0';
+  setTimeout(() => {
+    main.src = src;
+    main.style.opacity = '1';
+  }, 200);
+  document.querySelectorAll(".thumb-cube").forEach(t => t.classList.remove("active"));
   thumb.classList.add("active");
 }
-
-
-document.querySelector('.wishlist-btn')?.addEventListener('click', async function () {
-    const button = this;
-    const productId = button.dataset.id;
-
-    try {
-        const res = await fetch('/wishlist/toggle', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ productId })
-        });
-
-        const data = await res.json();
-
-        if (data.success && data.action === "added") {
-            Swal.fire({
-                icon: "success",
-                title: "Added to Wishlist",
-                text: "Product added to your wishlist!"
-            });
-
-            document.getElementById("wishlistIcon").classList.remove("fa-regular");
-            document.getElementById("wishlistIcon").classList.add("fa-solid");
-
-        } else if (!data.success && data.message === "Product is already in wishlist") {
-            Swal.fire({
-                icon: "info",
-                title: "Already Added",
-                text: "This product is already in your wishlist!"
-            });
-
-        } else if (data.action === "removed") {
-            Swal.fire({
-                icon: "info",
-                title: "Removed",
-                text: "Product removed from wishlist!"
-            });
-
-            document.getElementById("wishlistIcon").classList.remove("fa-solid");
-            document.getElementById("wishlistIcon").classList.add("fa-regular");
-        }
-
-    } catch (err) {
-        console.error(err);
-        Swal.fire({
-            icon: "error",
-            title: "Error",
-            text: "Connection failed. Try again."
-        });
-    }
-});
 </script>
-
 </body>
 </html>

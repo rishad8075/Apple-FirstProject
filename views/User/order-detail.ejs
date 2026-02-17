@@ -135,7 +135,9 @@
                             <p class="text-muted small mb-1">ORDER ID</p>
                             <p class="fw-bold">#<%= order.orderId %></p>
                             <p class="text-muted small mb-1">PLACED ON</p>
-                            <p class="fw-bold"><%= order.createdAt.toLocaleString() %></p>
+                                                 <p class="fw-bold"><%= new Date(order.createdAt).toLocaleString("en-IN", { 
+    timeZone: "Asia/Kolkata" 
+}) %></p>
                         </div>
                         <div class="col-md-6 text-md-end">
                             <p class="text-muted small mb-1">ORDER STATUS</p>
