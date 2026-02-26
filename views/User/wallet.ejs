@@ -154,6 +154,7 @@
       <thead>
         <tr>
           <th style="width:5%">#</th>
+          <th style="width:18%">Source</th>
           <th style="width:18%">Amount</th>
           <th style="width:12%">Type</th>
           <th>Description</th>
@@ -165,6 +166,7 @@
           <% walletHistory.forEach((txn, idx) => { %>
             <tr>
               <td><%= (currentPage-1)*5 + idx + 1 %></td>
+              <td><%=txn.source  %></td>
               <td class="fw-bold <%= txn.type.toLowerCase() === 'credit' ? 'text-success' : 'text-danger' %>">
                 <%= txn.type.toLowerCase() === 'credit' ? '+' : '-' %> ₹<%= txn.amount.toFixed(2) %>
               </td>
